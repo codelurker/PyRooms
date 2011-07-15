@@ -43,16 +43,36 @@ class controller:
 		
 		eve = people.human()
 		eve.name = ('Eve','')
+		eve.male = False
 		eve.age = 25
 		eve.strength = 4
 		eve.dexterity = 5
 		eve.intelligence = 3
 		eve.charisma = 8
 
-		eve.schedule_add([6,2],eve.have_child,args=adam)
+		eve.impregnate(adam)
+		
+		#eve.schedule_add([6,2],eve.have_child,args=adam)
 	
-		for r in range(2,people.random.randint(3,5)+1):
-			eve.have_child(adam)
+		#for r in range(2,people.random.randint(3,5)+1):
+		#	eve.have_child(adam)
+	
+	def get_future_date(self,ticks):
+		_d = list(self.date)
+		_t = self.ticks
+		
+		for t in range(ticks):
+			_t += 1
+
+			if _t/24 > _d[0]:
+				_d[0]+=1
+		
+			if _t == 7200:
+				_d[0]=1
+				_d[1]+=1
+				_t = 0
+		
+		return _d
 	
 	def tick(self,ticks = 1):
 		print 'Ticking',
@@ -73,9 +93,7 @@ class controller:
 		else:
 			print 'Advancing %s years.' % amnt
 		
-		end_ticks = (7200*amnt)
-		
-		for _y in range(end_ticks):
+		for _y in range(7200*amnt):
 			for _p in self.people:
 				_p.tick()
 			

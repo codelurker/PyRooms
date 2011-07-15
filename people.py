@@ -34,11 +34,26 @@ class person:
 		self.potential_charisma = 0
 		
 		self.items = []
-		self.events = {'lastbirthday':False}
+		self.events = {'lastbirthday':False,\
+						'pregnant':False,\
+						'pregnanton':False,\
+						'pregnantby':None}
 		self.schedule = []
 	
 	def schedule_add(self,time,event,args=''):
 		self.schedule.append({'time':time,'event':event,'args':args})
+		if var.debug: print '[Schedule] Event added by %s %s' % (self.name[0],self.name[1])
+	
+	def impregnate(self,male):
+		if self.male: print 'What are you doing?'
+		
+		self.events['pregnant'] = True
+		self.events['pregnanton'] = tuple(var._c.date)
+		self.events['pregnantby'] = male
+		
+		self.schedule_add(var._c.get_future_date(4800),self.have_child,args=male)
+		
+		print '[%s] %s is pregnant' % (self.events['pregnanton'],self.name[0])
 	
 	def have_child(self,male):
 		_child = person()
