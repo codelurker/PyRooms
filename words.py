@@ -14,8 +14,16 @@ human_lnames = sorted(hln.readlines()[0].split(','))
 hln.close()
 
 _keywords = open(os.path.join('data','keywords.txt'),'r')
-keywords = sorted(_keywords.readlines()[0].split(','))
+__keywords = sorted(_keywords.readlines()[0].split(','))
+keywords = []
+for key in __keywords:
+	keywords.append(key.split(':'))
+	
 _keywords.close()
 
-commands = ['look']
-prepositions = ['at','with']
+commands = ['look','ask']
+
+def get_action(word):
+	for _keyword in keywords:
+		if word == _keyword[0]:
+			return _keyword[1]

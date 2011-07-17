@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import var, words, functions
+import var, words
 
 def parse_input(text):
 	text = text.split(' ')
