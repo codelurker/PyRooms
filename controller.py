@@ -85,7 +85,7 @@ class controller:
 				self.date[1]+=1
 				self.ticks = 0
 				
-				print '[Time] It is now year %s.' % self.date[1]
+				#print '[Time] It is now year %s.' % self.date[1]
 				
 				for _p in self.people:
 					_p.events['lastbirthday']=False

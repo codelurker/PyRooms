@@ -49,8 +49,11 @@ class person:
 	def find_partner(self):
 		for person in var._c.people:
 			if not person.male:
-				if not person.age >= person.events['seek_partner_age'] and not person.spouse == None:
+				if person.age < person.events['seek_partner_age']:
 					break
+				
+				#if not person.spouse == None:
+				#	break
 				
 				if (person.intelligence+person.charisma) <= (self.intelligence+self.charisma):
 					self.marry(person)
