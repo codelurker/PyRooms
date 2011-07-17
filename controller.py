@@ -1,11 +1,13 @@
 #!/usr/bin/python2
-import interpreter,people
+import functions, people, var
 
 class room:
 	def __init__(self):
-		self.name = 'Test'
+		self.name = 'The TesterToaster House'
+		self.on_enter = 'Your eyes take a few seconds to adjust to the dim lighting.'
+		self.description = 'A '
+		
 		self.guests = []
-
 
 class controller:
 	def __init__(self,size=(32,32)):
@@ -16,10 +18,10 @@ class controller:
 		self.people = []
 		
 	def generate(self):
-		print 'Making world',
+		if var.debug: print 'Making world',
 	
 		for x in range(self.size[0]):
-			print '.',
+			if var.debug: print '.',
 			ycols = []
 			
 			for y in range(self.size[1]-1):
@@ -27,11 +29,11 @@ class controller:
 			
 			self.map.append(ycols)
 		
-		print 'Done!\n',
+		if var.debug: print 'Done!\n',
 	
 	def make_human_race(self):
 		adam = people.human()
-		adam.name = ('Adam','')
+		adam.name = ['Adam',functions.get_last_name(adam.race)]
 		adam.age = 30
 		adam.strength = 6
 		adam.dexterity = 4
@@ -39,7 +41,7 @@ class controller:
 		adam.charisma = 6
 		
 		eve = people.human()
-		eve.name = ('Eve','')
+		eve.name = ['Eve',functions.get_last_name(adam.race)]
 		eve.male = False
 		eve.age = 25
 		eve.strength = 4

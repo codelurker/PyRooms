@@ -1,38 +1,29 @@
 #!/usr/bin/python2
-import words,random,time,var
+import var, words, functions
 
-def get_date():
-	return list(var._c.date)
+def parse_input(text):
+	text = text.split(' ')
+	
+	if text[0] in words.commands:
+		if text[0] == 'look':
+			if len(text) == 1:
+				print 'The room is dark!'
+			elif text[1] == 'at' and len(text) > 2:
+				_look = functions.look_for(text[2])
+				
+				if len(_look) > 1:
+					print 'There are a number of things here that go by that name:'
+					for entry in _look: print '%s %s,' % (entry.name[0],entry.name[1]),
+					print
+				elif len(_look):
+					print '%s looks very good!' % (_look[0].name[0])
+				else:
+					print 'There is nothing here by that name!'
+				
+			else:
+				print 'What are you looking at?'
+				
 
-def get_ticks():
-	return int(var._c.ticks)
-
-def get_future_date(ticks):
-	_d = get_date()
-	_t = get_ticks()
-	__t = _t
+def get_input():
+	parse_input(raw_input())
 	
-	
-	for t in range(ticks):
-		_t += 1
-
-		if _t/48 > _d[0]:
-			_d[0]+=1
-	
-		if _t == 14400:
-			_d[0]=1
-			_d[1]+=1
-			_t = 0
-	
-	return _d
-
-def get_name(race,male):
-	random.seed()
-	
-	if male:
-		if race == 'Human':
-			return words.human_male_fnames[random.randint(0,len(words.human_male_fnames)-1)]
-	
-	else:
-		if race == 'Human':
-			return words.human_female_fnames[random.randint(0,len(words.human_female_fnames)-1)]

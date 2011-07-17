@@ -1,13 +1,14 @@
 #!/usr/bin/python2
-import random, interpreter, var
+import random, functions, var
 
 random.seed()
 
 class person:
-	def __init__(self):
-		var._c.people.append(self)
+	def __init__(self,player=False):
+		if not player: var._c.people.append(self)
 		
-		self.name = ('','')
+		self.name = [None,None]
+		self.maiden_name = None
 		self.born = tuple(var._c.date)
 		self.race = None
 		self.male = True
@@ -48,12 +49,11 @@ class person:
 	
 	def find_partner(self):
 		for person in var._c.people:
-			if not person.male:
+			if not person.male and person.spouse == None:
 				if person.age < person.events['seek_partner_age']:
 					break
 				
-				#if not person.spouse == None:
-				#	break
+				#print person.spouse
 				
 				if (person.intelligence+person.charisma) <= (self.intelligence+self.charisma):
 					self.marry(person)
@@ -61,8 +61,10 @@ class person:
 	def marry(self,_spouse):
 		self.spouse = _spouse
 		_spouse.spouse = self
+		_spouse.maiden_name = _spouse.name[1]
+		_spouse.name[1] = self.name[1]
 
-		print '[%s] %s has married %s.' % (var._c.date,self.name[0],_spouse.name[0])
+		print '%s %s %s has married %s %s' % (var._c.date,self.name[0],self.name[1],_spouse.name[0],_spouse.maiden_name)
 	
 	def impregnate(self,male):
 		if self.male: print 'What are you doing?'
@@ -72,10 +74,10 @@ class person:
 		self.events['pregnanton'] = var._c.date #tuple(var._c.date)
 		self.events['pregnantby'] = male
 		
-		_f_date = interpreter.get_future_date(9600)
+		_f_date = functions.get_future_date(9600)
 		self.schedule_add(_f_date,self.have_child,args=male)
 		
-		print '[%s] %s is pregnant.' % (self.events['pregnanton'],self.name[0])
+		print '%s %s %s is pregnant.' % (self.events['pregnanton'],self.name[0],self.name[1])
 		#print 'Due date: %s' % _f_date
 	
 	def have_child(self,male):
@@ -89,7 +91,7 @@ class person:
 		
 		_child.male = random.randint(0,1)
 		
-		_child.name = (interpreter.get_name(_child.race,_child.male),'')
+		_child.name = [functions.get_name(_child.race,_child.male),self.name[1]]
 		
 		_strength = sorted([self.strength,male.strength])
 		_dexterity = sorted([self.dexterity,male.dexterity])
@@ -127,7 +129,7 @@ class person:
 		
 		self.events['pregnant'] = False
 		
-		print '[%s] %s has been born.' % (interpreter.get_date(),_child.name[0])
+		print '%s %s %s has been born.' % (functions.get_date(),_child.name[0],_child.name[1])
 	
 	def tick(self):
 		if self.male:
