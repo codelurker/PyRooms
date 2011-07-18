@@ -1,5 +1,6 @@
 #!/usr/bin/python2
-import functions, words
+import functions, words, os
+from BeautifulSoup import BeautifulStoneSoup
 
 class item:
 	def __init__(self):
@@ -37,7 +38,10 @@ class light(item):
 	def get_description(self):
 		if self.on:
 			return 'Its flame slowly flickers, casting a silent, wavering glow on the %s under it.' % self.parent.name
-		
+
+def load_items():
+	items = open(os.path.join('data','items.xml'),'r')
+	soup = BeautifulStoneSoup(menu)
 
 t = table()
 l = light(t)
