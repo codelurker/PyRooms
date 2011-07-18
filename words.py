@@ -1,5 +1,6 @@
 #!/usr/bin/python2
 import os, random
+from BeautifulSoup import BeautifulStoneSoup
 
 random.seed()
 
@@ -50,8 +51,18 @@ def get_desc_lighting(lights,detail):
 		else:
 			return room_description_poor_lighting[random.randint(0,len(room_description_poor_lighting)-1)].split('|')[0]+'.'
 
-room_description_interior_stone = ['A brief glance at the interior reveals that the walls are composed of light-grey stone| stacked one upon the other|, padded with wooden slabs every few feet']
-room_description_interior_stone_wet = ['']
+room_description_interior_stone = []
+room_description_interior_stone_wet = []
+
+def load_room_descriptions():
+	room_desc_file = open(os.path.join('data','room_interior_descriptions.xml'),'r')
+	soup = BeautifulStoneSoup(room_desc_file)
+	room_desc_file.close()
+	_stone = soup.findAll('stone')
+	
+	for _i in _stone:
+		room_description_interior_stone.append(_i.renderContents())
+
 def get_desc_interior(type):
 	if type == 'stone':
 		_ret = room_description_interior_stone[random.randint(0,len(room_description_interior_stone)-1)]
