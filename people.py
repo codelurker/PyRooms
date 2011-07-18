@@ -47,6 +47,10 @@ class person:
 		self.schedule.append({'time':time,'event':event,'args':args})
 		if var.debug: print '[Schedule] Event added by %s %s.' % (self.name[0],self.name[1])
 	
+	def warp_to(self,place):
+		self.place = place
+		var._c.map[place[0]][place[1]].add_guest(self)
+	
 	def find_partner(self):
 		for person in var._c.people:
 			if not person.male and person.spouse == None:

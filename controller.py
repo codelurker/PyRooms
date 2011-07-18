@@ -5,8 +5,9 @@ import items as item
 class room:
 	def __init__(self):
 		self.name = 'The TesterToaster House'
-		self.on_enter = 'Your eyes take a few seconds to adjust to the dim lighting.'
-		self.description = 'A '
+		self.on_enter = ''
+		self.description = ''
+		self.built_with = 'stone'
 		
 		self.objects = []
 		self.guests = []
@@ -15,15 +16,31 @@ class room:
 		if not place:
 			obj.location = words.get_desc_random_location()
 		self.objects.append(obj)
+
+	def add_guest(self,person):
+		self.guests.append(person)
 	
-	def get_description(self):
-		_d = '%s' % self.on_enter
+	def parse_room(self,detail=True):
+		_lights = 0
 		
 		for obj in self.objects:
-			_d += ' '+obj.get_room_description()
-			_d += ' '+obj.get_description()
+			if obj.type == 'light':
+				_lights += 1
 		
-		return _d
+		self.on_enter += words.get_desc_lighting(_lights,detail)
+		if detail: self.on_enter += ' '+words.get_desc_interior(self.built_with)
+		
+		for obj in self.objects:
+			self.description += ' '+obj.get_room_description()
+			if detail: self.description += ' '+obj.get_description()
+		
+		for per in self.guests:
+			self.description += ' %s is here.' % (per.name[0])
+	
+	def get_description(self):
+		self.parse_room()
+		
+		return '%s%s' % (self.on_enter,self.description)
 
 class controller:
 	def __init__(self,size=(32,32)):
@@ -68,6 +85,8 @@ class controller:
 		eve.charisma = 8
 		
 		adam.marry(eve)
+		adam.warp_to([0,0])
+		eve.warp_to([0,0])
 		
 		for _r in range(2,people.random.randint(4,5)):
 			eve.impregnate(adam)
