@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import words,random,time,var
+import random, time, words, var
 
 def look_for(text):
 	_l = []

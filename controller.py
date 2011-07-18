@@ -1,5 +1,6 @@
 #!/usr/bin/python2
-import functions, people, var
+import functions, people, var, words
+import items as item
 
 class room:
 	def __init__(self):
@@ -7,7 +8,22 @@ class room:
 		self.on_enter = 'Your eyes take a few seconds to adjust to the dim lighting.'
 		self.description = 'A '
 		
+		self.objects = []
 		self.guests = []
+	
+	def add_object(self,obj,place=None):
+		if not place:
+			obj.location = words.get_desc_random_location()
+		self.objects.append(obj)
+	
+	def get_description(self):
+		_d = '%s' % self.on_enter
+		
+		for obj in self.objects:
+			_d += ' '+obj.get_room_description()
+			_d += ' '+obj.get_description()
+		
+		return _d
 
 class controller:
 	def __init__(self,size=(32,32)):
@@ -25,7 +41,9 @@ class controller:
 			ycols = []
 			
 			for y in range(self.size[1]-1):
-				ycols.append(room())
+				_r = room()
+				_r.add_object(item.get_item('light'))
+				ycols.append(_r)
 			
 			self.map.append(ycols)
 		

@@ -1,1 +1,15 @@
-s
+<item>
+	<type>light</type>
+	<ref>candle</ref>
+	<prefix>a</prefix>
+	<action>burn</action>
+	<room_desc>%prefix% %ref% %action% %pos%.</room_desc>
+	<desc>Its flame slowly flickers, casting a silent, wavering glow on| the %parent% under it.</desc>
+</item>
+
+<item>
+	<type>container</type>
+	<ref>wooden table</ref>
+	<prefix>the|a</prefix>
+	<action>sit</action>
+</item>

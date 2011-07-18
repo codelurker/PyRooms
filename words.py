@@ -1,5 +1,7 @@
 #!/usr/bin/python2
-import os
+import os, random
+
+random.seed()
 
 hmf = open(os.path.join('data','human_male_fnames.txt'),'r')
 human_male_fnames = sorted(hmf.readlines()[0].split(','))
@@ -27,3 +29,11 @@ def get_action(word):
 	for _keyword in keywords:
 		if word == _keyword[0]:
 			return _keyword[1]
+
+light_filler = ['the floor below it','the walls around it']
+def get_desc_light_filler(obj):
+	return light_filler[random.randint(0,len(light_filler)-1)]
+
+random_location = ['in the far corner','next to the door']
+def get_desc_random_location():
+	return random_location[random.randint(0,len(random_location)-1)]
