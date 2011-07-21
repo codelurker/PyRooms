@@ -17,6 +17,7 @@ class person:
 		self.spouse = None
 		self.children = []
 		self.siblings = []
+		self.place = [0,0]
 		
 		self.condition = {'head':10,'eyes':10,\
 						'larm':10,'rarm':10,\
@@ -46,6 +47,18 @@ class person:
 	def schedule_add(self,time,event,args=''):
 		self.schedule.append({'time':time,'event':event,'args':args})
 		if var.debug: print '[Schedule] Event added by %s %s.' % (self.name[0],self.name[1])
+	
+	def walk(self,dir):
+		if dir == 'north':
+			self.place[1] -= 1
+		elif dir == 'south':
+			self.place[1] += 1
+		elif dir == 'east':
+			self.place[0] -= 1
+		elif dir == 'west':
+			self.place[0] += 1
+		
+		print 'Moving %s, %s,%s' % (dir,str(self.place[0]),str(self.place[1]))
 	
 	def warp_to(self,place):
 		self.place = place
@@ -176,7 +189,7 @@ class person:
 
 
 class human(person):
-	def __init__(self):
-		person.__init__(self)
+	def __init__(self,player=False):
+		person.__init__(self,player=player)
 		
 		self.race = 'Human'

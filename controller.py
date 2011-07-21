@@ -11,6 +11,8 @@ class room:
 		
 		self.objects = []
 		self.guests = []
+		
+		self.exits = ['north','south','east','west']
 	
 	def add_object(self,obj,place=None):
 		if not place:
@@ -83,6 +85,15 @@ class controller:
 		eve.dexterity = 5
 		eve.intelligence = 3
 		eve.charisma = 8
+		
+		var.player = people.human(player=True)
+		var.player.name = ['Eve',functions.get_last_name(adam.race)]
+		var.player.male = False
+		var.player.age = 25
+		var.player.strength = 4
+		var.player.dexterity = 5
+		var.player.intelligence = 3
+		var.player.charisma = 8
 		
 		adam.marry(eve)
 		adam.warp_to([0,0])

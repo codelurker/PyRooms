@@ -7,7 +7,8 @@ def parse_input(text):
 	if text[0] in words.commands:
 		if text[0] == 'look':
 			if len(text) == 1:
-				print 'The room is dark!'
+				print var._c.map[var.player.place[0]][var.player.place[1]].get_description()
+				
 			elif text[1] == 'at' and len(text) > 2:
 				_look = functions.look_for(text[2])
 				
@@ -22,6 +23,9 @@ def parse_input(text):
 				
 			else:
 				print 'What are you looking at?'
+		
+	if text[0] in ['north','south','east','west']:
+		var.player.walk(text[0])
 				
 
 def get_input():
