@@ -5,6 +5,7 @@ import items as item
 class room:
 	def __init__(self):
 		self.name = 'The TesterToaster House'
+		self.type = ''
 		self.on_enter = ''
 		self.description = ''
 		self.built_with = 'stone'
@@ -23,6 +24,8 @@ class room:
 		self.guests.append(person)
 	
 	def parse_room(self,detail=True):
+		self.on_enter = ''
+		self.description = ''
 		_lights = 0
 		
 		for obj in self.objects:
@@ -30,7 +33,7 @@ class room:
 				_lights += 1
 		
 		self.on_enter += words.get_desc_lighting(_lights,detail)
-		if detail: self.on_enter += ' '+words.get_desc_interior(self.built_with)
+		if detail: self.on_enter += ' '+words.get_desc_interior(self.built_with,_lights)
 		
 		for obj in self.objects:
 			self.description += ' '+obj.get_room_description()
@@ -51,6 +54,11 @@ class controller:
 		self.date = [1,0]
 		self.ticks = 0
 		self.people = []
+		self.history = []
+	
+	def log(self,text):
+		print text
+		self.history.append(text)
 		
 	def generate(self):
 		if var.debug: print 'Making world',
@@ -60,9 +68,15 @@ class controller:
 			ycols = []
 			
 			for y in range(self.size[1]-1):
-				_r = room()
-				_r.add_object(item.get_item('light'))
-				ycols.append(_r)
+				if (x,y) == (0,0):
+					_r = room()
+					_r.type = 'home'
+					_r.add_object(item.get_item('light'))
+					_r.add_object(item.get_item('light'))
+					_r.add_object(item.get_item('light'))
+					ycols.append(_r)
+				else:
+					ycols.append(room())
 			
 			self.map.append(ycols)
 		
@@ -87,7 +101,7 @@ class controller:
 		eve.charisma = 8
 		
 		var.player = people.human(player=True)
-		var.player.name = ['Eve',functions.get_last_name(adam.race)]
+		var.player.name = ['Player',functions.get_last_name(adam.race)]
 		var.player.male = False
 		var.player.age = 25
 		var.player.strength = 4
@@ -117,9 +131,9 @@ class controller:
 	
 	def tick_year(self,amnt):
 		if amnt == 1:
-			print '[Time] Advancing 1 year.'
+			self.log('[Time] Advancing 1 year.')
 		else:
-			print '[Time] Advancing %s years.' % amnt
+			self.log('[Time] Advancing %s years.' % amnt)
 		
 		for _y in range(14400*amnt):
 			for _p in self.people:

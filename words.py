@@ -4,36 +4,25 @@ from BeautifulSoup import BeautifulStoneSoup
 
 random.seed()
 
-hmf = open(os.path.join('data','human_male_fnames.txt'),'r')
-human_male_fnames = sorted(hmf.readlines()[0].split(','))
-hmf.close()
-
-hff = open(os.path.join('data','human_female_fnames.txt'),'r')
-human_female_fnames = sorted(hff.readlines()[0].split(','))
-hff.close()
-
-hln = open(os.path.join('data','human_lnames.txt'),'r')
-human_lnames = sorted(hln.readlines()[0].split(','))
-hln.close()
-
-_keywords = open(os.path.join('data','keywords.txt'),'r')
-__keywords = sorted(_keywords.readlines()[0].split(','))
-keywords = []
-for key in __keywords:
-	keywords.append(key.split(':'))
-	
-_keywords.close()
-
-commands = ['look','ask']
+def read_word_list(fname):
+	_r = open(os.path.join('data',fname),'r')
+	return sorted(_r.readlines()[0].split(','))
+	_r.close()
 
 def get_action(word):
 	for _keyword in keywords:
 		if word == _keyword[0]:
 			return _keyword[1]
 
-def cut_text(text):
+def cut_text(text,detail):
 	parts = text.split('|')
-	return ''.join(parts[:random.randint(1,len(parts))])+'.'
+	if detail > len(parts) :
+		detail = len(parts)
+	
+	#print 
+	
+	#return ''.join(parts[:random.randint(1,len(parts))])+'.'
+	return ''.join(parts[:detail])+'.'
 
 light_filler = ['the floor below it','the walls around it']
 def get_desc_light_filler(obj):
@@ -45,15 +34,32 @@ def get_desc_random_location():
 
 room_description_poor_lighting = ['The room is very dark|, and your eyes take a moment to adjust to the dim light.']
 def get_desc_lighting(lights,detail):
-	if lights == 1:
+	if lights >= 1:
 		if detail:
 			return room_description_poor_lighting[random.randint(0,len(room_description_poor_lighting)-1)].replace('|','')
 		else:
 			return room_description_poor_lighting[random.randint(0,len(room_description_poor_lighting)-1)].split('|')[0]+'.'
+	elif not lights:
+		return 'It is too dark to see anything.'
+
+def get_desc_interior(type,lights):
+	if type == 'stone':
+		_ret = room_description_interior_stone[random.randint(0,len(room_description_interior_stone)-1)]
+		return cut_text(_ret,lights)
+	else:
+		return ''
+
+def get_phrase(type):
+	_l = []
+	
+	for entry in phrases:
+		if entry['type'] == type:
+			_l.append(entry['text'])
+	
+	return _l[random.randint(0,len(_l)-1)]
 
 room_description_interior_stone = []
 room_description_interior_stone_wet = []
-
 def load_room_descriptions():
 	room_desc_file = open(os.path.join('data','room_interior_descriptions.xml'),'r')
 	soup = BeautifulStoneSoup(room_desc_file)
@@ -63,7 +69,29 @@ def load_room_descriptions():
 	for _i in _stone:
 		room_description_interior_stone.append(_i.renderContents())
 
-def get_desc_interior(type):
-	if type == 'stone':
-		_ret = room_description_interior_stone[random.randint(0,len(room_description_interior_stone)-1)]
-		return cut_text(_ret)
+phrases = []
+def load_phrases():
+	phrase_file = open(os.path.join('data','phrases.xml'),'r')
+	soup = BeautifulStoneSoup(phrase_file)
+	phrase_file.close()
+	
+	_room_exit = soup.findAll('room_exit')
+	
+	for _i in _room_exit:
+		phrases.append({'type':'room_exit','text':_i.renderContents()})
+
+
+#WORDLISTS
+human_male_fnames = read_word_list('human_male_fnames.txt')
+human_female_fnames = read_word_list('human_female_fnames.txt')
+human_lnames = read_word_list('human_lnames.txt')
+
+_keywords = open(os.path.join('data','keywords.txt'),'r')
+__keywords = sorted(_keywords.readlines()[0].split(','))
+keywords = []
+for key in __keywords:
+	keywords.append(key.split(':'))
+	
+_keywords.close()
+
+commands = ['look','ask','north','south','east','west']

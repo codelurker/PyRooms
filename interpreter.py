@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import var, words
+import var, words, functions, sys
 
 def parse_input(text):
 	text = text.split(' ')
@@ -13,21 +13,24 @@ def parse_input(text):
 				_look = functions.look_for(text[2])
 				
 				if len(_look) > 1:
-					print 'There are a number of things here that go by that name:'
-					for entry in _look: print '%s %s,' % (entry.name[0],entry.name[1]),
+					var._c.log('There are a number of things here that go by that name:')
+					for entry in _look: var._c.log('%s %s,' % (entry.name[0],entry.name[1]))
 					print
 				elif len(_look):
-					print '%s looks very good!' % (_look[0].name[0])
+					var._c.log('%s looks very good!' % (_look[0].name[0]))
 				else:
-					print 'There is nothing here by that name!'
+					var._c.log('There is nothing here by that name!')
 				
 			else:
-				print 'What are you looking at?'
+				var._c.log('What are you looking at?')
 		
-	if text[0] in ['north','south','east','west']:
-		var.player.walk(text[0])
+		elif text[0] in ['north','south','east','west']:
+			var.player.walk(text[0])
+	
+	else:
+		return False
 				
 
 def get_input():
-	parse_input(raw_input())
+	while not parse_input(raw_input('> ')) == False: pass
 	

@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import random, functions, var
+import random, functions, words, var
 
 random.seed()
 
@@ -44,7 +44,14 @@ class person:
 						'seek_partner_age':None}
 		self.schedule = []
 	
-	def schedule_add(self,time,event,args=''):
+	def parse(self,text,search=None):
+		_t = text.replace('%name%',self.name[0]).replace('%fname%','%s %s' % (self.name[0],self.name[1]))
+		
+		if search: _t = _t.replace(search['find'],search['replace'])
+		
+		return _t
+	
+	def schedule_add(self,time,event,args):
 		self.schedule.append({'time':time,'event':event,'args':args})
 		if var.debug: print '[Schedule] Event added by %s %s.' % (self.name[0],self.name[1])
 	
@@ -58,7 +65,9 @@ class person:
 		elif dir == 'west':
 			self.place[0] += 1
 		
-		print 'Moving %s, %s,%s' % (dir,str(self.place[0]),str(self.place[1]))
+		var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))
+		
+		if var.debug: var._c.log('Moving %s, %s,%s' % (dir,str(self.place[0]),str(self.place[1])))
 	
 	def warp_to(self,place):
 		self.place = place
@@ -70,8 +79,6 @@ class person:
 				if person.age < person.events['seek_partner_age']:
 					break
 				
-				#print person.spouse
-				
 				if (person.intelligence+person.charisma) <= (self.intelligence+self.charisma):
 					self.marry(person)
 	
@@ -81,10 +88,10 @@ class person:
 		_spouse.maiden_name = _spouse.name[1]
 		_spouse.name[1] = self.name[1]
 
-		print '%s %s %s has married %s %s' % (var._c.date,self.name[0],self.name[1],_spouse.name[0],_spouse.maiden_name)
+		var._c.log('%s %s %s has married %s %s' % (var._c.date,self.name[0],self.name[1],_spouse.name[0],_spouse.maiden_name))
 	
 	def impregnate(self,male):
-		if self.male: print 'What are you doing?'
+		if self.male and var.debug: print 'What are you doing?'
 		if self.events['pregnant'] == True: return 0
 		
 		self.events['pregnant'] = True
@@ -94,8 +101,7 @@ class person:
 		_f_date = functions.get_future_date(9600)
 		self.schedule_add(_f_date,self.have_child,args=male)
 		
-		print '%s %s %s is pregnant.' % (self.events['pregnanton'],self.name[0],self.name[1])
-		#print 'Due date: %s' % _f_date
+		var._c.log('%s %s %s is pregnant.' % (self.events['pregnanton'],self.name[0],self.name[1]))
 	
 	def have_child(self,male):
 		_child = person()
@@ -146,7 +152,7 @@ class person:
 		
 		self.events['pregnant'] = False
 		
-		print '%s %s %s has been born.' % (functions.get_date(),_child.name[0],_child.name[1])
+		var._c.log('%s %s %s has been born.' % (functions.get_date(),_child.name[0],_child.name[1]))
 	
 	def tick(self):
 		if self.male:
