@@ -8,7 +8,7 @@ class room:
 		self.type = ''
 		self.on_enter = ''
 		self.description = ''
-		self.built_with = 'stone'
+		self.built_with = ''
 		
 		self.objects = []
 		self.guests = []
@@ -23,7 +23,7 @@ class room:
 	def add_guest(self,person):
 		self.guests.append(person)
 	
-	def parse_room(self,detail=True):
+	def parse_room(self):
 		self.on_enter = ''
 		self.description = ''
 		_lights = 0
@@ -32,12 +32,39 @@ class room:
 			if obj.type == 'light':
 				_lights += 1
 		
-		self.on_enter += words.get_desc_lighting(_lights,detail)
-		if detail: self.on_enter += ' '+words.get_desc_interior(self.built_with,_lights)
+		for guest in self.guests:
+			for item in guest.items:
+				if item.type == 'light':
+					_lights += 1
 		
+		if var.debug: print 'There are %s lights here.' % _lights
+		
+		_l = words.get_desc_lighting(_lights)
+		if _l: self.on_enter += _l+' '
+		
+		self.on_enter += words.get_desc_interior(self.built_with,_lights)
+		
+		_objs = []
 		for obj in self.objects:
-			self.description += ' '+obj.get_room_description()
-			if detail: self.description += ' '+obj.get_description()
+			for _obj in _objs:
+				if _obj['name'] == obj.name:
+					_obj['count'] += 1
+					_obj['obj'] == obj
+			else:
+				_objs.append({'name':obj.name,'count':1,'obj':obj})
+				
+		_t = []
+		for obj in _objs:
+			if not obj['name'] in _t:
+				self.description += ' '+obj['obj'].get_room_description()
+				self.description += ' '+obj['obj'].get_description()
+				
+				if obj['count'] > 2:
+					self.description += ' There are %s more %ss here.' % (obj['count']-1,obj['obj'].name)
+				elif obj['count'] == 2:
+					self.description += ' There is one more %s here.' % (obj['obj'].name)					
+				
+				_t.append(obj['name'])
 		
 		for per in self.guests:
 			self.description += ' %s is here.' % (per.name[0])
@@ -74,6 +101,7 @@ class controller:
 					_r.add_object(item.get_item('light'))
 					_r.add_object(item.get_item('light'))
 					_r.add_object(item.get_item('light'))
+					_r.built_with = 'stone'
 					ycols.append(_r)
 				else:
 					ycols.append(room())
@@ -112,6 +140,7 @@ class controller:
 		adam.marry(eve)
 		adam.warp_to([0,0])
 		eve.warp_to([0,0])
+		var.player.warp_to([0,0])
 		
 		for _r in range(2,people.random.randint(4,5)):
 			eve.impregnate(adam)

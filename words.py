@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import os, random
+import os, random, var
 from BeautifulSoup import BeautifulStoneSoup
 
 random.seed()
@@ -19,10 +19,10 @@ def cut_text(text,detail):
 	if detail > len(parts) :
 		detail = len(parts)
 	
-	#print 
-	
-	#return ''.join(parts[:random.randint(1,len(parts))])+'.'
-	return ''.join(parts[:detail])+'.'
+	if detail:
+		return ''.join(parts[:detail])+'.'
+	else:
+		return ''
 
 light_filler = ['the floor below it','the walls around it']
 def get_desc_light_filler(obj):
@@ -32,15 +32,18 @@ random_location = ['in the far corner','next to the door']
 def get_desc_random_location():
 	return random_location[random.randint(0,len(random_location)-1)]
 
-room_description_poor_lighting = ['The room is very dark|, and your eyes take a moment to adjust to the dim light.']
-def get_desc_lighting(lights,detail):
-	if lights >= 1:
-		if detail:
-			return room_description_poor_lighting[random.randint(0,len(room_description_poor_lighting)-1)].replace('|','')
-		else:
-			return room_description_poor_lighting[random.randint(0,len(room_description_poor_lighting)-1)].split('|')[0]+'.'
+room_description_poor_lighting = ['The room is very dark|, and your eyes take a moment to adjust to the dim light']
+def get_desc_lighting(lights):
+	if lights in [1,2]:
+		_ret = room_description_poor_lighting[random.randint(0,len(room_description_poor_lighting)-1)]
+		return cut_text(_ret,lights)
+	
 	elif not lights:
 		return 'It is too dark to see anything.'
+	
+	elif lights >= 3:
+		if var.debug: return '<FIXME> Not enough lighting phrases for %s lights.' % lights
+		return None
 
 def get_desc_interior(type,lights):
 	if type == 'stone':
@@ -94,4 +97,4 @@ for key in __keywords:
 	
 _keywords.close()
 
-commands = ['look','ask','north','south','east','west']
+commands = ['look','ask','north','south','east','west','take','drop','items']

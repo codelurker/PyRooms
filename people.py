@@ -56,6 +56,8 @@ class person:
 		if var.debug: print '[Schedule] Event added by %s %s.' % (self.name[0],self.name[1])
 	
 	def walk(self,dir):
+		var._c.map[self.place[0]][self.place[1]].guests.remove(self)
+		
 		if dir == 'north':
 			self.place[1] -= 1
 		elif dir == 'south':
@@ -65,13 +67,17 @@ class person:
 		elif dir == 'west':
 			self.place[0] += 1
 		
-		var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))
+		var._c.map[self.place[0]][self.place[1]].guests.append(self)
 		
+		var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))		
 		if var.debug: var._c.log('Moving %s, %s,%s' % (dir,str(self.place[0]),str(self.place[1])))
 	
 	def warp_to(self,place):
 		self.place = place
 		var._c.map[place[0]][place[1]].add_guest(self)
+	
+	def get_room(self):
+		return var._c.map[self.place[0]][self.place[1]]
 	
 	def find_partner(self):
 		for person in var._c.people:
