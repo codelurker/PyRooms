@@ -13,19 +13,26 @@ class room:
 		self.objects = []
 		self.guests = []
 		
+		self.map = []
 		self.exits = ['north','south','east','west']
+		
+		for x in range(0,var.room_size[0]):
+			ycols = []
+			
+			for y in range(0,var.room_size[1]):
+				ycols.append({'object':0})
+			
+			self.map.append(ycols)
 	
 	def add_object(self,obj,place=None):
 		if not place:
-			obj.location = words.get_desc_random_location()
+			obj.location = words.get_desc_location(obj)
 		self.objects.append(obj)
 
 	def add_guest(self,person):
 		self.guests.append(person)
 	
-	def parse_room(self):
-		self.on_enter = ''
-		self.description = ''
+	def get_lights(self):
 		_lights = 0
 		
 		for obj in self.objects:
@@ -37,6 +44,14 @@ class room:
 				if item.type == 'light':
 					_lights += 1
 		
+		return _lights
+	
+	def parse_room(self):
+		self.on_enter = ''
+		self.description = ''
+		
+		_lights = self.get_lights()
+		
 		if var.debug: print 'There are %s lights here.' % _lights
 		
 		_l = words.get_desc_lighting(_lights)
@@ -46,12 +61,15 @@ class room:
 		
 		_objs = []
 		for obj in self.objects:
+			
 			for _obj in _objs:
 				if _obj['name'] == obj.name:
 					_obj['count'] += 1
-					_obj['obj'] == obj
-			else:
-				_objs.append({'name':obj.name,'count':1,'obj':obj})
+					#_obj['obj'] == obj
+				else:
+					_objs.append({'name':obj.name,'count':0,'obj':obj})
+			
+			if not len(_objs): _objs.append({'name':obj.name,'count':1,'obj':obj})
 				
 		_t = []
 		for obj in _objs:
@@ -67,7 +85,8 @@ class room:
 				_t.append(obj['name'])
 		
 		for per in self.guests:
-			self.description += ' %s is here.' % (per.name[0])
+			if per != var.player:
+				self.description += ' %s is here.' % (per.name[0])
 	
 	def get_description(self):
 		self.parse_room()
@@ -101,6 +120,7 @@ class controller:
 					_r.add_object(item.get_item('light'))
 					_r.add_object(item.get_item('light'))
 					_r.add_object(item.get_item('light'))
+					_r.add_object(item.get_item('table'))
 					_r.built_with = 'stone'
 					ycols.append(_r)
 				else:

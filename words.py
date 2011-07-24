@@ -28,9 +28,9 @@ light_filler = ['the floor below it','the walls around it']
 def get_desc_light_filler(obj):
 	return light_filler[random.randint(0,len(light_filler)-1)]
 
-random_location = ['in the far corner','next to the door']
-def get_desc_random_location():
-	return random_location[random.randint(0,len(random_location)-1)]
+def get_desc_location(obj):
+	if obj.coords == (0,0):
+		return 'in the northwest corner of the room'
 
 room_description_poor_lighting = ['The room is very dark|, and your eyes take a moment to adjust to the dim light']
 def get_desc_lighting(lights):
@@ -97,4 +97,5 @@ for key in __keywords:
 	
 _keywords.close()
 
-commands = ['look','ask','north','south','east','west','take','drop','items']
+commands = ['look','ask','north','south','east','west','take','drop','items','put']
+attacks = ['stab', 'punch', 'kick']

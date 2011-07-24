@@ -28,11 +28,9 @@ def parse_input(text):
 			var.player.walk(text[0])
 		
 		elif text[0] == 'take' and len(text) == 2:
-			#for object in var._c.map[var.player.place[0]][var.player.place[1]].objects:
 			for object in var.player.get_room().objects:
 				if object.name == text[1]:
-					var._c.map[var.player.place[0]][var.player.place[1]].objects.remove(object)
-					var.player.items.append(object)
+					object.take(var.player)
 					var._c.log('You take the %s.' % object.name)
 					break
 		
@@ -43,6 +41,21 @@ def parse_input(text):
 					var.player.get_room().add_object(item)
 					var._c.log('You drop the %s.' % item.name)
 					break
+		
+		elif text[0] == 'put' and len(text) > 2:
+			for item in var.player.items:
+				if item.name == text[1]:
+					_item = item					
+					break
+			
+			for object in var.player.get_room().objects:
+				if text[2] == 'on':
+					if object.name == text[3] and object.surface:
+						var.player.items.remove(_item)
+						var.player.get_room().add_object(_item)
+						_item.sit_on(object)
+						var._c.log('You put the %s on the %s.' % (_item.name,object.name))
+						break
 		
 		elif text[0] == 'items':
 			if len(var.player.items):
@@ -67,6 +80,10 @@ def parse_input(text):
 						_t.append(item['name'])
 					else:
 						var._c.log(item['obj'].name)
+	
+	elif text[0] in words.attacks:
+		#Calculate alignment
+		pass
 	
 	else:
 		return False

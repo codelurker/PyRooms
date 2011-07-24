@@ -1,15 +1,18 @@
 <item>
 	<type>light</type>
 	<ref>candle</ref>
-	<prefix>a</prefix>
+	<prefix>A</prefix>
 	<action>burn</action>
 	<room_desc>%prefix% %ref% %action% %pos%.</room_desc>
 	<desc>Its flame slowly flickers, casting a silent, wavering glow on| the %parent% under it.</desc>
 </item>
 
 <item>
-	<type>container</type>
-	<ref>wooden table</ref>
-	<prefix>the|a</prefix>
+	<type>table</type>
+	<ref>table</ref>
+	<prefix>the</prefix>
 	<action>sit</action>
+	<surface>True</surface>
+	<room_desc>%prefix% %ref% %action% %pos%.</room_desc>
+	<desc>It is made out of a dark colored wood|, its surface is worn| and has several scars on it from years of use</desc>
 </item>
