@@ -1,6 +1,7 @@
 #!/usr/bin/python2
 
-debug = 0
+#Developer
+debug = False
 
 #Settings
 room_size = (2,2)

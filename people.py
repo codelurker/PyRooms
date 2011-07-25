@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import random, functions, words, var
+import random, functions, brain, words, var
 
 random.seed()
 
@@ -7,6 +7,8 @@ class person:
 	def __init__(self,player=False):
 		if not player: var._c.people.append(self)
 		
+		self.id = var._c.get_id()		
+		self.brain = brain.brain(self)
 		self.name = [None,None]
 		self.maiden_name = None
 		self.born = tuple(var._c.date)
@@ -30,11 +32,19 @@ class person:
 		self.dexterity = 0
 		self.intelligence = 0
 		self.charisma = 0
-		
+				
 		self.potential_strength = 0
 		self.potential_dexterity = 0
 		self.potential_intelligence = 0
 		self.potential_charisma = 0
+		
+		#skills
+		self.medicine = 5
+		self.speech = 2
+		
+		#attributes
+		self.attributes = {'naturalbeauty':False,\
+							'conartist':False}
 		
 		self.items = []
 		self.events = {'lastbirthday':False,\
@@ -43,6 +53,30 @@ class person:
 						'pregnantby':None,\
 						'seek_partner_age':None}
 		self.schedule = []
+		
+		self.description = ''
+	
+	def get_description(self):
+		pass
+	
+	def who_am_i(self):
+		_s = '%s %s %s.' % (words.get_phrase('introduction'),\
+					self.name[0],self.name[1])	
+		
+		return _s		
+	
+	def get_health(self):
+		_t = 0
+		_s = ''
+		if self.male: _g = 'his'
+		else: _g = 'her';
+		
+		for part in words.body_parts:
+			_c = self.condition[part]
+			_t += _c
+			
+		if _t >= 120:		
+			return 'good'
 	
 	def parse(self,text,search=None):
 		_t = text.replace('%name%',self.name[0]).replace('%fname%','%s %s' % (self.name[0],self.name[1]))

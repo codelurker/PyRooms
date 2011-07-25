@@ -79,9 +79,13 @@ def load_phrases():
 	phrase_file.close()
 	
 	_room_exit = soup.findAll('room_exit')
+	_introduction = soup.findAll('introduction')
 	
 	for _i in _room_exit:
 		phrases.append({'type':'room_exit','text':_i.renderContents()})
+	
+	for _i in _introduction:
+		phrases.append({'type':'introduction','text':_i.renderContents()})
 
 
 #WORDLISTS
@@ -97,5 +101,6 @@ for key in __keywords:
 	
 _keywords.close()
 
-commands = ['look','ask','north','south','east','west','take','drop','items','put']
+commands = ['look','ask','north','south','east','west','take','drop','items','put','talk']
 attacks = ['stab', 'punch', 'kick']
+body_parts = ['head','eyes', 'larm','rarm','lhand','rhand','chest','stomach','torso','groin','lleg','rleg','lfoot','rfoot']

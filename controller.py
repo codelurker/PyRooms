@@ -101,10 +101,16 @@ class controller:
 		self.ticks = 0
 		self.people = []
 		self.history = []
+		
+		self.id = 0
 	
 	def log(self,text):
 		print text
 		self.history.append(text)
+	
+	def get_id(self):
+		self.id += 1
+		return self.id
 		
 	def generate(self):
 		if var.debug: print 'Making world',

@@ -80,6 +80,24 @@ def parse_input(text):
 						_t.append(item['name'])
 					else:
 						var._c.log(item['obj'].name)
+		
+		elif text[0] == 'talk':
+			if text[1] in ['with','to']:
+				person = text[2]
+			else:
+				person = text[1]
+			
+			_l = []
+			for guest in var.player.get_room().guests:
+				if person.upper() == guest.name[0].upper():
+					_l.append(guest)
+			
+			if len(_l) == 1:
+				_person = _l[0]
+				
+				var._c.log('You start talking to %s.' % _person.name[0])
+				_person.brain.get_dialog_options(var.player)
+					
 	
 	elif text[0] in words.attacks:
 		#Calculate alignment
@@ -87,7 +105,7 @@ def parse_input(text):
 	
 	else:
 		return False
-				
+	
 
 def get_input():
 	while not parse_input(raw_input('> ')) == False: pass
