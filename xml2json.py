@@ -1,9 +1,8 @@
-import json, re, os, sys
+import json, re, os, time
 
-if not len(sys.argv) > 1: sys.exit()
-
-def parse():
-	_f = open(os.path.join(sys.argv[1]),'r')
+def parse(file, debug=False):
+	if debug: _stime = time.time()
+	_f = open(os.path.join(file),'r')
 	
 	_dict = ''
 	_fval = None
@@ -20,7 +19,6 @@ def parse():
 				_farg = re.search('<\w*>',line).group(0)
 				_larg = re.search('</\w*>',line).group(0)
 				_val = line[line.find(_farg)+len(_farg):line.find(_larg)]
-				#print '{\"%s\":\"%s\"}' % (_farg,_val)
 				_dict += '\"%s\":\"%s\",' % (_farg[1:len(_farg)-1],_val)
 				
 			except:
@@ -31,19 +29,14 @@ def parse():
 			_re = re.search('</\w*>',line)
 			
 			if _re:
-				#if _re.group(0).partition('/')[2] == _fval[1:]:
 				if reduce(lambda u,v: u.strip(v), [_re.group(0), '</', '>']) == reduce(lambda u,v: u.strip(v), [_fval, '<', '>']):
 					_dict = _dict[:len(_dict)-1] + '}'
 					_fval = None
 	
-	return _dict
-
-def save(f,file):
-	f = f.replace('}','}\n').replace(',','\n\t')
+	_dict = _dict.replace('}','}\n')#.replace(',','\n\t')
 	
-	_f = open(file,'w')
-	_f.write(f)
+	_f = open(file.split('.')[0]+'.json','w')
+	_f.write(_dict)
 	_f.close()
-
-_ret = parse()
-save(_ret,sys.argv[1].split('.')[0]+'.json')
+	
+	if debug: print '%s -> %s (took %s)' % (file,file.split('.')[0]+'.json',time.time()-_stime)

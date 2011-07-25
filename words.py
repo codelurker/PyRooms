@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import os, random, var
+import os, random, xml2json, var, hashlib
 from BeautifulSoup import BeautifulStoneSoup
 
 random.seed()
@@ -87,19 +87,48 @@ def load_phrases():
 	for _i in _introduction:
 		phrases.append({'type':'introduction','text':_i.renderContents()})
 
-
-#WORDLISTS
-human_male_fnames = read_word_list('human_male_fnames.txt')
-human_female_fnames = read_word_list('human_female_fnames.txt')
-human_lnames = read_word_list('human_lnames.txt')
-
-_keywords = open(os.path.join('data','keywords.txt'),'r')
-__keywords = sorted(_keywords.readlines()[0].split(','))
-keywords = []
-for key in __keywords:
-	keywords.append(key.split(':'))
+def load_config_files(flush=False):
+	_f = open(os.path.join('data','config_files.txt'),'r')
+	_flist = _f.readlines()
+	_f.close()
 	
-_keywords.close()
+	_f = open(os.path.join('data','hashes.txt'),'r')
+	_fhashes = _f.readlines()
+	_f.close()
+	
+	_newhashes = []
+	for file in _flist:
+		file = file[:len(file)-1]+'.xml'
+		_t = open(os.path.join('data',file),'r')
+		_newhashes.append((file,hashlib.md5(_t.read()).hexdigest()))
+		_t.close()
+	
+	_hashes = []
+	for hash in _fhashes:
+		if flush:
+			_h = hash[:len(hash)-1]+'derp'
+		else:
+			_h = hash[:len(hash)-1]
+		_hashes.append(tuple(_h.split(',')))
+	
+	aa = set(_newhashes)
+	bb = set(_hashes)
+	
+	if aa.difference(bb):
+		for file in aa.difference(bb):
+			_ret = xml2json.parse(os.path.join('data',file[0]),debug=True)
+			
+			for i in range(0,len(_hashes)):
+				if _hashes[i][0] == file[0]:
+					_hashes[i] = file
+		
+		_f = open(os.path.join('data','hashes.txt'),'w')
+		for file in _hashes:
+			_f.write('%s,%s\n' % (file[0],file[1]))
+		_f.close()
+		
+
+load_config_files(flush=False)
 
 commands = ['look','ask','north','south','east','west','take','drop','items','put','talk']
 attacks = ['stab', 'punch', 'kick']
