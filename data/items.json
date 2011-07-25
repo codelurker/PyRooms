@@ -1,0 +1,16 @@
+{"type":"light"
+	"ref":"candle"
+	"prefix":"A"
+	"action":"burn"
+	"room_desc":"%prefix% %ref% %action% %pos%."
+	"desc":"Its flame slowly flickers
+	 casting a silent
+	 wavering glow on| the %parent% under it."}
+{"type":"table"
+	"ref":"table"
+	"prefix":"the"
+	"action":"sit"
+	"surface":"True"
+	"room_desc":"%prefix% %ref% %action% %pos%."
+	"desc":"It is made out of a dark colored wood|
+	 its surface is worn| and has several scars on it from years of use"}
