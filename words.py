@@ -1,6 +1,5 @@
 #!/usr/bin/python2
-import os, random, xml2json, var, hashlib
-from BeautifulSoup import BeautifulStoneSoup
+import var, items, os, random, json, xml2json, hashlib
 
 random.seed()
 
@@ -10,9 +9,14 @@ def read_word_list(fname):
 	_r.close()
 
 def get_action(word):
-	for _keyword in keywords:
-		if word == _keyword[0]:
-			return _keyword[1]
+	if word == 'burn':
+		return 'burns'
+	if word == 'sit':
+		return 'sits'
+	#for _keyword in keywords:
+	#	return _keyword[1]
+	#	#if word == _keyword[0]:
+	#	#	return _keyword[1]
 
 def cut_text(text,detail):
 	parts = text.split('|')
@@ -46,8 +50,14 @@ def get_desc_lighting(lights):
 		return None
 
 def get_desc_interior(type,lights):
+	_l = []
+	
+	for key in interior_descriptions:
+		if key['type'] == type:
+			_l.append(key['desc'])
+	
 	if type == 'stone':
-		_ret = room_description_interior_stone[random.randint(0,len(room_description_interior_stone)-1)]
+		_ret = _l[random.randint(0,len(_l)-1)]
 		return cut_text(_ret,lights)
 	else:
 		return ''
@@ -61,32 +71,11 @@ def get_phrase(type):
 	
 	return _l[random.randint(0,len(_l)-1)]
 
-room_description_interior_stone = []
-room_description_interior_stone_wet = []
-def load_room_descriptions():
-	room_desc_file = open(os.path.join('data','room_interior_descriptions.xml'),'r')
-	soup = BeautifulStoneSoup(room_desc_file)
-	room_desc_file.close()
-	_stone = soup.findAll('stone')
-	
-	for _i in _stone:
-		room_description_interior_stone.append(_i.renderContents())
-
+interior_descriptions = []
+human_male_fnames = []
+human_female_fnames = []
+human_lnames = []
 phrases = []
-def load_phrases():
-	phrase_file = open(os.path.join('data','phrases.xml'),'r')
-	soup = BeautifulStoneSoup(phrase_file)
-	phrase_file.close()
-	
-	_room_exit = soup.findAll('room_exit')
-	_introduction = soup.findAll('introduction')
-	
-	for _i in _room_exit:
-		phrases.append({'type':'room_exit','text':_i.renderContents()})
-	
-	for _i in _introduction:
-		phrases.append({'type':'introduction','text':_i.renderContents()})
-
 def load_config_files(flush=False):
 	_f = open(os.path.join('data','config_files.txt'),'r')
 	_flist = _f.readlines()
@@ -115,6 +104,7 @@ def load_config_files(flush=False):
 	bb = set(_hashes)
 	
 	if aa.difference(bb):
+		if var.debug: print 'CONVERTAN'
 		for file in aa.difference(bb):
 			_ret = xml2json.parse(os.path.join('data',file[0]),debug=True)
 			
@@ -126,10 +116,58 @@ def load_config_files(flush=False):
 		for file in _hashes:
 			_f.write('%s,%s\n' % (file[0],file[1]))
 		_f.close()
+	
+	for file in _flist:
+		file = file[:len(file)-1]
+		if var.debug: print 'Loading '+file
+		_f = open(os.path.join('data',file+'.json'))
 		
+		for line in _f.readlines():
+			_j = json.loads(line)
+			
+			for _key in _j.iterkeys():
+				key = _key
+				break
 
-load_config_files(flush=False)
+			if file == 'descriptions':
+				if key.count('interior'):
+					global interior_descriptions
+					interior_descriptions.append({'type':key[len('interior-'):],'desc':_j[key]})
+			
+			elif file == 'phrases':
+				global phrases
+				phrases.append({'type':key,'text':_j[key]})
+			
+			elif file == 'names':
+				if key == 'male':
+					global human_male_fnames
+					human_male_fnames = _j[key].split(',')
+				elif key == 'female':
+					global human_female_fnames
+					human_female_fnames = _j[key].split(',')
+				elif key == 'last':
+					global human_lnames
+					human_lnames = _j[key].split(',')
+			
+			elif file == 'items':
+				if _j['type'] == 'light':
+					_i = items.light()
+				elif _j['type'] == 'table':
+					_i = items.table()
+					
+				_i.name = _j['ref']
+				_i.prefix = _j['prefix']
+				_i.action = _j['action']
+				_i.room_description = _j['room_desc']
+				_i.description = _j['desc']
+				
+				#print
+		
+		_f.close()
+	
+	#print interior_descriptions
+	#print var.items
 
-commands = ['look','ask','north','south','east','west','take','drop','items','put','talk']
+commands = ['look','ask','north','south','east','west','take','pick','drop','items','put','talk']
 attacks = ['stab', 'punch', 'kick']
 body_parts = ['head','eyes', 'larm','rarm','lhand','rhand','chest','stomach','torso','groin','lleg','rleg','lfoot','rfoot']

@@ -27,9 +27,14 @@ def parse_input(text):
 		elif text[0] in ['north','south','east','west']:
 			var.player.walk(text[0])
 		
-		elif text[0] == 'take' and len(text) == 2:
+		elif text[0] in ['take','pick'] and len(text) >= 2:
+			if text[1] == 'up':
+				_object = text[2]
+			else:
+				_object = text[1]
+			
 			for object in var.player.get_room().objects:
-				if object.name == text[1]:
+				if object.name == _object:
 					object.take(var.player)
 					var._c.log('You take the %s.' % object.name)
 					break
