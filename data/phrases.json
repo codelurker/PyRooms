@@ -1,3 +1,11 @@
 {"room_exit":"%name% heads %direction%."}
 {"introduction":"I am"}
 {"introduction":"My name is"}
+{"uncomfortable":"That's all you need to know about me"}
+{"uncomfortable":"That's all you'll get outta me"}
+{"uncomfortable":"The rest you're gonna have to pay for"}
+{"origin-local":"I was born in"}
+{"origin-local":"I was raised near"}
+{"origin-foreign":"I was raised just %direction% of here in a place called"}
+{"occupation":"Since %year%, I've been a %occupation%"}
+{"occupation":"I've been a %occupation% since %year%"}

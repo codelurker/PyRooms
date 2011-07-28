@@ -9,7 +9,7 @@ def parse(file, debug=False):
 	_fval = None
 	
 	for line in _f.readlines():
-		if line == '#READ ALL\n':
+		if line == '#READ ALL\n' and read_all == False:
 			read_all = True
 		
 		if not _fval:
@@ -20,14 +20,16 @@ def parse(file, debug=False):
 		else:
 			try:
 				if read_all:
+					#print line
 					_farg = re.search('<[\w-]*>',line).group(0)
 					_larg = re.search('</[\w-]*>',line).group(0)
 					_val = line[line.find(_farg)+len(_farg):line.find(_larg)]
 					_dict += '\"%s\":\"%s\"}\n{' % (_farg[1:len(_farg)-1],_val)
 					
 					if reduce(lambda u,v: u.strip(v), [_re.group(0), '</', '>']) == reduce(lambda u,v: u.strip(v), [_farg, '<', '>']):
+						_dict += '{'
 						_dict = _dict[:len(_dict)-1]
-						_fval = None
+						#_fval = None
 				else:
 					_farg = re.search('<[\w-]*>',line).group(0)
 					_larg = re.search('</[\w-]*>',line).group(0)

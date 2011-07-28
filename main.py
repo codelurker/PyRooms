@@ -1,13 +1,16 @@
 #!/usr/bin/python2
-import controller, items, var, interpreter, words
+import controller, items, var, interpreter, words, sys
 if var.debug: import time
 
 var._c = controller.controller()
 #items.load_items()
 #words.load_room_descriptions()
 #words.load_phrases()
-words.load_config_files(flush=False)
-words.get_desc_interior('stone',3)
+
+if len(sys.argv)>1 and sys.argv[1] == 'recompile':
+	words.load_config_files(flush=True)
+else:
+	words.load_config_files(flush=False)
 
 if var.debug: _starttime = time.time()
 

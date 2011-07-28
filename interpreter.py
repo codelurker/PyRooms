@@ -109,6 +109,21 @@ def parse_input(text):
 		pass
 	
 	else:
+		if len(var._c.errors)>1:
+			var._c.log('===ERRORS===')
+		elif len(var._c.errors)==1:
+			var._c.log('===ERROR===')
+		
+		for error in var._c.errors:
+			print error
+		
+		if var.debug_console:
+			print 'Dropping to debugging console...'
+			try:
+				import code; code.interact(local=locals(),banner='Interactive console launched.')
+			except:
+				print 'Couldn\'t start an interactive session. You\'re on your own!'
+		
 		return False
 	
 

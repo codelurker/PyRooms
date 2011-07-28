@@ -69,14 +69,28 @@ class brain:
 		var._c.log('+%s Charisma bonus.' % _char_bonus)
 		
 		return _p
+
+	def know_person(self, person):
+		for person in self.people:
+			if person['id'] == person.id:
+				return True
+		
+		return False
+	
+	def add_person(self, person):
+		self.people.append({'name':person.name,'id':person.id,'obj':person})
 	
 	def get_dialog_options(self, person):
 		_items = []
-		
+
+		if not self.know_person(person):
+			self.add_person(person)
+			person.brain.add_person(self.owner)
+			
 		_p = self.get_compatibility_with(person)
-				
+		
 		if _p >= 20:
-			_items.append({'topic':'Tell me more about yourself.','trigger':self.owner.who_am_i})
+			_items.append({'topic':'Tell me more about yourself.','trigger':self.owner.who_am_i,'args':2})
 			_items.append({'topic':'How are you feeling?'})
 		
 		for i in range(1,len(_items)+1):
@@ -88,17 +102,8 @@ class brain:
 			var._c.log('\'%s\' is not a valid topic choice.' % str(choice+1))
 			choice = int(raw_input('# '))-1
 		
+		var._c.log('%s %s now knows %s %s.' % (self.owner.name[0],self.owner.name[1],person.name[0],person.name[1]))
 		var._c.log('You: %s' % _items[choice]['topic'])
-		var._c.log('???: %s' % _items[choice]['trigger']())
+		var._c.log('%s: %s' % (self.owner.name[0],_items[choice]['trigger'](detail=_items[choice]['args'])))
 		
 		return len(_items)
-	
-	def know_person(self, person):
-		for person in self.people:
-			if person['id'] == person.id:
-				return True
-		
-		return False
-	
-	def add_person(self, person):
-		self.people.add({'name':person.name,'id':person.id,'description':person.get_phys_description()})

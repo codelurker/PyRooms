@@ -2,6 +2,7 @@
 
 #Developer
 debug = False
+debug_console = False
 
 #Settings
 room_size = (2,2)

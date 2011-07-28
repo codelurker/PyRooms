@@ -3,4 +3,12 @@
 <room_exit>%name% heads %direction%.</room_exit>
 <introduction>I am</introduction>
 <introduction>My name is</introduction>
+<uncomfortable>That's all you need to know about me</uncomfortable>
+<uncomfortable>That's all you'll get outta me</uncomfortable>
+<uncomfortable>The rest you're gonna have to pay for</uncomfortable>
+<origin-local>I was born in</origin-local>
+<origin-local>I was raised near</origin-local>
+<origin-foreign>I was raised just %direction% of here in a place called</origin-foreign>
+<occupation>Since %year%, I've been a %occupation%</occupation>
+<occupation>I've been a %occupation% since %year%</occupation>
 </phrases>

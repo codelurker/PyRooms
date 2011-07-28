@@ -20,6 +20,7 @@ class person:
 		self.children = []
 		self.siblings = []
 		self.place = [0,0]
+		self.birthplace = self.get_room()
 		
 		self.condition = {'head':10,'eyes':10,\
 						'larm':10,'rarm':10,\
@@ -37,6 +38,10 @@ class person:
 		self.potential_dexterity = 0
 		self.potential_intelligence = 0
 		self.potential_charisma = 0
+		
+		#jobs
+		self.occupation = 'Bum'
+		self.occupation_since = [0,0]
 		
 		#skills
 		self.medicine = 5
@@ -59,9 +64,23 @@ class person:
 	def get_description(self):
 		pass
 	
-	def who_am_i(self):
-		_s = '%s %s %s.' % (words.get_phrase('introduction'),\
-					self.name[0],self.name[1])	
+	def who_am_i(self, detail=0):
+		#Name.
+		_s = '%s %s %s. ' % (words.get_phrase('introduction'),self.name[0],self.name[1])
+
+		if detail >= 1:
+			if self.place == list(self.birthplace.coords):
+				_g = 'origin-local'
+			else:
+				_g = 'origin-foreign'
+			
+			_s += '%s %s. ' % (words.get_phrase(_g).replace('%direction%',self.get_room().get_direction_to(self.birthplace)), self.birthplace.name)
+		
+			if detail >= 2:
+				_s += '%s. ' % (words.get_phrase('occupation').replace('%year%',str(self.occupation_since[1])).replace('%occupation%',self.occupation))
+			
+		elif not detail:
+			_s += '%s' % (words.get_phrase('uncomfortable'))
 		
 		return _s		
 	
@@ -90,7 +109,10 @@ class person:
 		if var.debug: print '[Schedule] Event added by %s %s.' % (self.name[0],self.name[1])
 	
 	def walk(self,dir):
-		var._c.map[self.place[0]][self.place[1]].guests.remove(self)
+		try:
+			var._c.map[self.place[0]][self.place[1]].guests.remove(self)
+		except:
+			var._c.log('Guest remove for %s failed with AID[%s].' % (self.get_room().name, self.id), error=True)
 		
 		if dir == 'north':
 			self.place[1] -= 1
@@ -155,6 +177,7 @@ class person:
 		_child.male = random.randint(0,1)
 		
 		_child.name = [functions.get_name(_child.race,_child.male),self.name[1]]
+		#_child.birthplace = self.get_room()
 		
 		_strength = sorted([self.strength,male.strength])
 		_dexterity = sorted([self.dexterity,male.dexterity])
