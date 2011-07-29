@@ -120,7 +120,13 @@ def load_config_files(flush=False):
 	for file in _flist:
 		file = file[:len(file)-1]
 		if var.debug: print 'Loading '+file
-		_f = open(os.path.join('data',file+'.json'))
+		try:
+			_f = open(os.path.join('data',file+'.json'))
+		except:
+			print 'ERROR: Some of your .JSON files are broken.\n'
+			print 'This could happen if you haven\'t compiled you .XML files yet.'
+			print 'Run: ./main.py recompile'
+		
 		
 		for line in _f.readlines():
 			_j = json.loads(line)
