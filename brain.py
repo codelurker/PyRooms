@@ -4,7 +4,7 @@ class brain:
 	def __init__(self, owner):
 		self.owner = owner
 		
-		self.locations = []  	#dict: name:name, coords:x,y, map:[{start:startpos,map:map}]
+		self.locations = []  	#dict: name:name, coords:x,y, path:[{start:startpos,path:path}]
 		self.people = []		#dict: name:(fname,lname), id:id, description:physdescription
 	
 	def get_compatibility_with(self, person):

@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import random, functions, brain, words, var
+import random, functions, brain, words, ai, var
 
 random.seed()
 
@@ -58,6 +58,7 @@ class person:
 						'pregnantby':None,\
 						'seek_partner_age':None}
 		self.schedule = []
+		self.path = None
 		
 		self.description = ''
 	
@@ -128,6 +129,20 @@ class person:
 		var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))		
 		if var.debug: var._c.log('Moving %s, %s,%s' % (dir,str(self.place[0]),str(self.place[1])))
 	
+	def get_walk_dir(self, npos):
+		if npos[0]-self.place[0] == -1:
+			return 'west'
+		elif npos[0]-self.place[0] == 1:
+			return 'east'
+		elif npos[1]-self.place[1] == -1:
+			return 'north'
+		elif npos[1]-self.place[1] == 1:
+			return 'south'
+	
+	def walk_to(self, to):
+		p = ai.AStar(self.place,to)
+		self.path = p.getPath()
+		
 	def warp_to(self,place):
 		self.place = place
 		var._c.map[place[0]][place[1]].add_guest(self)
@@ -255,7 +270,11 @@ class person:
 			self.age+=1
 			self.events['lastbirthday'] = True
 			#print '%s is now %s years old!' % (self.name,self.age)
-
+		
+		#Movements.
+		if self.path:
+			#print 'AStar '+str(self.path.pop())
+			self.walk(self.get_walk_dir(self.path.pop()))
 
 class human(person):
 	def __init__(self,player=False):

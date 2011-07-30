@@ -102,7 +102,8 @@ def parse_input(text):
 				
 				var._c.log('You start talking to %s.' % _person.name[0])
 				_person.brain.get_dialog_options(var.player)
-					
+		
+		var._c.tick()					
 	
 	elif text[0] in words.attacks:
 		#Calculate alignment

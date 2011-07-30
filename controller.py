@@ -85,7 +85,7 @@ class room:
 			for _obj in _objs:
 				if _obj['name'] == obj.name:
 					_obj['count'] += 1
-					#_obj['obj'] == obj
+					
 				else:
 					_objs.append({'name':obj.name,'count':0,'obj':obj})
 			
@@ -188,23 +188,33 @@ class controller:
 		adam.warp_to([0,0])
 		eve.warp_to([0,0])
 		var.player.warp_to([0,0])
-		#adam.walk('south')
+		adam.walk_to((0,2))
 		
 		for _r in range(2,people.random.randint(4,5)):
 			eve.impregnate(adam)
 		
-	def tick(self,ticks = 1):
-		print 'Ticking',
+	def tick(self,ticks=1):
+		if var.debug: print 'Ticking',
 		
 		for _t in range(ticks):
-			print '.',
+			if var.debug: print '.',
+			
+			for _p in self.people:
+				_p.tick()
+			
 			self.ticks += _t
 			
-			if self.ticks == 1440:
+			if self.ticks == 14400:
+				self.date[0]=1
 				self.date[1]+=1
 				self.ticks = 0
+				
+				if var.debug: print '[Time] It is now year %s.' % self.date[1]
+				
+				for _p in self.people:
+					_p.events['lastbirthday']=False
 		
-		print 'Done!\n',
+		if var.debug: print 'Done!\n',
 	
 	def tick_year(self,amnt):
 		if amnt == 1:
