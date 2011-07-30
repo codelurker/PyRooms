@@ -109,9 +109,8 @@ class room:
 				self.description += ' %s is here.' % (per.name[0])
 
 class controller:
-	def __init__(self,size=(32,32)):
+	def __init__(self):
 		self.map = []
-		self.size = size
 		self.date = [1,0]
 		self.ticks = 0
 		self.people = []
@@ -135,11 +134,11 @@ class controller:
 	def generate(self):
 		if var.debug: print 'Making world',
 	
-		for x in range(self.size[0]):
+		for x in range(var.world_size[0]):
 			if var.debug: print '.',
 			ycols = []
 			
-			for y in range(self.size[1]-1):
+			for y in range(var.world_size[1]):
 				if (x,y) == (0,0):
 					_r = room((x,y))
 					_r.type = 'home'
@@ -240,3 +239,7 @@ class controller:
 				
 				for _p in self.people:
 					_p.events['lastbirthday']=False
+	
+	def draw_map(self):
+		for x in range(var.world_size[0]):
+			for y in range(var.world_size[1]):
