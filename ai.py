@@ -25,13 +25,17 @@ class Node:
 			npos = [self.loc[0]+pos[0],self.loc[1]+pos[1]]
 			
 			if npos[0] >= 0 and npos[0] <= 20 and npos[1] >= 0 and npos[1] <= 20:
-				if not self.astar.map[npos[0]][npos[1]] == None and not self.astar.map[npos[0]][npos[1]] in self.astar._cl:
-					_n.append(self.astar.map[npos[0]][npos[1]])
+				if self.astar.ignoreNone:
+					if not self.astar.map[npos[0]][npos[1]] in self.astar._cl:
+						_n.append(self.astar.map[npos[0]][npos[1]])
+				else:
+					if not self.astar.map[npos[0]][npos[1]] == None and not self.astar.map[npos[0]][npos[1]] in self.astar._cl:
+						_n.append(self.astar.map[npos[0]][npos[1]])
 		
 		return _n
 
 class AStar:
-	def __init__(self,start,end,debug=False):
+	def __init__(self,start,end,debug=False,ignoreNone=False):
 		self.map = []
 		self.start = start
 		self.end = end
@@ -40,12 +44,13 @@ class AStar:
 		self.lowest = None
 		self.chance = 0
 		self.max_chances = 50
+		self.ignoreNone = ignoreNone
 		
 		self.map = []
 		for x in range(0,var.world_size[0]):
 			_y = []
 			for y in range(0,var.world_size[1]):
-				if var._c.map[x][y]:
+				if var._c.map[x][y] or ignoreNone:
 					_y.append(Node((x,y),self))
 				else:
 					_y.append(None)
@@ -55,7 +60,8 @@ class AStar:
 			import time
 			_stime = time.time()
 		
-		self.run(self.map[self.start[0]][self.start[1]])
+		if self.end:
+			self.run(self.map[self.start[0]][self.start[1]])
 		
 		if debug: print time.time()-_stime
 		
@@ -110,7 +116,7 @@ class AStar:
 						self.lowest = n
 				
 				if self.chance < self.max_chances:
-					self.run(self.lowest)		
+					self.run(self.lowest)
 
 	def getPath(self):
 		path = []

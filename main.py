@@ -15,9 +15,10 @@ else:
 if var.debug: _starttime = time.time()
 
 var._c.generate()
-var._c.make_human_race()
+#var._c.make_human_race()
 ##var._c.tick_year(40)
 
 if var.debug: print 'Generation took %s' % (str(time.time()-_starttime))
 
-interpreter.get_input()
+#interpreter.get_input()
+var._c.draw_map()

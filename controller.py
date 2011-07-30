@@ -1,6 +1,8 @@
 #!/usr/bin/python2
-import functions, people, var, words
+import functions, people, var, ai, words, random
 import items as item
+
+random.seed()
 
 class room:
 	def __init__(self, coords):
@@ -16,6 +18,8 @@ class room:
 				
 		self.map = []
 		self.exits = ['north','south','east','west']
+		
+		self.flags = {'sunlit':False}
 		
 		for x in range(0,var.room_size[0]):
 			ycols = []
@@ -131,7 +135,80 @@ class controller:
 		self.id += 1
 		return self.id
 		
+	def path_maker(self,towns):
+		path = []
+		
+		for l in range(0,len(towns)-1):
+			print 'Trying to do'
+			print towns[l],towns[l+1]
+			p = ai.AStar(towns[l],towns[l+1],ignoreNone=True)
+			path.extend(p.getPath())
+		
+		print path
+		for pos in path:
+			if self.map[pos[0]][pos[1]] == None:
+				self.map[pos[0]][pos[1]] = self.build_forest(pos[0],pos[1])
+	
 	def generate(self):
+		#Make a blank map
+		for x in range(var.world_size[0]):
+			if var.debug: print '.',
+			ycols = []
+			
+			for y in range(var.world_size[1]):
+				ycols.append(None)
+			
+			self.map.append(ycols)
+		
+		#Find some spots to place towns
+		self.towns = []
+		for t in range(0,var.towns):
+			tspot = None
+			
+			while tspot == None:
+				_tspot = (random.randint(0,var.world_size[0]),random.randint(0,var.world_size[1]))
+				if _tspot[0] > 0 and _tspot[0]+4 < var.world_size[0] and _tspot[1] > 0 and _tspot[1]+4 < var.world_size[1]:
+					
+					#Do they overlap?
+					overlap = False
+					
+					for x in range(0,4):
+						for y in range(0,4):
+							if self.map[_tspot[0]+x][_tspot[1]+y]:
+								overlap = True
+								print 'Overlapping towns found at %s,%s. Trying again.' % (_tspot[0]+x,_tspot[1]+y)
+					
+					if not overlap:
+						tspot = _tspot
+						print 'Town location found: %s,%s' % (tspot[0],tspot[1])
+			
+			for x in range(0,4):
+				for y in range(0,4):
+					self.map[tspot[0]+x][tspot[1]+y] = self.build_clearing(tspot[0]+x,tspot[1]+y)
+			
+			self.towns.append((tspot[0]+2,tspot[1]+2))
+		
+		print 'Towns at:'
+		print self.towns
+		
+		#Connect towns
+		self.path_maker(self.towns)
+	
+	def build_clearing(self,x,y):
+		r = room((x,y))
+		r.type = 'clearing'
+		r.flags['sunlit'] = True
+		
+		return r
+	
+	def build_forest(self,x,y):
+		r = room((x,y))
+		r.type = 'forest'
+		r.flags['sunlit'] = True
+		
+		return r
+	
+	def generate_old(self):
 		if var.debug: print 'Making world',
 	
 		for x in range(var.world_size[0]):
@@ -139,7 +216,7 @@ class controller:
 			ycols = []
 			
 			for y in range(var.world_size[1]):
-				if (x,y) == (0,0):
+				if (x,y) == (10,10):
 					_r = room((x,y))
 					_r.type = 'home'
 					_r.add_object(item.get_item('light'))
@@ -149,7 +226,10 @@ class controller:
 					_r.built_with = 'stone'
 					ycols.append(_r)
 				else:
-					ycols.append(room((x,y)))
+					if words.random.randint(0,20) < 10:
+						ycols.append(room((x,y)))
+					else:
+						ycols.append(None)
 			
 			self.map.append(ycols)
 		
@@ -184,10 +264,10 @@ class controller:
 		var.player.birthplace = [0,1]
 		
 		adam.marry(eve)
-		adam.warp_to([0,0])
-		eve.warp_to([0,0])
-		var.player.warp_to([0,0])
-		adam.walk_to((0,2))
+		adam.warp_to([10,10])
+		eve.warp_to([10,10])
+		var.player.warp_to([10,10])
+		adam.walk_to((10,11))
 		
 		for _r in range(2,people.random.randint(4,5)):
 			eve.impregnate(adam)
@@ -241,5 +321,16 @@ class controller:
 					_p.events['lastbirthday']=False
 	
 	def draw_map(self):
-		for x in range(var.world_size[0]):
-			for y in range(var.world_size[1]):
+		for y in range(var.world_size[0]):
+			for x in range(var.world_size[1]):
+				if self.map[x][y]:
+					if self.map[x][y].type == 'home':
+						print 'H',
+					if self.map[x][y].type == 'clearing':
+						print 'C',
+					else:
+						print '.',
+				else:
+					print ' ',
+			
+			print

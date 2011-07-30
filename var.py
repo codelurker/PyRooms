@@ -7,6 +7,7 @@ debug_console = False
 #Settings
 world_size = (20,20)
 room_size = (2,2)
+towns = 3
 
 #Stats
 base_human_seek_partner_age = 16

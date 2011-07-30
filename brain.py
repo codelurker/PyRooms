@@ -70,16 +70,6 @@ class brain:
 		
 		return _p
 
-	def know_person(self, person):
-		for person in self.people:
-			if person['id'] == person.id:
-				return True
-		
-		return False
-	
-	def add_person(self, person):
-		self.people.append({'name':person.name,'id':person.id,'obj':person})
-	
 	def get_dialog_options(self, person):
 		_items = []
 
@@ -107,3 +97,14 @@ class brain:
 		var._c.log('%s: %s' % (self.owner.name[0],_items[choice]['trigger'](detail=_items[choice]['args'])))
 		
 		return len(_items)
+
+	def know_person(self, person):
+		for person in self.people:
+			if person['id'] == person.id:
+				return True
+		
+		return False
+	
+	def add_person(self, person):
+		self.people.append({'name':person.name,'id':person.id,'obj':person})
+	
