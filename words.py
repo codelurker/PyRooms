@@ -94,7 +94,14 @@ def load_config_files(flush=False):
 	_flist = _f.readlines()
 	_f.close()
 	
-	_f = open(os.path.join('data','hashes.txt'),'r')
+	try:
+		_f = open(os.path.join('data','hashes.txt'),'r')
+	except:
+		_f = open(os.path.join('data','hashes.txt'),'w')
+		_f.write('')
+		_f.close()
+		_f = open(os.path.join('data','hashes.txt'),'r')
+	
 	_fhashes = _f.readlines()
 	_f.close()
 	

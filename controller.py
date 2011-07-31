@@ -45,13 +45,13 @@ class room:
 	def get_direction_to(self, place):
 		_s = ''
 		
-		if place.coords[0] < self.loc[0]:
+		if place.loc[0] < self.loc[0]:
 			_s += 'west'
-		elif place.coords[0] > self.loc[0]:
+		elif place.loc[0] > self.loc[0]:
 			_s += 'east'
-		if place.coords[1] < self.loc[1]:
+		if place.loc[1] < self.loc[1]:
 			_s = 'north' + _s
-		elif place.coords[1] > self.loc[1]:
+		elif place.loc[1] > self.loc[1]:
 			_s = 'south' + _s
 		
 		return _s
@@ -305,14 +305,15 @@ class controller:
 		var.player.dexterity = 5
 		var.player.intelligence = 3
 		var.player.charisma = 8
-		var.player.birthplace = [0,1]
 		
 		adam.marry(eve)
 		_t = self.get_random_town()
 		adam.warp_to(_t.loc)
+		adam.birthplace = _t
 		eve.warp_to(_t.loc)
-		var.player.warp_to(list(_t.loc))
-		#adam.walk_to((10,11))
+		eve.birthplace = _t
+		var.player.warp_to(_t.loc)
+		var.player.birthplace = var.player
 		
 		for _r in range(2,people.random.randint(4,5)):
 			eve.impregnate(adam)

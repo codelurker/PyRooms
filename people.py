@@ -70,7 +70,7 @@ class person:
 		_s = '%s %s %s. ' % (words.get_phrase('introduction'),self.name[0],self.name[1])
 
 		if detail >= 1:
-			if self.loc == list(self.birthplace.coords):
+			if self.loc == list(self.birthplace.loc):
 				_g = 'origin-local'
 			else:
 				_g = 'origin-foreign'
