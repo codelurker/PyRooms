@@ -16,3 +16,13 @@
 	<room_desc>%prefix% %ref% %action% %pos%.</room_desc>
 	<desc>It is made out of a dark colored wood|, its surface is worn| and has several scars on it from years of use</desc>
 </item>
+
+<item>
+	<type>foliage</type>
+	<ref>bush</ref>
+	<prefix>a</prefix>
+	<action>growing</action>
+	<surface>False</surface>
+	<room_desc>%prefix% %ref% is %action% %pos%.</room_desc>
+	<desc>Its leaves are small, yet numerous|, derpingstan</desc>
+</item>

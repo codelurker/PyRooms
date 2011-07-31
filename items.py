@@ -13,7 +13,7 @@ class item:
 		self.name = ''
 		self.action = ''
 		self.place = (0,0)
-		self.coords = (0,0)
+		self.loc = (0,0)
 		self.location = ''
 		
 		self.container = False
@@ -47,11 +47,12 @@ class item:
 		who.items.append(self)
 	
 	def get_room(self):
-		return var._c.map[self.coords[0]][self.coords[1]]
+		return var._c.map[self.loc[0]][self.loc[1]]
 	
 	def get_room_description(self):
-		return self.room_description.replace('%prefix%',self.prefix[0].upper()+self.prefix[1:]).replace('%ref%',self.name)\
-			.replace('%action%',words.get_action(self.action)).replace('%pos%',self.location)
+		return self.room_description.replace('%prefix%',self.prefix[0].upper()+self.prefix[1:])\
+		.replace('%ref%',self.name).replace('%action%',words.get_action(self.action))\
+		.replace('%pos%',self.location).replace('%roomtype%',self.get_room().type)
 	
 	def parse_description(self):
 		return words.cut_text(self.description,self.get_room().get_lights())
@@ -92,6 +93,15 @@ class light(item):
 			else:
 				return self.sanitize(self.description,'%parent%')
 
+class foliage(item):
+	def __init__(self):
+		item.__init__(self)
+		
+		self.type = 'foliage'
+	
+	def get_description(self):
+		return self.parse_description()
+
 def load_items():
 	pass
 
@@ -104,3 +114,5 @@ def get_item(type):
 	
 	if _l:
 		return _l[functions.random.randint(0,len(_l)-1)]
+	else:
+		print 'Couldn\'t get any items of type %s' % type

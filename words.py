@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import var, items, os, random, json, xml2json, hashlib
+import var, items, os, sys, random, json, xml2json, hashlib
 
 random.seed()
 
@@ -11,8 +11,10 @@ def read_word_list(fname):
 def get_action(word):
 	if word == 'burn':
 		return 'burns'
-	if word == 'sit':
+	elif word == 'sit':
 		return 'sits'
+	else:
+		return 'ACTION'
 	#for _keyword in keywords:
 	#	return _keyword[1]
 	#	#if word == _keyword[0]:
@@ -33,8 +35,8 @@ def get_desc_light_filler(obj):
 	return light_filler[random.randint(0,len(light_filler)-1)]
 
 def get_desc_location(obj):
-	if obj.coords == (0,0):
-		return 'in the northwest corner of the room'
+	if obj.place == (0,0):
+		return 'in the northwest corner of the %roomtype%'
 
 room_description_poor_lighting = ['The room is very dark|, and your eyes take a moment to adjust to the dim light']
 def get_desc_lighting(lights):
@@ -62,6 +64,16 @@ def get_desc_interior(type,lights):
 	else:
 		return ''
 
+def get_desc_outside(type,lights):
+	_l = []
+	
+	for key in outside_descriptions:
+		if key['type'] == type:
+			_l.append(key['desc'])
+	
+	_ret = _l[random.randint(0,len(_l)-1)]
+	return cut_text(_ret,lights)
+
 def get_phrase(type):
 	_l = []
 	
@@ -72,6 +84,7 @@ def get_phrase(type):
 	return _l[random.randint(0,len(_l)-1)]
 
 interior_descriptions = []
+outside_descriptions = []
 human_male_fnames = []
 human_female_fnames = []
 human_lnames = []
@@ -124,8 +137,9 @@ def load_config_files(flush=False):
 			_f = open(os.path.join('data',file+'.json'))
 		except:
 			print 'ERROR: Some of your .JSON files are broken.\n'
-			print 'This could happen if you haven\'t compiled you .XML files yet.'
+			print 'This could happen if you haven\'t compiled your .XML files yet.'
 			print 'Run: ./main.py recompile'
+			sys.exit()
 		
 		
 		for line in _f.readlines():
@@ -139,6 +153,9 @@ def load_config_files(flush=False):
 				if key.count('interior'):
 					global interior_descriptions
 					interior_descriptions.append({'type':key[len('interior-'):],'desc':_j[key]})
+				elif key.count('outside'):
+					global outside_descriptions
+					outside_descriptions.append({'type':key[len('outside-'):],'desc':_j[key]})
 			
 			elif file == 'phrases':
 				global phrases
@@ -160,19 +177,16 @@ def load_config_files(flush=False):
 					_i = items.light()
 				elif _j['type'] == 'table':
 					_i = items.table()
+				elif _j['type'] == 'foliage':
+					_i = items.foliage()
 					
 				_i.name = _j['ref']
 				_i.prefix = _j['prefix']
 				_i.action = _j['action']
 				_i.room_description = _j['room_desc']
 				_i.description = _j['desc']
-				
-				#print
 		
 		_f.close()
-	
-	#print interior_descriptions
-	#print var.items
 
 commands = ['look','ask','north','south','east','west','take','pick','drop','items','put','talk']
 attacks = ['stab', 'punch', 'kick']

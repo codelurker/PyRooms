@@ -7,7 +7,7 @@ def parse_input(text):
 	if text[0] in words.commands:
 		if text[0] == 'look':
 			if len(text) == 1:
-				print var._c.map[var.player.place[0]][var.player.place[1]].get_description()
+				print var._c.map[var.player.loc[0]][var.player.loc[1]].get_description()
 				
 			elif text[1] == 'at' and len(text) > 2:
 				_look = functions.look_for(text[2])

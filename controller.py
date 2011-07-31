@@ -1,23 +1,24 @@
 #!/usr/bin/python2
-import functions, people, var, ai, words, random
+import functions, people, var, ai, words, towns, random
 import items as item
 
 random.seed()
 
 class room:
-	def __init__(self, coords):
+	def __init__(self, loc, controller):
 		self.name = 'The TesterToaster House'
 		self.type = ''
 		self.on_enter = ''
 		self.description = ''
 		self.built_with = ''
-		self.coords = coords
+		self.loc = loc
+		self.controller = controller
 		
 		self.objects = []
 		self.guests = []
 				
 		self.map = []
-		self.exits = ['north','south','east','west']
+		self.exits = []
 		
 		self.flags = {'sunlit':False}
 		
@@ -29,6 +30,13 @@ class room:
 			
 			self.map.append(ycols)
 	
+	def randomize(self):
+		if self.type == 'clearing':
+			for n in range(0,random.randint(0,5)):
+				_i = item.get_item('foliage')
+				_i.loc = self.loc
+				self.add_object(_i)
+				
 	def get_description(self):
 		self.parse_room()
 		
@@ -37,16 +45,29 @@ class room:
 	def get_direction_to(self, place):
 		_s = ''
 		
-		if place.coords[0] < self.coords[0]:
+		if place.coords[0] < self.loc[0]:
 			_s += 'west'
-		elif place.coords[0] > self.coords[0]:
+		elif place.coords[0] > self.loc[0]:
 			_s += 'east'
-		if place.coords[1] < self.coords[1]:
+		if place.coords[1] < self.loc[1]:
 			_s = 'north' + _s
-		elif place.coords[1] > self.coords[1]:
+		elif place.coords[1] > self.loc[1]:
 			_s = 'south' + _s
 		
 		return _s
+	
+	def find_exits(self):
+		for pos in [[0,-1],[-1,0],[1,0],[0,1]]:
+			if self.controller.map[self.loc[0]+pos[0]][self.loc[1]+pos[1]]:
+				_r = self.controller.map[self.loc[0]+pos[0]][self.loc[1]+pos[1]]
+				if pos == [0,-1]:
+					self.exits.append({'dir':'north','room':_r})
+				elif pos == [-1,0]:
+					self.exits.append({'dir':'west','room':_r})
+				elif pos == [1,0]:
+					self.exits.append({'dir':'east','room':_r})
+				elif pos == [0,1]:
+					self.exits.append({'dir':'south','room':_r})
 	
 	def add_object(self,obj,place=None):
 		if not place:
@@ -71,21 +92,29 @@ class room:
 		return _lights
 	
 	def parse_room(self):
+		print 'Room type: '+self.type
 		self.on_enter = ''
 		self.description = ''
 		
-		_lights = self.get_lights()
+		#Lighting on the inside
+		if self.type in ['house']:
+			_lights = self.get_lights()
+			
+			if var.debug: print 'There are %s lights here.' % _lights
+			
+			_l = words.get_desc_lighting(_lights)
+			if _l: self.on_enter += _l+' '
+			
+			self.on_enter += words.get_desc_interior(self.built_with,_lights)
 		
-		if var.debug: print 'There are %s lights here.' % _lights
+		#Lighting on the outside
+		if self.controller.is_daytime():
+			if self.type == 'clearing':
+				self.on_enter += words.get_desc_outside('clearing',9)
 		
-		_l = words.get_desc_lighting(_lights)
-		if _l: self.on_enter += _l+' '
-		
-		self.on_enter += words.get_desc_interior(self.built_with,_lights)
-		
+		#Count objects
 		_objs = []
 		for obj in self.objects:
-			
 			for _obj in _objs:
 				if _obj['name'] == obj.name:
 					_obj['count'] += 1
@@ -108,9 +137,14 @@ class room:
 				
 				_t.append(obj['name'])
 		
+		for exit in self.exits:
+			self.description += ' To the %s there is a %s.' % (exit['dir'],exit['room'].type)
+		
 		for per in self.guests:
 			if per != var.player:
 				self.description += ' %s is here.' % (per.name[0])
+		
+		self.description.replace('  ',' ')
 
 class controller:
 	def __init__(self):
@@ -131,6 +165,10 @@ class controller:
 		
 		self.history.append(text)
 		
+	def get_random_town(self):
+		_t = random.randint(0,len(self.towns)-1)
+		return self.towns[_t]
+	
 	def get_id(self):
 		self.id += 1
 		return self.id
@@ -139,15 +177,12 @@ class controller:
 		path = []
 		
 		for l in range(0,len(towns)-1):
-			print 'Trying to do'
-			print towns[l],towns[l+1]
-			p = ai.AStar(towns[l],towns[l+1],ignoreNone=True)
+			p = ai.AStar(towns[l].loc,towns[l+1].loc,ignoreNone=True)
 			path.extend(p.getPath())
 		
-		print path
 		for pos in path:
 			if self.map[pos[0]][pos[1]] == None:
-				self.map[pos[0]][pos[1]] = self.build_forest(pos[0],pos[1])
+				self.build_forest(pos)
 	
 	def generate(self):
 		#Make a blank map
@@ -176,37 +211,46 @@ class controller:
 						for y in range(0,4):
 							if self.map[_tspot[0]+x][_tspot[1]+y]:
 								overlap = True
-								print 'Overlapping towns found at %s,%s. Trying again.' % (_tspot[0]+x,_tspot[1]+y)
+								if var.debug: print 'Overlapping towns found at %s,%s. Trying again.' % (_tspot[0]+x,_tspot[1]+y)
 					
 					if not overlap:
 						tspot = _tspot
-						print 'Town location found: %s,%s' % (tspot[0],tspot[1])
+						if var.debug: print 'Town location found: %s,%s' % (tspot[0],tspot[1])
 			
+			spots = []
 			for x in range(0,4):
 				for y in range(0,4):
-					self.map[tspot[0]+x][tspot[1]+y] = self.build_clearing(tspot[0]+x,tspot[1]+y)
+					spots.append((tspot[0]+x,tspot[1]+y))# = self.build_clearing(tspot[0]+x,tspot[1]+y)
 			
-			self.towns.append((tspot[0]+2,tspot[1]+2))
-		
-		print 'Towns at:'
-		print self.towns
+			_t = towns.town(tspot,spots,self)
+			_t.generate()
+			self.towns.append(_t)
 		
 		#Connect towns
 		self.path_maker(self.towns)
+		
+		#Finish up by finding room exits
+		l = None
+		for x in range(var.world_size[0]):
+			for y in range(var.world_size[1]):
+				if self.map[x][y]:
+					self.map[x][y].find_exits()
+					l = self.map[x][y]
 	
-	def build_clearing(self,x,y):
-		r = room((x,y))
+	def build_clearing(self,pos):
+		r = room(pos,self)
 		r.type = 'clearing'
 		r.flags['sunlit'] = True
+		r.randomize()
 		
-		return r
+		self.map[pos[0]][pos[1]] = r
 	
-	def build_forest(self,x,y):
-		r = room((x,y))
+	def build_forest(self,pos):
+		r = room(pos,self)
 		r.type = 'forest'
 		r.flags['sunlit'] = True
 		
-		return r
+		self.map[pos[0]][pos[1]] = r
 	
 	def generate_old(self):
 		if var.debug: print 'Making world',
@@ -264,14 +308,18 @@ class controller:
 		var.player.birthplace = [0,1]
 		
 		adam.marry(eve)
-		adam.warp_to([10,10])
-		eve.warp_to([10,10])
-		var.player.warp_to([10,10])
-		adam.walk_to((10,11))
+		_t = self.get_random_town()
+		adam.warp_to(_t.loc)
+		eve.warp_to(_t.loc)
+		var.player.warp_to(list(_t.loc))
+		#adam.walk_to((10,11))
 		
 		for _r in range(2,people.random.randint(4,5)):
 			eve.impregnate(adam)
 		
+	def is_daytime(self):
+		return True
+	
 	def tick(self,ticks=1):
 		if var.debug: print 'Ticking',
 		
@@ -327,9 +375,9 @@ class controller:
 					if self.map[x][y].type == 'home':
 						print 'H',
 					if self.map[x][y].type == 'clearing':
-						print 'C',
-					else:
 						print '.',
+					else:
+						print '#',
 				else:
 					print ' ',
 			

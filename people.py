@@ -19,7 +19,7 @@ class person:
 		self.spouse = None
 		self.children = []
 		self.siblings = []
-		self.place = [0,0]
+		self.loc = [0,0]
 		self.birthplace = self.get_room()
 		
 		self.condition = {'head':10,'eyes':10,\
@@ -70,7 +70,7 @@ class person:
 		_s = '%s %s %s. ' % (words.get_phrase('introduction'),self.name[0],self.name[1])
 
 		if detail >= 1:
-			if self.place == list(self.birthplace.coords):
+			if self.loc == list(self.birthplace.coords):
 				_g = 'origin-local'
 			else:
 				_g = 'origin-foreign'
@@ -111,44 +111,44 @@ class person:
 	
 	def walk(self,dir):
 		try:
-			var._c.map[self.place[0]][self.place[1]].guests.remove(self)
+			var._c.map[self.loc[0]][self.loc[1]].guests.remove(self)
 		except:
 			var._c.log('Guest remove for %s failed with AID[%s].' % (self.get_room().name, self.id), error=True)
 		
 		if dir == 'north':
-			self.place[1] -= 1
+			self.loc[1] -= 1
 		elif dir == 'south':
-			self.place[1] += 1
+			self.loc[1] += 1
 		elif dir == 'east':
-			self.place[0] -= 1
+			self.loc[0] -= 1
 		elif dir == 'west':
-			self.place[0] += 1
+			self.loc[0] += 1
 		
-		var._c.map[self.place[0]][self.place[1]].guests.append(self)
+		var._c.map[self.loc[0]][self.loc[1]].guests.append(self)
 		
 		var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))		
-		if var.debug: var._c.log('Moving %s, %s,%s' % (dir,str(self.place[0]),str(self.place[1])))
+		if var.debug: var._c.log('Moving %s, %s,%s' % (dir,str(self.loc[0]),str(self.loc[1])))
 	
 	def get_walk_dir(self, npos):
-		if npos[0]-self.place[0] == -1:
+		if npos[0]-self.loc[0] == -1:
 			return 'west'
-		elif npos[0]-self.place[0] == 1:
+		elif npos[0]-self.loc[0] == 1:
 			return 'east'
-		elif npos[1]-self.place[1] == -1:
+		elif npos[1]-self.loc[1] == -1:
 			return 'north'
-		elif npos[1]-self.place[1] == 1:
+		elif npos[1]-self.loc[1] == 1:
 			return 'south'
 	
 	def walk_to(self, to):
-		p = ai.AStar(self.place,to)
+		p = ai.AStar(self.loc,to)
 		self.path = p.getPath()
 		
 	def warp_to(self,place):
-		self.place = place
+		self.loc = place
 		var._c.map[place[0]][place[1]].add_guest(self)
 	
 	def get_room(self):
-		return var._c.map[self.place[0]][self.place[1]]
+		return var._c.map[self.loc[0]][self.loc[1]]
 	
 	def find_partner(self):
 		for person in var._c.people:
