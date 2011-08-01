@@ -9,6 +9,19 @@ def look_for(text):
 	
 	return _l
 
+def look_for_gender(gender):
+	_l = []
+	
+	for person in var._c.people:
+		if gender.lower() == 'man':
+			if person.male:
+				_l.append(person)
+		elif gender.lower() == 'woman':
+			if not person.male:
+				_l.append(person)
+	
+	return _l
+
 def get_date():
 	return list(var._c.date)
 

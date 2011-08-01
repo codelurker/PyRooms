@@ -33,6 +33,7 @@ class person:
 		self.dexterity = 0
 		self.intelligence = 0
 		self.charisma = 0
+		self.weight = 0
 				
 		self.potential_strength = 0
 		self.potential_dexterity = 0
@@ -52,6 +53,7 @@ class person:
 							'conartist':False}
 		
 		self.items = []
+		self.wearing = []
 		self.events = {'lastbirthday':False,\
 						'pregnant':False,\
 						'pregnanton':False,\
@@ -65,12 +67,37 @@ class person:
 	def get_description(self):
 		pass
 	
+	def get_visual_description(self, short=True):
+		if self.male:
+			_ref = ['man','he']
+		else:
+			_ref = ['woman','she']
+		
+		_s = ''
+		if short:
+			_s += '%s is wearing' % (_ref[1][0].upper()+_ref[1][1:])
+			for item in self.wearing:
+				_s += ' %s %s %s,' % (item.prefix,item.madeof,item.name)
+			
+			_s = _s[:len(_s)-1]+_s[len(_s)-1].replace(',','. ')
+			
+			if self.strength >= 6:
+				_s += '%s appears to be fairly strong.' % (_ref[1][0].upper()+_ref[1][1:])
+		
+		return _s
+	
+	def add_item(self, item):
+		self.items.append(item)
+	
+	def wear(self, item):
+		self.wearing.append(item)
+	
 	def who_am_i(self, detail=0):
 		#Name.
 		_s = '%s %s %s. ' % (words.get_phrase('introduction'),self.name[0],self.name[1])
 
 		if detail >= 1:
-			if self.loc == list(self.birthplace.loc):
+			if self.loc == self.birthplace.loc:
 				_g = 'origin-local'
 			else:
 				_g = 'origin-foreign'

@@ -10,16 +10,28 @@ def parse_input(text):
 				print var._c.map[var.player.loc[0]][var.player.loc[1]].get_description()
 				
 			elif text[1] == 'at' and len(text) > 2:
-				_look = functions.look_for(text[2])
-				
-				if len(_look) > 1:
-					var._c.log('There are a number of things here that go by that name:')
-					for entry in _look: var._c.log('%s %s,' % (entry.name[0],entry.name[1]))
-					print
-				elif len(_look):
-					var._c.log('%s looks very good!' % (_look[0].name[0]))
+				if text[2] in ['man','woman']:
+					_look = functions.look_for_gender(text[2])
+					
+					if len(_look) > 1:
+						var._c.log('There are a number of things here that go by that gender. Be more specific.')
+						for entry in _look: var._c.log('%s %s,' % (entry.name[0],entry.name[1]))
+						print
+					elif len(_look):
+						var._c.log(_look[0].get_visual_description())
+					else:
+						var._c.log('There is nothing here by that gender.')
 				else:
-					var._c.log('There is nothing here by that name!')
+					_look = functions.look_for(text[2])
+					
+					if len(_look) > 1:
+						var._c.log('There are a number of things here that go by that name:')
+						for entry in _look: var._c.log('%s %s,' % (entry.name[0],entry.name[1]))
+						print
+					elif len(_look):	
+						var._c.log(_look[0].get_visual_description())
+					else:
+						var._c.log('There is nothing here by that name.')
 				
 			else:
 				var._c.log('What are you looking at?')
@@ -88,20 +100,25 @@ def parse_input(text):
 		
 		elif text[0] == 'talk':
 			if text[1] in ['with','to']:
-				person = text[2]
+				person = ' '.join(text[2:])
 			else:
-				person = text[1]
+				person = ' '.join(text[1:])
 			
 			_l = []
+
 			for guest in var.player.get_room().guests:
 				if person.upper() == guest.name[0].upper():
 					_l.append(guest)
 			
 			if len(_l) == 1:
 				_person = _l[0]
-				
 				var._c.log('You start talking to %s.' % _person.name[0])
 				_person.brain.get_dialog_options(var.player)
+			
+			else:
+				for guest in var.player.get_room().guests:
+					if person.upper() == guest.name[0].upper():
+						_l.append(guest)
 		
 		var._c.tick()					
 	

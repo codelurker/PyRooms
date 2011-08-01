@@ -16,12 +16,14 @@ class item:
 		self.loc = (0,0)
 		self.location = ''
 		
+		self.wearable = False
 		self.container = False
 		self.stackable = False
 		self.groupable = False
 		self.surface = False
 		self.chair = False
 		
+		self.weight = 0
 		self.contains = []
 		self.max_contain = 5
 		self.max_stack = 2
@@ -98,6 +100,16 @@ class foliage(item):
 		item.__init__(self)
 		
 		self.type = 'foliage'
+	
+	def get_description(self):
+		return self.parse_description()
+
+class clothing(item):
+	def __init__(self):
+		item.__init__(self)
+		
+		self.type = 'clothing'
+		self.wearable = True
 	
 	def get_description(self):
 		return self.parse_description()

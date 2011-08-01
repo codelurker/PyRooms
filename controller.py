@@ -2,6 +2,13 @@
 import functions, people, var, ai, words, towns, random
 import items as item
 
+try:
+	from colorama import Fore, Back, Style
+	colors = True
+except:
+	colors = False
+	pass
+
 random.seed()
 
 class room:
@@ -142,7 +149,15 @@ class room:
 		
 		for per in self.guests:
 			if per != var.player:
-				self.description += ' %s is here.' % (per.name[0])
+				if var.player.brain.know_person(per):
+					self.description += ' %s is here.' % (per.name[0])
+				else:
+					if per.male:
+						_ref = ['man','he']
+					else:
+						_ref = ['woman','she']
+					
+					self.description += ' A %s is here. ' % (_ref[0]) + per.get_visual_description()
 		
 		self.description.replace('  ',' ')
 
@@ -159,7 +174,15 @@ class controller:
 	
 	def log(self,text,error=False):
 		if not error:
-			print text
+			global colors
+			
+			if colors:
+				text = text.replace('[',Back.WHITE+Fore.BLACK+'[')\
+						.replace('+',Fore.CYAN+'+').replace('You',Style.BRIGHT+Fore.BLUE+'You')
+				print text + Fore.RESET + Back.RESET + Style.NORMAL
+			
+			else:
+				print text
 		else:
 			self.errors.append(text)
 		
@@ -287,6 +310,8 @@ class controller:
 		adam.dexterity = 4
 		adam.intelligence = 6
 		adam.charisma = 6
+		adam.add_item(item.get_item('clothing'))
+		adam.wear(adam.items[0])
 		
 		eve = people.human()
 		eve.name = ['Eve',functions.get_last_name(adam.race)]

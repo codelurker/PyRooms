@@ -1,6 +1,7 @@
 <item>
 	<type>light</type>
 	<ref>candle</ref>
+	<weight>1</weight>
 	<prefix>A</prefix>
 	<action>burn</action>
 	<room_desc>%prefix% %ref% %action% %pos%.</room_desc>
@@ -10,6 +11,7 @@
 <item>
 	<type>table</type>
 	<ref>table</ref>
+	<weight>20</weight>
 	<prefix>the</prefix>
 	<action>sit</action>
 	<surface>True</surface>
@@ -20,9 +22,21 @@
 <item>
 	<type>foliage</type>
 	<ref>bush</ref>
+	<weight>0</weight>
 	<prefix>a</prefix>
 	<action>growing</action>
 	<surface>False</surface>
 	<room_desc>%prefix% %ref% is %action% %pos%.</room_desc>
 	<desc>Its leaves are small, yet numerous|, derpingstan</desc>
+</item>
+
+<item>
+	<type>clothing</type>
+	<ref>cloak</ref>
+	<madeof>cotton</madeof>
+	<weight>1</weight>
+	<prefix>a</prefix>
+	<action>wearing</action>
+	<room_desc>%prefix% %ref% is in %pos%.</room_desc>
+	<desc></desc>
 </item>

@@ -186,12 +186,16 @@ def load_config_files(flush=False):
 					_i = items.table()
 				elif _j['type'] == 'foliage':
 					_i = items.foliage()
+				elif _j['type'] == 'clothing':
+					_i = items.clothing()
+					_i.madeof = _j['madeof']
 					
 				_i.name = _j['ref']
 				_i.prefix = _j['prefix']
 				_i.action = _j['action']
 				_i.room_description = _j['room_desc']
 				_i.description = _j['desc']
+				_i.weight = _j['weight']
 		
 		_f.close()
 
