@@ -200,7 +200,7 @@ class controller:
 		path = []
 		
 		for l in range(0,len(towns)-1):
-			p = ai.AStar(towns[l].loc,towns[l+1].loc,ignoreNone=True)
+			p = ai.AStar([towns[l].loc[0]+(towns[l].size/2),towns[l].loc[1]+(towns[l].size/2)],(towns[l+1].loc[0]+(towns[l+1].size/2),towns[l+1].loc[1]+(towns[l+1].size/2)),ignoreNone=True)
 			path.extend(p.getPath())
 		
 		for pos in path:
@@ -395,9 +395,9 @@ class controller:
 					_p.events['lastbirthday']=False
 	
 	def draw_map(self):
-		for y in range(var.world_size[0]):
-			for x in range(var.world_size[1]):
-				if self.map[x][y]:
+		for y in range(var.world_size[1]):
+			for x in range(var.world_size[0]):
+				if self.map[x][y] and not (x,y) == var.player.loc:
 					if self.map[x][y].type == 'home':
 						print 'H',
 					if self.map[x][y].type == 'clearing':
@@ -405,6 +405,9 @@ class controller:
 					else:
 						print '#',
 				else:
-					print ' ',
+					if (x,y) == var.player.loc:
+						print '@',
+					else:
+						print ' ',
 			
 			print

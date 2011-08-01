@@ -24,7 +24,7 @@ class Node:
 		for pos in [[0,-1],[-1,0],[1,0],[0,1]]:
 			npos = [self.loc[0]+pos[0],self.loc[1]+pos[1]]
 			
-			if npos[0] >= 0 and npos[0] <= 20 and npos[1] >= 0 and npos[1] <= 20:
+			if npos[0] >= 0 and npos[0] <= var.world_size[0] and npos[1] >= 0 and npos[1] <= var.world_size[1]:
 				if self.astar.ignoreNone:
 					if not self.astar.map[npos[0]][npos[1]] in self.astar._cl:
 						_n.append(self.astar.map[npos[0]][npos[1]])

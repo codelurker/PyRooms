@@ -98,6 +98,9 @@ def parse_input(text):
 					else:
 						var._c.log(item['obj'].name)
 		
+		elif text[0] == 'map':
+			var._c.draw_map()
+		
 		elif text[0] == 'talk':
 			if text[1] in ['with','to']:
 				person = ' '.join(text[2:])
@@ -125,6 +128,14 @@ def parse_input(text):
 	elif text[0] in words.attacks:
 		#Calculate alignment
 		pass
+	
+	elif text[0] in ['town']:
+		if text[0] == 'town' and len(text)==2:
+			try:
+				print var._c.towns[int(text[1])].get_population()
+			except:
+				var._c.log('[DEBUG] Town %s does not exist.' % text[1],error=1)
+			
 	
 	else:
 		if len(var._c.errors)>1:

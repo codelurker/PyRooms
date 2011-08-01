@@ -5,9 +5,9 @@ debug = False
 debug_console = False
 
 #Settings
-world_size = (20,20)
+world_size = (40,30)
 room_size = (2,2)
-towns = 3
+towns = 5
 
 #Stats
 base_human_seek_partner_age = 16
