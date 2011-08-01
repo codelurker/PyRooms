@@ -21,7 +21,8 @@ if var.debug: _starttime = time.time()
 
 var._c.generate()
 var._c.make_human_race()
-#var._c.tick_year(40)
+#var._c.tick(300)
+var._c.tick_year(1)
 
 if var.debug: print 'Generation took %s' % (str(time.time()-_starttime))
 

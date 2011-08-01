@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import var, items, os, sys, random, json, xml2json, hashlib
+import var, items, jobs, os, sys, random, json, xml2json, hashlib
 
 random.seed()
 
@@ -107,6 +107,7 @@ def load_config_files(flush=False):
 	
 	_newhashes = []
 	for file in _flist:
+		
 		file = file[:len(file)-1]+'.xml'
 		_t = open(os.path.join('data',file),'r')
 		_newhashes.append((file,hashlib.md5(_t.read()).hexdigest()))
@@ -178,6 +179,12 @@ def load_config_files(flush=False):
 				elif key == 'last':
 					global human_lnames
 					human_lnames = _j[key].split(',')
+			
+			elif file == 'jobs':
+				_i = jobs.job(_j['name'])
+				_i.strength_needed = int(_j['strength'])
+				_i.dexterity_needed = int(_j['dexterity'])
+				_i.intelligence_needed = int(_j['intelligence'])
 			
 			elif file == 'items':
 				if _j['type'] == 'light':

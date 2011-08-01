@@ -13,4 +13,5 @@ towns = 5
 base_human_seek_partner_age = 16
 
 #Items
+jobs = []
 items = []

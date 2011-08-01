@@ -153,7 +153,7 @@ def parse_input(text):
 			except:
 				print 'Couldn\'t start an interactive session. You\'re on your own!'
 		
-		var._c.draw_map()
+		#var._c.draw_map()
 		return False
 
 def get_input():

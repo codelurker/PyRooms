@@ -1,6 +1,7 @@
 #!/usr/bin/python2
 import functions, people, var, ai, words, towns, random
 import items as item
+import jobs as job
 
 try:
 	from colorama import Fore, Back, Style
@@ -166,11 +167,12 @@ class controller:
 		self.map = []
 		self.date = [1,0]
 		self.ticks = 0
-		self.people = []
 		self.history = []
 		self.errors = []
 		
 		self.id = 0
+		self.people = []
+		self.jobs = []
 	
 	def log(self,text,error=False):
 		if not error:
@@ -275,32 +277,8 @@ class controller:
 		
 		self.map[pos[0]][pos[1]] = r
 	
-	def generate_old(self):
-		if var.debug: print 'Making world',
-	
-		for x in range(var.world_size[0]):
-			if var.debug: print '.',
-			ycols = []
-			
-			for y in range(var.world_size[1]):
-				if (x,y) == (10,10):
-					_r = room((x,y))
-					_r.type = 'home'
-					_r.add_object(item.get_item('light'))
-					_r.add_object(item.get_item('light'))
-					_r.add_object(item.get_item('light'))
-					_r.add_object(item.get_item('table'))
-					_r.built_with = 'stone'
-					ycols.append(_r)
-				else:
-					if words.random.randint(0,20) < 10:
-						ycols.append(room((x,y)))
-					else:
-						ycols.append(None)
-			
-			self.map.append(ycols)
-		
-		if var.debug: print 'Done!\n',
+	def add_job(self,job):
+		self.jobs.append(job)
 	
 	def make_human_race(self):
 		adam = people.human()
@@ -339,6 +317,9 @@ class controller:
 		eve.birthplace = _t
 		var.player.warp_to(_t.loc)
 		var.player.birthplace = var.player
+		
+		self.jobs.append(job.get_job('carpenter'))
+		self.jobs[0].hire(adam)
 		
 		for _r in range(2,people.random.randint(4,5)):
 			eve.impregnate(adam)

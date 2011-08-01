@@ -1,0 +1,22 @@
+<job>
+	<name>Carpenter</name>
+	<description>Design and gather the needed materials to build items made of wood.</description>
+	<strength>4</strength>
+	<dexterity>4</dexterity>
+	<intelligence>4</intelligence>
+</job>
+
+<job>
+	<name>Metalworking</name>
+	<description>Design and gather the needed materials to build items made of metal.</description>
+	<strength>6</strength>
+	<dexterity>5</dexterity>
+	<intelligence>6</intelligence>
+</job>
+
+<job>
+	<name>Housewife</name>
+	<strength>2</strength>
+	<dexterity>3</dexterity>
+	<intelligence>3</intelligence>
+</job>

@@ -41,8 +41,7 @@ class person:
 		self.potential_charisma = 0
 		
 		#jobs
-		self.occupation = 'Bum'
-		self.occupation_since = [0,0]
+		self.job = None
 		
 		#skills
 		self.medicine = 5
@@ -92,9 +91,13 @@ class person:
 	def wear(self, item):
 		self.wearing.append(item)
 	
+	def about_place(self, place):
+		return {'text':'i dunno lol','detail':None}
+	
 	def who_am_i(self, detail=0):
 		#Name.
 		_s = '%s %s %s. ' % (words.get_phrase('introduction'),self.name[0],self.name[1])
+		_d = []
 
 		if detail >= 1:
 			if self.loc == self.birthplace.loc:
@@ -103,14 +106,16 @@ class person:
 				_g = 'origin-foreign'
 			
 			_s += '%s %s. ' % (words.get_phrase(_g).replace('%direction%',self.get_room().get_direction_to(self.birthplace)), self.birthplace.name)
+			_d.append('birthplace')
 		
 			if detail >= 2:
-				_s += '%s. ' % (words.get_phrase('occupation').replace('%year%',str(self.occupation_since[1])).replace('%occupation%',self.occupation))
+				_s += '%s. ' % (words.get_phrase('job').replace('%year%',str(self.job_since[1])).replace('%job%',self.job.name))
+				_d.append('job')
 			
 		elif not detail:
 			_s += '%s' % (words.get_phrase('uncomfortable'))
 		
-		return _s		
+		return {'text':_s,'detail':_d}
 	
 	def get_health(self):
 		_t = 0
