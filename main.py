@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import controller, items, var, interpreter, words, sys
+import controller, functions, items, var, interpreter, words, sys
 if var.debug: import time
 
 try:
@@ -9,8 +9,6 @@ except:
 	print 'colorama not found: Colors disabled.'
 
 var._c = controller.controller()
-#words.load_room_descriptions()
-#words.load_phrases()
 
 if len(sys.argv)>1 and sys.argv[1] == 'recompile':
 	words.load_config_files(flush=True)
@@ -26,5 +24,6 @@ var._c.tick_year(1)
 
 if var.debug: print 'Generation took %s' % (str(time.time()-_starttime))
 
+#functions.look_for_person('man')
 interpreter.get_input()
 #var._c.draw_map()

@@ -1,24 +1,48 @@
 #!/usr/bin/python2
 import random, time, words, var
 
-def look_for(text):
-	_l = []
+def look_for_person(text):
+	_p = []
+	_r = []
 	
-	for person in var._c.people:
-		if person.name[0].lower() == text.lower(): _l.append(person)
+	for detail in text:
+		for person in var.player.get_room().guests:
+			#Name
+			if person.name[0].lower() == detail.lower():
+				_p.append(person)
+			if person.name[1].lower() == detail.lower():
+				_p.append(person)
+			
+			#Gender
+			if person.male and detail.lower() in ['man','guy']:
+				_p.append(person)
+			elif not person.male and detail.lower() in ['woman','girl']:
+				_p.append(person)
+			
+			#Description
+			for _detail in person.get_visual_description().split(' '):
+				_detail = _detail.replace(',','').replace('.','')
+				
+				if detail == _detail:
+					_p.append(person)	
 	
-	return _l
-
-def look_for_gender(gender):
-	_l = []
+	for p in _p:
+		if not p in _r and not p == var.player:
+			_r.append(p)
+	_t = []	
+	for p in _r:
+		_g = False
+		for t in _t:
+			if t['person']==p and not _g:
+				t['count']+=1
+				_g = True
+		
+		if not _g:
+			_t.append({'person':p,'count':0})
 	
-	for person in var._c.people:
-		if gender.lower() == 'man':
-			if person.male:
-				_l.append(person)
-		elif gender.lower() == 'woman':
-			if not person.male:
-				_l.append(person)
+	_l=[]
+	for t in _t:
+		_l.append(t['person'])
 	
 	return _l
 

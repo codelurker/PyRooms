@@ -75,14 +75,43 @@ class person:
 		_s = ''
 		if short:
 			_s += '%s is wearing' % (_ref[1][0].upper()+_ref[1][1:])
-			for item in self.wearing:
-				_s += ' %s %s %s,' % (item.prefix,item.madeof,item.name)
+			if len(self.wearing):
+				for item in self.wearing:
+					_s += ' %s %s %s,' % (item.prefix,item.madeof,item.name)
+				
+				_s = _s[:len(_s)-1]+_s[len(_s)-1].replace(',',', ')
 			
-			_s = _s[:len(_s)-1]+_s[len(_s)-1].replace(',','. ')
+			else:
+				_s += ' nothing, '
 			
+			#_s += '%s appears to be ' % (_ref[1][0].upper()+_ref[1][1:])
+			_s += 'appears to be '
+			neg = -1
+			if self.age <= 12:
+				_s += 'very young, '
+				neg = 1
+			elif self.age > 12 and self.age <= 32:
+				_s += 'of fair age, '
+				neg = 0
+				
 			if self.strength >= 6:
-				_s += '%s appears to be fairly strong.' % (_ref[1][0].upper()+_ref[1][1:])
-		
+				if neg:
+					_s += 'yet '
+				else:
+					_s += 'and '
+				
+				_s += 'strongly built. '
+				neg = 0
+			
+			elif self.strength < 6:
+				if neg:
+					_s += 'and '
+				else:
+					_s += 'but '
+				
+				_s += 'weak. '
+				neg = 1
+					
 		return _s
 	
 	def add_item(self, item):
