@@ -12,7 +12,7 @@ class item:
 		self.prefix = ''
 		self.name = ''
 		self.action = ''
-		self.place = (0,0)
+		self.place = ''
 		self.loc = (0,0)
 		self.location = ''
 		
@@ -40,7 +40,7 @@ class item:
 	
 	def take(self,who):
 		self.get_room().objects.remove(self)
-		self.place = (-1,-1)
+		self.place = ''
 		self.location = 'in %s\'s inventory' % who.name
 		
 		if self.parent: self.parent.contains.remove(self)
@@ -54,7 +54,8 @@ class item:
 	def get_room_description(self):
 		return self.room_description.replace('%prefix%',self.prefix[0].upper()+self.prefix[1:])\
 		.replace('%ref%',self.name).replace('%action%',words.get_action(self.action))\
-		.replace('%pos%',self.location).replace('%roomtype%',self.get_room().type)
+		.replace('%pos%',self.location)\
+		.replace('%roomtype%',self.get_room().type)
 	
 	def parse_description(self):
 		return words.cut_text(self.description,self.get_room().get_lights())
@@ -110,6 +111,15 @@ class clothing(item):
 		
 		self.type = 'clothing'
 		self.wearable = True
+	
+	def get_description(self):
+		return self.parse_description()
+
+class window(item):
+	def __init__(self):
+		item.__init__(self)
+		
+		self.type = 'window'
 	
 	def get_description(self):
 		return self.parse_description()

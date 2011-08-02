@@ -19,7 +19,7 @@ def parse_input(text):
 				elif len(_look):	
 					var._c.log(_look[0].get_visual_description())
 				else:
-					var._c.log('There is nothing here by that name.')
+					var._c.log('There is nothing here by that description.')
 				
 			else:
 				var._c.log('What are you looking at?')
@@ -94,12 +94,6 @@ def parse_input(text):
 				person = text[2:]
 			else:
 				person = text[1:]
-			
-			#_l = []
-
-			#for guest in var.player.get_room().guests:
-			#	if person.upper() == guest.name[0].upper():
-			#		_l.append(guest)
 			
 			_look = functions.look_for_person(person)
 			

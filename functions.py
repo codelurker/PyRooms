@@ -6,17 +6,19 @@ def look_for_person(text):
 	_r = []
 	
 	for detail in text:
+		detail = detail.lower()
+		
 		for person in var.player.get_room().guests:
 			#Name
-			if person.name[0].lower() == detail.lower():
+			if person.name[0].lower() == detail:
 				_p.append(person)
-			if person.name[1].lower() == detail.lower():
+			if person.name[1].lower() == detail:
 				_p.append(person)
 			
 			#Gender
-			if person.male and detail.lower() in ['man','guy']:
+			if person.male and detail in ['man','guy']:
 				_p.append(person)
-			elif not person.male and detail.lower() in ['woman','girl']:
+			elif not person.male and detail in ['woman','girl']:
 				_p.append(person)
 			
 			#Description
@@ -24,7 +26,17 @@ def look_for_person(text):
 				_detail = _detail.replace(',','').replace('.','')
 				
 				if detail == _detail:
-					_p.append(person)	
+					_p.append(person)
+		
+		for obj in var.player.get_room().objects:
+			if obj.name.lower() == detail:
+				_p.append(obj)
+			
+			for _detail in obj.get_description().split(' '):
+				_detail = _detail.replace(',','').replace('.','')
+				
+				if detail == _detail:
+					_p.append(obj)
 	
 	for p in _p:
 		if not p in _r and not p == var.player:

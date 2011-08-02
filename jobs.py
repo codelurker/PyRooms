@@ -38,7 +38,6 @@ def get_job(name):
 			_l.append(copy.copy(job))
 	
 	if _l:
-		print 'FOUND JOB'
 		return _l[0]
 	else:
 		var._c.log('Couldn\'t get any jobs of name %s' % name,error=1)

@@ -44,6 +44,10 @@ class room:
 				_i = item.get_item('foliage')
 				_i.loc = self.loc
 				self.add_object(_i)
+		
+		elif self.type == 'house':
+			_i = item.get_item('light')
+			self.add_object(_i)
 				
 	def get_description(self):
 		self.parse_room()
@@ -76,10 +80,19 @@ class room:
 					self.exits.append({'dir':'east','room':_r})
 				elif pos == [0,1]:
 					self.exits.append({'dir':'south','room':_r})
+		
+		if self.type == 'house':
+			for exit in self.exits:
+				_i = item.get_item('window')
+				_i.place = exit['dir']
+				_i.inside = self
+				_i.outside = exit['room']
+				self.add_object(_i)
 	
 	def add_object(self,obj,place=None):
+		obj.loc = self.loc
 		if not place:
-			obj.location = words.get_desc_location(obj)
+			obj.location = words.get_phrase('location').replace('%place%',obj.place).replace('%roomtype%',self.type)
 		self.objects.append(obj)
 
 	def add_guest(self,person):
@@ -103,6 +116,7 @@ class room:
 		print 'Room type: '+self.type
 		self.on_enter = ''
 		self.description = ''
+		_lights = None
 		
 		#Lighting on the inside
 		if self.type in ['house']:
@@ -120,45 +134,54 @@ class room:
 			if self.type == 'clearing':
 				self.on_enter += words.get_desc_outside('clearing',9)
 		
-		#Count objects
-		_objs = []
-		for obj in self.objects:
-			for _obj in _objs:
-				if _obj['name'] == obj.name:
-					_obj['count'] += 1
-					
-				else:
-					_objs.append({'name':obj.name,'count':0,'obj':obj})
-			
-			if not len(_objs): _objs.append({'name':obj.name,'count':1,'obj':obj})
-				
-		_t = []
-		for obj in _objs:
-			if not obj['name'] in _t:
-				self.description += ' '+obj['obj'].get_room_description()
-				self.description += ' '+obj['obj'].get_description()
-				
-				if obj['count'] > 2:
-					self.description += ' There are %s more %ss here.' % (obj['count']-1,obj['obj'].name)
-				elif obj['count'] == 2:
-					self.description += ' There is one more %s here.' % (obj['obj'].name)					
-				
-				_t.append(obj['name'])
-		
-		for exit in self.exits:
-			self.description += ' To the %s there is a %s.' % (exit['dir'],exit['room'].type)
-		
-		for per in self.guests:
-			if per != var.player:
-				if var.player.brain.know_person(per):
-					self.description += ' %s is here.' % (per.name[0])
-				else:
-					if per.male:
-						_ref = ['man','he']
+		if _lights or (not self.type in ['house'] and self.controller.is_daytime()):
+			#Count objects
+			_objs = []
+			for obj in self.objects:
+				for _obj in _objs:
+					if _obj['name'] == obj.name:
+						_obj['count'] += 1
+						
 					else:
-						_ref = ['woman','she']
+						_objs.append({'name':obj.name,'count':0,'obj':obj})
+				
+				if not len(_objs): _objs.append({'name':obj.name,'count':1,'obj':obj})
 					
-					self.description += ' A %s is here. ' % (_ref[0]) + per.get_visual_description()
+			_t = []
+			for obj in _objs:
+				if not obj['name'] in _t:
+					self.description += ' '+obj['obj'].get_room_description()
+					self.description += ' '+obj['obj'].get_description()
+					
+					if obj['count'] > 2:
+						self.description += ' There are %s more %ss here.' % (obj['count']-1,obj['obj'].name)
+					elif obj['count'] == 2:
+						self.description += ' There is one more %s here.' % (obj['obj'].name)					
+					
+					_t.append(obj['name'])
+			
+			#for exit in self.exits:
+			if self.type in ['house']:
+				self.description += ' There are windows facing '
+				for obj in self.objects:
+					if obj.type == 'window' and obj.place:
+						#self.description += ' Out the %s window is a %s.' % (exit['dir'],exit['room'].type)
+						self.description += ' %s' % (obj.place)
+			else:
+				for exit in self.exits:
+					self.description += ' To the %s there is a %s.' % (exit['dir'],exit['room'].type)
+			
+			for per in self.guests:
+				if per != var.player:
+					if var.player.brain.know_person(per):
+						self.description += ' %s is here.' % (per.name[0])
+					else:
+						if per.male:
+							_ref = ['man','he']
+						else:
+							_ref = ['woman','she']
+						
+						self.description += ' A %s is here. ' % (_ref[0]) + per.get_visual_description()
 		
 		self.description.replace('  ',' ')
 
@@ -202,7 +225,8 @@ class controller:
 		path = []
 		
 		for l in range(0,len(towns)-1):
-			p = ai.AStar([towns[l].loc[0]+(towns[l].size/2),towns[l].loc[1]+(towns[l].size/2)],(towns[l+1].loc[0]+(towns[l+1].size/2),towns[l+1].loc[1]+(towns[l+1].size/2)),ignoreNone=True)
+			p = ai.AStar([towns[l].loc[0]+(towns[l].size[0]/2),towns[l].loc[1]+(towns[l].size[1]/2)],(towns[l+1].loc[0]+(towns[l+1].size[0]/2),towns[l+1].loc[1]+(towns[l+1]\
+					.size[1]/2)),ignoreNone=True)
 			path.extend(p.getPath())
 		
 		for pos in path:
@@ -274,6 +298,13 @@ class controller:
 		r = room(pos,self)
 		r.type = 'forest'
 		r.flags['sunlit'] = True
+		
+		self.map[pos[0]][pos[1]] = r
+	
+	def build_house(self,pos):
+		r = room(pos,self)
+		r.type = 'house'
+		r.randomize()
 		
 		self.map[pos[0]][pos[1]] = r
 	
@@ -378,7 +409,7 @@ class controller:
 	def draw_map(self):
 		for y in range(var.world_size[1]):
 			for x in range(var.world_size[0]):
-				if self.map[x][y] and not (x,y) == var.player.loc:
+				if self.map[x][y] and not (x,y) == tuple(var.player.loc):
 					if self.map[x][y].type == 'home':
 						print 'H',
 					if self.map[x][y].type == 'clearing':
@@ -386,7 +417,7 @@ class controller:
 					else:
 						print '#',
 				else:
-					if (x,y) == var.player.loc:
+					if (x,y) == tuple(var.player.loc):
 						print '@',
 					else:
 						print ' ',

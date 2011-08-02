@@ -176,19 +176,26 @@ class person:
 		except:
 			var._c.log('Guest remove for %s failed with AID[%s].' % (self.get_room().name, self.id), error=True)
 		
+		_tloc = list(self.loc)
+		
 		if dir == 'north':
-			self.loc[1] -= 1
+			_tloc[1] -= 1
 		elif dir == 'south':
-			self.loc[1] += 1
+			_tloc[1] += 1
 		elif dir == 'east':
-			self.loc[0] -= 1
+			_tloc[0] += 1
 		elif dir == 'west':
-			self.loc[0] += 1
+			_tloc[0] -= 1
 		
-		var._c.map[self.loc[0]][self.loc[1]].guests.append(self)
-		
-		var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))		
-		if var.debug: var._c.log('Moving %s, %s,%s' % (dir,str(self.loc[0]),str(self.loc[1])))
+		if var._c.map[_tloc[0]][_tloc[1]]:
+			self.loc = _tloc
+			var._c.map[_tloc[0]][_tloc[1]].guests.append(self)
+			
+			var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))			
+			if var.debug: var._c.log('Moving %s, %s,%s' % (dir,str(self.loc[0]),str(self.loc[1])))
+		else:
+			if self == var.player:
+				var._c.log('There is nothing in that direction.')
 	
 	def get_walk_dir(self, npos):
 		if npos[0]-self.loc[0] == -1:

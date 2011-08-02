@@ -34,10 +34,6 @@ light_filler = ['the floor below it','the walls around it']
 def get_desc_light_filler(obj):
 	return light_filler[random.randint(0,len(light_filler)-1)]
 
-def get_desc_location(obj):
-	if obj.place == (0,0):
-		return 'in the northwest corner of the %roomtype%'
-
 room_description_poor_lighting = ['The room is very dark|, and your eyes take a moment to adjust to the dim light']
 def get_desc_lighting(lights):
 	if lights in [1,2]:
@@ -193,6 +189,8 @@ def load_config_files(flush=False):
 					_i = items.table()
 				elif _j['type'] == 'foliage':
 					_i = items.foliage()
+				elif _j['type'] == 'window':
+					_i = items.window()
 				elif _j['type'] == 'clothing':
 					_i = items.clothing()
 					_i.madeof = _j['madeof']
