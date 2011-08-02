@@ -99,20 +99,24 @@ class brain:
 		for i in range(1,len(_items)+1):
 			var._c.log('%s) %s' % (str(i),_items[i-1]['topic']))
 			
-		choice = int(raw_input('# '))-1
-		
-		while choice >= len(_items) or choice < 0:
-			var._c.log('\'%s\' is not a valid topic choice.' % str(choice+1))
+		try:
 			choice = int(raw_input('# '))-1
-		
-		var._c.log('You: %s' % _items[choice]['topic'])
-		if _items[choice]['args'] and not _items[choice]['args'] == 'done':
-			_re = _items[choice]['trigger'](_items[choice]['args'])
-			var._c.log('%s: %s' % (self.owner.name[0],_re['text']))
-		elif _items[choice]['args'] == 'done':
+		except:
 			done = True
-		else:
-			var._c.log('%s: %s' % (self.owner.name[0],_items[choice]['trigger']()))
+		
+		if not done:
+			while choice >= len(_items) or choice < 0:
+				var._c.log('\'%s\' is not a valid topic choice.' % str(choice+1))
+				choice = int(raw_input('# '))-1
+			
+			var._c.log('You: %s' % _items[choice]['topic'])
+			if _items[choice]['args'] and not _items[choice]['args'] == 'done':
+				_re = _items[choice]['trigger'](_items[choice]['args'])
+				var._c.log('%s: %s' % (self.owner.name[0],_re['text']))
+			elif _items[choice]['args'] == 'done':
+				done = True
+			else:
+				var._c.log('%s: %s' % (self.owner.name[0],_items[choice]['trigger']()))
 		
 		if not done:
 			if _re['detail']:
