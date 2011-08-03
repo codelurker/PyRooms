@@ -32,15 +32,30 @@ def look_for_person(text):
 		for obj in var.player.get_room().objects:
 			if obj.name.lower() == detail:
 				_p.append(obj)
+				
+				if obj.type == 'window':
+					obj.description = 'You look out the window. '+obj.outside.get_description(exits=False)
 			
 			if obj.place.lower() == detail:
 				_p.append(obj)
+				
+				if obj.type == 'window':
+					obj.description = 'You look out the window. '+obj.outside.get_description(exits=False)
 			
 			for _detail in obj.get_description().split(' '):
 				_detail = _detail.replace(',','').replace('.','')
 				
 				if detail == _detail:
 					_p.append(obj)
+		
+		#Find windows, based on exits
+		for _exit in var.player.get_room().exits:
+			for exit in _exit['room'].exits:
+				if exit['room'] == var.player.get_room():
+					#print exit['room'].loc,var.player.get_room().loc
+					if not exit['obj']==None:
+						_p.append(exit['obj'])
+						exit['obj'].description = 'You look in the window. '+exit['obj'].inside.get_description(exits=False)		
 	
 	_t = []	
 	for p in _p:
@@ -61,7 +76,10 @@ def look_for_person(text):
 		elif t['count'] == count:
 			_l.append(t['person'])
 	
-	return _l
+	if not count == -1:
+		return _l
+	else:
+		return []
 
 def get_date():
 	return list(var._c.date)

@@ -52,7 +52,7 @@ class room:
 	def get_description(self,exits=True):
 		self.parse_room(exits=exits)
 		
-		return '%s%s' % (self.on_enter,self.description)
+		return self.description
 	
 	def get_direction_to(self, place):
 		_s = ''
@@ -73,22 +73,24 @@ class room:
 			if self.controller.map[self.loc[0]+pos[0]][self.loc[1]+pos[1]]:
 				_r = self.controller.map[self.loc[0]+pos[0]][self.loc[1]+pos[1]]
 				if pos == [0,-1]:
-					self.exits.append({'dir':'north','room':_r})
-				elif pos == [-1,0]:
-					self.exits.append({'dir':'west','room':_r})
-				elif pos == [1,0]:
-					self.exits.append({'dir':'east','room':_r})
+					self.exits.append({'dir':'north','room':_r,'window':True,'obj':None})
 				elif pos == [0,1]:
-					self.exits.append({'dir':'south','room':_r})
+					self.exits.append({'dir':'south','room':_r,'window':True,'obj':None})
+				elif pos == [1,0]:
+					self.exits.append({'dir':'east','room':_r,'window':True,'obj':None})
+				elif pos == [-1,0]:
+					self.exits.append({'dir':'west','room':_r,'window':True,'obj':None})
 		
 		if self.type == 'house':
 			for exit in self.exits:
+				#Place windows on inside.
 				_i = item.get_item('window')
 				_i.place = exit['dir']
 				_i.inside = self
 				_i.outside = exit['room']
+				exit['obj'] = _i
 				self.add_object(_i)
-	
+				
 	def add_object(self,obj,place=None):
 		obj.loc = self.loc
 		if not place:
@@ -113,8 +115,7 @@ class room:
 		return _lights
 	
 	def parse_room(self,exits=True):
-		self.on_enter = ''
-		self.description = ''
+		self.description = []
 		_lights = None
 		
 		#Lighting on the inside
@@ -124,14 +125,14 @@ class room:
 			if var.debug: print 'There are %s lights here.' % _lights
 			
 			_l = words.get_desc_lighting(_lights)
-			if _l: self.on_enter += _l+' '
+			if _l: self.description.append(_l)
 			
-			self.on_enter += words.get_desc_interior(self.built_with,_lights)
+			self.description.append(words.get_desc_interior(self.built_with,_lights))
 		
 		#Lighting on the outside
 		if self.controller.is_daytime():
 			if self.type == 'clearing':
-				self.on_enter += words.get_desc_outside('clearing',9)
+				self.description.append(words.get_desc_outside('clearing',9))
 		
 		if _lights or (not self.type in ['house'] and self.controller.is_daytime()):
 			#Count objects
@@ -149,49 +150,64 @@ class room:
 			_t = []
 			for obj in _objs:
 				if not obj['name'] in _t and not obj['obj'].type == 'window':
-					self.description += ' '+obj['obj'].get_room_description()
-					#self.description += ' '+obj['obj'].get_description()
+					self.description.append(obj['obj'].get_room_description())
 					
 					if not obj['obj'].type in ['foliage','window']:
 						if obj['count'] > 2:
-							self.description += ' There are %s more %ss here.' % (obj['count']-1,obj['obj'].name)
+							self.description.append('There are %s more %ss here' % (obj['count']-1,obj['obj'].name))
 						elif obj['count'] == 2:
-							self.description += ' There is one more %s here.' % (obj['obj'].name)
+							self.description.append('There is one more %s here' % (obj['obj'].name))
 					
 					_t.append(obj['name'])
 			
 			if exits:
 				if self.type in ['house']:
-					self.description += ' There are windows facing '
-					_win = ''
+					_win = 'There are windows facing '
 					
 					for obj in self.objects:
 						if obj.type == 'window' and obj.place:
 							_win += '%s, ' % (obj.place)
-							obj.description = 'You look out the window. '+obj.outside.get_description(exits=False).rstrip(' .')
-					
+							#obj.description = 'You look out the window. '+obj.outside.get_description(exits=False)
+							#obj.description = 'You look through the window. '+obj.inside.get_description(exits=False)
+								
 					_win = _win.split(' ')
 					_win[len(_win)-3] += ' and'
 					_win = ' '.join(_win)
 					
-					self.description += _win.rstrip(', ')
+					self.description.append(_win.rstrip('., '))
 				else:
 					for exit in self.exits:
-						self.description += ' To the %s there is a %s.' % (exit['dir'],exit['room'].type)
-			
-			self.description += '. '
+						_exits = []
+						
+						for _exit in exit['room'].exits:
+							if _exit['room'] == self:
+								if exit['room'].type == 'house':
+									_exits.append(exit)
+						
+						self.description.append('To the %s there is a %s' % (exit['dir'],exit['room'].type))
+												
+						for _exit in _exits:
+							_ls = _exit['room'].get_lights()
+							
+							if _ls == 1:
+								self.description.append(words.get_phrase('lightinwindowdim').replace('%direction%',words.opposite(_exit['dir'])).replace('%roomtype%',_exit['room'].type))
 			
 			for per in self.guests:
 				if per != var.player:
 					if var.player.brain.know_person(per):
-						self.description += '%s is here. ' % (per.name[0])
+						self.description.append('%s is here.' % (per.name[0]))
 					else:
 						if per.male:
 							_ref = ['man','he']
 						else:
 							_ref = ['woman','she']
 						
-						self.description += 'A %s is here.' % (_ref[0])+' '+per.get_visual_description()
+						self.description.append('A %s is here. ' % (_ref[0])+per.get_visual_description())
+			
+		if None in self.description:
+			self.description.remove(None)
+			
+		self.description = '. '.join(self.description)+'.'
 
 class controller:
 	def __init__(self):
@@ -332,8 +348,10 @@ class controller:
 		adam.dexterity = 4
 		adam.intelligence = 6
 		adam.charisma = 6
-		adam.add_item(item.get_item('clothing'))
+		adam.add_item(item.get_item_clothing('chest'))
 		adam.wear(adam.items[0])
+		adam.add_item(item.get_item_clothing('feet'))
+		adam.wear(adam.items[1])
 		
 		eve = people.human()
 		eve.name = ['Eve',functions.get_last_name(adam.race)]
@@ -343,6 +361,8 @@ class controller:
 		eve.dexterity = 5
 		eve.intelligence = 3
 		eve.charisma = 8
+		eve.add_item(item.get_item('clothing'))
+		eve.wear(adam.items[0])
 		
 		var.player = people.human(player=True)
 		var.player.name = ['Player',functions.get_last_name(adam.race)]

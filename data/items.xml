@@ -4,8 +4,8 @@
 	<weight>1</weight>
 	<prefix>A</prefix>
 	<action>burns</action>
-	<room_desc>%prefix% %ref% %action%, providing some light.</room_desc>
-	<desc>Its flame slowly flickers, casting a silent, wavering glow on| the %parent% under it.</desc>
+	<room_desc>%prefix% %ref% %action%, providing some light</room_desc>
+	<desc>Its flame slowly flickers, casting a silent, wavering glow on| the %parent% under it</desc>
 </item>
 
 <item>
@@ -26,7 +26,7 @@
 	<prefix>a</prefix>
 	<action>growing</action>
 	<surface>False</surface>
-	<room_desc>%prefix% %ref% is %action%.</room_desc>
+	<room_desc>%prefix% %ref% is %action%</room_desc>
 	<desc>Its leaves are small, yet numerous|, derpingstan</desc>
 </item>
 
@@ -34,10 +34,23 @@
 	<type>clothing</type>
 	<ref>cloak</ref>
 	<madeof>cotton</madeof>
+	<slot>chest</slot>
 	<weight>1</weight>
 	<prefix>a</prefix>
 	<action>wearing</action>
-	<room_desc>%prefix% %ref% is in %pos%.</room_desc>
+	<room_desc>%prefix% %ref% is in %pos%</room_desc>
+	<desc></desc>
+</item>
+
+<item>
+	<type>clothing</type>
+	<ref>shoes</ref>
+	<madeof>leather</madeof>
+	<slot>feet</slot>
+	<weight>1</weight>
+	<prefix></prefix>
+	<action>wearing</action>
+	<room_desc>%prefix% %ref% is in %pos%</room_desc>
 	<desc></desc>
 </item>
 
@@ -47,6 +60,6 @@
 	<weight>-1</weight>
 	<prefix>A</prefix>
 	<action>sits</action>
-	<room_desc>%prefix% %ref% %action% %pos%.</room_desc>
+	<room_desc>%prefix% %ref% %action% %pos%</room_desc>
 	<desc>null</desc>
 </item>

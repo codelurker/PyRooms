@@ -3,10 +3,15 @@ import var, items, jobs, os, sys, random, json, xml2json, hashlib
 
 random.seed()
 
-def read_word_list(fname):
-	_r = open(os.path.join('data',fname),'r')
-	return sorted(_r.readlines()[0].split(','))
-	_r.close()
+def opposite(text):
+	if text == 'north':
+		return 'south'
+	elif text == 'south':
+		return 'north'
+	elif text == 'east':
+		return 'west'
+	elif text == 'west':
+		return 'east'
 
 def cut_text(text,detail):
 	parts = text.split('|')
@@ -14,7 +19,7 @@ def cut_text(text,detail):
 		detail = len(parts)
 	
 	if detail:
-		return ''.join(parts[:detail])+'.'
+		return ''.join(parts[:detail])+''
 	else:
 		return ''
 
@@ -29,7 +34,7 @@ def get_desc_lighting(lights):
 		return cut_text(_ret,lights)
 	
 	elif not lights:
-		return 'It is too dark to see anything.'
+		return 'It is too dark to see anything'
 	
 	elif lights >= 3:
 		if var.debug: return '<FIXME> Not enough lighting phrases for %s lights.' % lights
@@ -46,7 +51,7 @@ def get_desc_interior(type,lights):
 		_ret = _l[random.randint(0,len(_l)-1)]
 		return cut_text(_ret,lights)
 	else:
-		return ''
+		return None
 
 def get_desc_outside(type,lights):
 	_l = []
@@ -182,6 +187,7 @@ def load_config_files(flush=False):
 				elif _j['type'] == 'clothing':
 					_i = items.clothing()
 					_i.madeof = _j['madeof']
+					_i.slot = _j['slot']
 					
 				_i.name = _j['ref']
 				_i.prefix = _j['prefix']

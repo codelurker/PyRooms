@@ -77,7 +77,12 @@ class person:
 			_s += '%s is wearing' % (_ref[1][0].upper()+_ref[1][1:])
 			if len(self.wearing):
 				for item in self.wearing:
-					_s += ' %s %s %s,' % (item.prefix,item.madeof,item.name)
+					if item.prefix:
+						_s += ' %s ' % (item.prefix)
+					else:
+						_s += ' '
+					
+					_s += '%s %s,' % (item.madeof,item.name)
 				
 				_s = _s[:len(_s)-1]+_s[len(_s)-1].replace(',',', ')
 			
@@ -100,7 +105,7 @@ class person:
 				else:
 					_s += 'and '
 				
-				_s += 'strongly built. '
+				_s += 'strongly built'
 				neg = 0
 			
 			elif self.strength < 6:
@@ -109,7 +114,7 @@ class person:
 				else:
 					_s += 'but '
 				
-				_s += 'weak. '
+				_s += 'weak'
 				neg = 1
 					
 		return _s

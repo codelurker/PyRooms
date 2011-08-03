@@ -142,3 +142,15 @@ def get_item(type):
 		return _l[functions.random.randint(0,len(_l)-1)]
 	else:
 		print 'Couldn\'t get any items of type %s' % type
+
+def get_item_clothing(slot):
+	_l = []
+	
+	for item in var.items:
+		if item.type == 'clothing' and item.slot == slot:
+			_l.append(copy.copy(item))
+	
+	if _l:
+		return _l[functions.random.randint(0,len(_l)-1)]
+	else:
+		print 'Couldn\'t get any items of type %s' % type
