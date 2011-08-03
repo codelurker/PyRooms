@@ -12,5 +12,5 @@
 <origin-foreign>I was raised just %direction% of here in a place called</origin-foreign>
 <job>Since %year%, I've been a %job%</job>
 <job>I've been a %job% since %year%</job>
-<location>In the %place% of %roomtype%</location>
+<location>in the %place% of the %roomtype%</location>
 </phrases>

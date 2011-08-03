@@ -28,8 +28,12 @@ def look_for_person(text):
 				if detail == _detail:
 					_p.append(person)
 		
+		#Objects
 		for obj in var.player.get_room().objects:
 			if obj.name.lower() == detail:
+				_p.append(obj)
+			
+			if obj.place.lower() == detail:
 				_p.append(obj)
 			
 			for _detail in obj.get_description().split(' '):
@@ -38,11 +42,8 @@ def look_for_person(text):
 				if detail == _detail:
 					_p.append(obj)
 	
-	for p in _p:
-		if not p in _r and not p == var.player:
-			_r.append(p)
 	_t = []	
-	for p in _r:
+	for p in _p:
 		_g = False
 		for t in _t:
 			if t['person']==p and not _g:
@@ -52,9 +53,13 @@ def look_for_person(text):
 		if not _g:
 			_t.append({'person':p,'count':0})
 	
-	_l=[]
+	count = -1
 	for t in _t:
-		_l.append(t['person'])
+		if t['count'] > count:
+			count = t['count']
+			_l = [t['person']]
+		elif t['count'] == count:
+			_l.append(t['person'])
 	
 	return _l
 

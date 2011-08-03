@@ -3,8 +3,8 @@
 	<ref>candle</ref>
 	<weight>1</weight>
 	<prefix>A</prefix>
-	<action>burn</action>
-	<room_desc>%prefix% %ref% %action% %pos%.</room_desc>
+	<action>burns</action>
+	<room_desc>%prefix% %ref% %action%, providing some light.</room_desc>
 	<desc>Its flame slowly flickers, casting a silent, wavering glow on| the %parent% under it.</desc>
 </item>
 
@@ -26,7 +26,7 @@
 	<prefix>a</prefix>
 	<action>growing</action>
 	<surface>False</surface>
-	<room_desc>%prefix% %ref% is %action% %pos%.</room_desc>
+	<room_desc>%prefix% %ref% is %action%.</room_desc>
 	<desc>Its leaves are small, yet numerous|, derpingstan</desc>
 </item>
 

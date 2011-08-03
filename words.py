@@ -8,18 +8,6 @@ def read_word_list(fname):
 	return sorted(_r.readlines()[0].split(','))
 	_r.close()
 
-def get_action(word):
-	if word == 'burn':
-		return 'burns'
-	elif word == 'sit':
-		return 'sits'
-	else:
-		return 'ACTION'
-	#for _keyword in keywords:
-	#	return _keyword[1]
-	#	#if word == _keyword[0]:
-	#	#	return _keyword[1]
-
 def cut_text(text,detail):
 	parts = text.split('|')
 	if detail > len(parts) :

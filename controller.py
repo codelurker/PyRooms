@@ -40,7 +40,7 @@ class room:
 	
 	def randomize(self):
 		if self.type == 'clearing':
-			for n in range(0,random.randint(0,5)):
+			for n in range(0,random.randint(0,1)):
 				_i = item.get_item('foliage')
 				_i.loc = self.loc
 				self.add_object(_i)
@@ -49,8 +49,8 @@ class room:
 			_i = item.get_item('light')
 			self.add_object(_i)
 				
-	def get_description(self):
-		self.parse_room()
+	def get_description(self,exits=True):
+		self.parse_room(exits=exits)
 		
 		return '%s%s' % (self.on_enter,self.description)
 	
@@ -92,7 +92,7 @@ class room:
 	def add_object(self,obj,place=None):
 		obj.loc = self.loc
 		if not place:
-			obj.location = words.get_phrase('location').replace('%place%',obj.place).replace('%roomtype%',self.type)
+			obj.location = words.get_phrase('location')#.replace('%place%',obj.place).replace('%roomtype%',self.type)
 		self.objects.append(obj)
 
 	def add_guest(self,person):
@@ -112,8 +112,7 @@ class room:
 		
 		return _lights
 	
-	def parse_room(self):
-		print 'Room type: '+self.type
+	def parse_room(self,exits=True):
 		self.on_enter = ''
 		self.description = ''
 		_lights = None
@@ -149,41 +148,50 @@ class room:
 					
 			_t = []
 			for obj in _objs:
-				if not obj['name'] in _t:
+				if not obj['name'] in _t and not obj['obj'].type == 'window':
 					self.description += ' '+obj['obj'].get_room_description()
-					self.description += ' '+obj['obj'].get_description()
+					#self.description += ' '+obj['obj'].get_description()
 					
-					if obj['count'] > 2:
-						self.description += ' There are %s more %ss here.' % (obj['count']-1,obj['obj'].name)
-					elif obj['count'] == 2:
-						self.description += ' There is one more %s here.' % (obj['obj'].name)					
+					if not obj['obj'].type in ['foliage','window']:
+						if obj['count'] > 2:
+							self.description += ' There are %s more %ss here.' % (obj['count']-1,obj['obj'].name)
+						elif obj['count'] == 2:
+							self.description += ' There is one more %s here.' % (obj['obj'].name)
 					
 					_t.append(obj['name'])
 			
-			#for exit in self.exits:
-			if self.type in ['house']:
-				self.description += ' There are windows facing '
-				for obj in self.objects:
-					if obj.type == 'window' and obj.place:
-						#self.description += ' Out the %s window is a %s.' % (exit['dir'],exit['room'].type)
-						self.description += ' %s' % (obj.place)
-			else:
-				for exit in self.exits:
-					self.description += ' To the %s there is a %s.' % (exit['dir'],exit['room'].type)
+			if exits:
+				if self.type in ['house']:
+					self.description += ' There are windows facing '
+					_win = ''
+					
+					for obj in self.objects:
+						if obj.type == 'window' and obj.place:
+							_win += '%s, ' % (obj.place)
+							obj.description = 'You look out the window. '+obj.outside.get_description(exits=False).rstrip(' .')
+					
+					_win = _win.split(' ')
+					_win[len(_win)-3] += ' and'
+					_win = ' '.join(_win)
+					
+					self.description += _win.rstrip(', ')
+				else:
+					for exit in self.exits:
+						self.description += ' To the %s there is a %s.' % (exit['dir'],exit['room'].type)
+			
+			self.description += ' '
 			
 			for per in self.guests:
 				if per != var.player:
 					if var.player.brain.know_person(per):
-						self.description += ' %s is here.' % (per.name[0])
+						self.description += '%s is here.' % (per.name[0])
 					else:
 						if per.male:
 							_ref = ['man','he']
 						else:
 							_ref = ['woman','she']
 						
-						self.description += ' A %s is here. ' % (_ref[0]) + per.get_visual_description()
-		
-		self.description.replace('  ',' ')
+						self.description += 'A %s is here.' % (_ref[0])+' '+per.get_visual_description()
 
 class controller:
 	def __init__(self):
@@ -203,7 +211,7 @@ class controller:
 			
 			if colors:
 				text = text.replace('[',Back.WHITE+Fore.BLACK+'[')\
-						.replace('+',Fore.CYAN+'+').replace('You',Style.BRIGHT+Fore.BLUE+'You')
+						.replace('+',Fore.CYAN+'+')#.replace('You',Style.BRIGHT+Fore.BLUE+'You')
 				print text + Fore.RESET + Back.RESET + Style.NORMAL
 			
 			else:
@@ -214,8 +222,13 @@ class controller:
 		self.history.append(text)
 		
 	def get_random_town(self):
-		_t = random.randint(0,len(self.towns)-1)
-		return self.towns[_t]
+		_t = self.towns[random.randint(0,len(self.towns)-1)]
+		for pos in _t.map:
+			#print pos
+			if self.map[pos[0]][pos[1]].type == 'house':
+				_h = self.map[pos[0]][pos[1]]
+		
+		return _h
 	
 	def get_id(self):
 		self.id += 1

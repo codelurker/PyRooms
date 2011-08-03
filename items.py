@@ -51,10 +51,14 @@ class item:
 	def get_room(self):
 		return var._c.map[self.loc[0]][self.loc[1]]
 	
+	def get_visual_description(self):
+		return self.parse_description()
+	
 	def get_room_description(self):
 		return self.room_description.replace('%prefix%',self.prefix[0].upper()+self.prefix[1:])\
-		.replace('%ref%',self.name).replace('%action%',words.get_action(self.action))\
+		.replace('%ref%',self.name).replace('%action%',self.action)\
 		.replace('%pos%',self.location)\
+		.replace('%place%',self.place)\
 		.replace('%roomtype%',self.get_room().type)
 	
 	def parse_description(self):
