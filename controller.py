@@ -179,12 +179,12 @@ class room:
 					for exit in self.exits:
 						self.description += ' To the %s there is a %s.' % (exit['dir'],exit['room'].type)
 			
-			self.description += ' '
+			self.description += '. '
 			
 			for per in self.guests:
 				if per != var.player:
 					if var.player.brain.know_person(per):
-						self.description += '%s is here.' % (per.name[0])
+						self.description += '%s is here. ' % (per.name[0])
 					else:
 						if per.male:
 							_ref = ['man','he']
