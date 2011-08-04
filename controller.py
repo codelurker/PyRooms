@@ -167,8 +167,6 @@ class room:
 					for obj in self.objects:
 						if obj.type == 'window' and obj.place:
 							_win += '%s, ' % (obj.place)
-							#obj.description = 'You look out the window. '+obj.outside.get_description(exits=False)
-							#obj.description = 'You look through the window. '+obj.inside.get_description(exits=False)
 								
 					_win = _win.split(' ')
 					_win[len(_win)-3] += ' and'
