@@ -3,9 +3,11 @@
 #Developer
 debug = False
 debug_console = False
+running = True
+interactive = False
 
 #Settings
-world_size = (40,30)
+world_size = (79,18)
 room_size = (2,2)
 towns = 5
 

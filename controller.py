@@ -3,13 +3,6 @@ import functions, people, var, ai, words, towns, random
 import items as item
 import jobs as job
 
-try:
-	from colorama import Fore, Back, Style
-	colors = True
-except:
-	colors = False
-	pass
-
 random.seed()
 
 class room:
@@ -221,15 +214,13 @@ class controller:
 	
 	def log(self,text,error=False):
 		if not error:
-			global colors
-			
-			if colors:
-				text = text.replace('[',Back.WHITE+Fore.BLACK+'[')\
-						.replace('+',Fore.CYAN+'+')#.replace('You',Style.BRIGHT+Fore.BLUE+'You')
-				print text + Fore.RESET + Back.RESET + Style.NORMAL
-			
-			else:
-				print text
+			var.window.clear('log')
+			var.window.write('log',text,(0,5-len(text)/79))
+			var.window.refresh('log')
+			#else:
+			#	var.window.write_append('log',text)
+			#	var.window.refresh('log')
+			var.window.refresh('main')
 		else:
 			self.errors.append(text)
 		
@@ -410,6 +401,7 @@ class controller:
 				for _p in self.people:
 					_p.events['lastbirthday']=False
 		
+		self.draw_map()
 		if var.debug: print 'Done!\n',
 	
 	def tick_year(self,amnt):
@@ -442,15 +434,15 @@ class controller:
 			for x in range(var.world_size[0]):
 				if self.map[x][y] and not (x,y) == tuple(var.player.loc):
 					if self.map[x][y].type == 'home':
-						print 'H',
+						var.window.write('main','H',(x,y))
 					if self.map[x][y].type == 'clearing':
-						print '.',
+						var.window.write('main','.',(x,y))
 					else:
-						print '#',
+						var.window.write('main','#',(x,y))
 				else:
 					if (x,y) == tuple(var.player.loc):
-						print '@',
+						var.window.write('main','@',(x,y))
 					else:
-						print ' ',
-			
-			print
+						var.window.write('main',' ',(x,y))
+		
+		var.window.refresh('main')

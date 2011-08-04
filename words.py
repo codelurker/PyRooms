@@ -198,6 +198,6 @@ def load_config_files(flush=False):
 		
 		_f.close()
 
-commands = ['look','ask','north','south','east','west','take','pick','drop','items','put','talk','map']
+commands = ['look','ask','north','south','east','west','up','down','left','right','take','pick','drop','items','put','talk','map']
 attacks = ['stab', 'punch', 'kick']
 body_parts = ['head','eyes', 'larm','rarm','lhand','rhand','chest','stomach','torso','groin','lleg','rleg','lfoot','rfoot']

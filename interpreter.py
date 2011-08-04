@@ -2,12 +2,13 @@
 import var, words, functions, sys
 
 def parse_input(text):
-	text = text.split(' ')
+	if var.interactive:
+		text = text.split(' ')
 	
 	if text[0] in words.commands:
 		if text[0] == 'look':
 			if len(text) == 1:
-				print var._c.map[var.player.loc[0]][var.player.loc[1]].get_description()
+				var._c.log(var._c.map[var.player.loc[0]][var.player.loc[1]].get_description())
 				
 			elif text[1] == 'at' and len(text) > 2:
 				_look = functions.look_for_person(text[2:])
@@ -24,7 +25,17 @@ def parse_input(text):
 			else:
 				var._c.log('What are you looking at?')
 		
-		elif text[0] in ['north','south','east','west']:
+		elif text[0] in ['north','south','east','west','up','down','left','right']:
+			if text[0] == 'up':
+				text[0] = 'north'
+			elif text[0] == 'down':
+				text[0] = 'south'
+			elif text[0] == 'left':
+				text[0] = 'west'
+			elif text[0] == 'right':
+				text[0] = 'east'
+			
+			var._c.tick()
 			var.player.walk(text[0])
 		
 		elif text[0] in ['take','pick'] and len(text) >= 2:
@@ -108,6 +119,14 @@ def parse_input(text):
 		#Calculate alignment
 		pass
 	
+	elif text[0] == ord('i') or text[0] == 'i':
+		if var.interactive:
+			var.interactive = False
+			return False
+		else:
+			var.interactive = True
+			return False
+	
 	elif text[0] in ['town']:
 		if text[0] == 'town' and len(text)==2:
 			try:
@@ -132,9 +151,12 @@ def parse_input(text):
 			except:
 				print 'Couldn\'t start an interactive session. You\'re on your own!'
 		
-		#var._c.draw_map()
+		var.running = 0
 		return False
 
 def get_input():
-	while not parse_input(raw_input('> ')) == False: pass
-	
+	while var.running:
+		if var.interactive:
+			while not parse_input(var.window.get_str()) == False: pass
+		else:
+			while not parse_input([var.window.translate(var.window.get_char())]) == False: pass

@@ -1,12 +1,10 @@
 #!/usr/bin/python2
 import controller, functions, items, var, interpreter, words, sys
 if var.debug: import time
+import cursed
 
-try:
-	from colorama import init
-	init()
-except:
-	print 'colorama not found: Colors disabled.'
+var.window = cursed.cursed()
+var.window.create_window('log',(0,18),(79,24),pad=True)
 
 var._c = controller.controller()
 
@@ -24,6 +22,6 @@ var._c.tick_year(1)
 
 if var.debug: print 'Generation took %s' % (str(time.time()-_starttime))
 
-#functions.look_for_person('man')
+var._c.draw_map()
 interpreter.get_input()
-#var._c.draw_map()
+var.window.end()
