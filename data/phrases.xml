@@ -1,6 +1,9 @@
 #READ ALL
 <phrases>
 <room_exit>%name% heads %direction%.</room_exit>
+<room_location>To the %direction%, a %roomtype%</room_location>
+<room_location>Just to the %direction%, there is a %roomtype%</room_location>
+<room_location>A %roomtype% is %direction% of here</room_location>
 <introduction>I am</introduction>
 <introduction>My name is</introduction>
 <uncomfortable>That's all you need to know about me</uncomfortable>

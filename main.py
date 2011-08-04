@@ -23,5 +23,5 @@ var._c.tick_year(1)
 if var.debug: print 'Generation took %s' % (str(time.time()-_starttime))
 
 var._c.draw_map()
-interpreter.get_input()
+#interpreter.get_input()
 var.window.end()

@@ -5,6 +5,7 @@ debug = False
 debug_console = False
 running = True
 interactive = False
+astar_chances = 100
 
 #Settings
 world_size = (79,18)

@@ -238,7 +238,7 @@ class person:
 		_spouse.maiden_name = _spouse.name[1]
 		_spouse.name[1] = self.name[1]
 
-		var._c.log('%s %s %s has married %s %s' % (var._c.date,self.name[0],self.name[1],_spouse.name[0],_spouse.maiden_name))
+		#var._c.log('%s %s %s has married %s %s' % (var._c.date,self.name[0],self.name[1],_spouse.name[0],_spouse.maiden_name))
 	
 	def impregnate(self,male):
 		if self.male and var.debug: print 'What are you doing?'
@@ -251,7 +251,7 @@ class person:
 		_f_date = functions.get_future_date(9600)
 		self.schedule_add(_f_date,self.have_child,args=male)
 		
-		var._c.log('%s %s %s is pregnant.' % (self.events['pregnanton'],self.name[0],self.name[1]))
+		#var._c.log('%s %s %s is pregnant.' % (self.events['pregnanton'],self.name[0],self.name[1]))
 	
 	def have_child(self,male):
 		_child = person()
@@ -303,7 +303,7 @@ class person:
 		
 		self.events['pregnant'] = False
 		
-		var._c.log('%s %s %s has been born.' % (functions.get_date(),_child.name[0],_child.name[1]))
+		#var._c.log('%s %s %s has been born.' % (functions.get_date(),_child.name[0],_child.name[1]))
 	
 	def tick(self):
 		if self.male:

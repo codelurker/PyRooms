@@ -43,7 +43,7 @@ class AStar:
 		self._cl = []
 		self.lowest = None
 		self.chance = 0
-		self.max_chances = 50
+		self.max_chances = var.astar_chances
 		self.ignoreNone = ignoreNone
 		
 		self.map = []

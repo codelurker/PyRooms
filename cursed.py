@@ -35,11 +35,7 @@ class cursed:
 		win = curses.newwin(height, width, spos[1], spos[0])
 		
 		if pad:
-			_t = []
-			for h in range(0,height):
-				_t.append('')
-				
-			self.screen.append({'name':name,'win':win,'spos':spos,'epos':epos,'pad':True,'log':_t,'height':height-1})
+			self.screen.append({'name':name,'win':win,'spos':spos,'epos':epos,'pad':True,'log':['' for i in range(height)],'height':height-1})
 		else:
 			self.screen.append({'name':name,'win':win,'spos':spos,'epos':epos,'pad':False})
 	

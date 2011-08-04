@@ -175,7 +175,7 @@ class room:
 								if exit['room'].type == 'house':
 									_exits.append(exit)
 						
-						self.description.append('To the %s there is a %s' % (exit['dir'],exit['room'].type))
+						self.description.append(words.get_phrase('room_location').replace('%direction%',exit['dir']).replace('%roomtype%',exit['room'].type))
 												
 						for _exit in _exits:
 							_ls = _exit['room'].get_lights()
@@ -214,12 +214,14 @@ class controller:
 	
 	def log(self,text,error=False):
 		if not error:
-			var.window.clear('log')
-			var.window.write('log',text,(0,5-len(text)/79))
-			var.window.refresh('log')
-			#else:
-			#	var.window.write_append('log',text)
-			#	var.window.refresh('log')
+			if len(text)>79:
+				var.window.clear('log')
+				var.window.write('log',text,(0,5-len(text)/79))
+				var.window.refresh('log')
+			else:
+				var.window.write_append('log',text)
+				var.window.refresh('log')
+			
 			var.window.refresh('main')
 		else:
 			self.errors.append(text)
@@ -229,7 +231,6 @@ class controller:
 	def get_random_town(self):
 		_t = self.towns[random.randint(0,len(self.towns)-1)]
 		for pos in _t.map:
-			#print pos
 			if self.map[pos[0]][pos[1]].type == 'house':
 				_h = self.map[pos[0]][pos[1]]
 		
@@ -249,7 +250,7 @@ class controller:
 		
 		for pos in path:
 			if self.map[pos[0]][pos[1]] == None:
-				self.build_forest(pos)
+				self.build_road(pos)
 	
 	def generate(self):
 		#Make a blank map
@@ -261,7 +262,7 @@ class controller:
 				ycols.append(None)
 			
 			self.map.append(ycols)
-		
+			
 		#Find some spots to place towns
 		self.towns = []
 		for t in range(0,var.towns):
@@ -296,6 +297,14 @@ class controller:
 		#Connect towns
 		self.path_maker(self.towns)
 		
+		#Build some forests in random areas
+		self.forests = 4
+		for _f in range(self.forests):
+			self.log('FOREST')
+			random.seed()
+			self.build_forest((random.randint(0,var.world_size[0]),random.randint(0,var.world_size[1])))
+			#self.log('Forest at %s,%s' % (x,y))
+		
 		#Finish up by finding room exits
 		l = None
 		for x in range(var.world_size[0]):
@@ -313,8 +322,18 @@ class controller:
 		self.map[pos[0]][pos[1]] = r
 	
 	def build_forest(self,pos):
+		for x in range(-5,5):
+			for y in range(-5,5):
+				if random.randint(0,20) <= 10:
+					if pos[0]+x > 1 and pos[0]+x < var.world_size[0]-1 and pos[1]+y < 0 and pos[1]+y < var.world_size[1]-1 and not self.map[pos[0]+x][pos[1]+y]:
+						r = room((pos[0]+x,pos[1]+y),self)
+						r.type = 'forest'
+						r.flags['sunlit'] = True
+						self.map[pos[0]+x][pos[1]+y] = r
+	
+	def build_road(self,pos):
 		r = room(pos,self)
-		r.type = 'forest'
+		r.type = 'road'
 		r.flags['sunlit'] = True
 		
 		self.map[pos[0]][pos[1]] = r
@@ -406,7 +425,8 @@ class controller:
 	
 	def tick_year(self,amnt):
 		if amnt == 1:
-			self.log('[Time] Advancing 1 year.')
+			pass
+			#self.log('[Time] Advancing 1 year.')
 		else:
 			self.log('[Time] Advancing %s years.' % amnt)
 		
@@ -435,10 +455,12 @@ class controller:
 				if self.map[x][y] and not (x,y) == tuple(var.player.loc):
 					if self.map[x][y].type == 'home':
 						var.window.write('main','H',(x,y))
-					if self.map[x][y].type == 'clearing':
+					elif self.map[x][y].type == 'clearing':
 						var.window.write('main','.',(x,y))
-					else:
+					elif self.map[x][y].type == 'road':
 						var.window.write('main','#',(x,y))
+					elif self.map[x][y].type == 'forest':
+						var.window.write('main','F',(x,y))
 				else:
 					if (x,y) == tuple(var.player.loc):
 						var.window.write('main','@',(x,y))
