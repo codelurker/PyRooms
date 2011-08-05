@@ -1,4 +1,4 @@
-import var
+import var, random
 
 class Node:
 	def __init__(self, loc, astar):
@@ -163,3 +163,40 @@ class AStar:
 						print '.',
 			
 			print
+
+class RandomWalker:
+	def __init__(self,start):
+		self.pos = list(start)
+		
+		self.path = []
+		self.directions = [[1,2,3],[2,3,6],[3,6,9],[6,9,8],[9,8,7],[8,7,4],[7,4,1],[4,1,2]]
+		self.directions = self.directions[random.randint(0,len(self.directions)-1)]
+		self.life = 0
+		self.max_life = var.walker_life
+
+	def walk(self):
+		for w in range(self.max_life):
+			dir = self.directions[random.randint(0,len(self.directions)-1)]
+			
+			if dir == 1:
+				self.pos[0]-=1
+				self.pos[1]+=1
+			elif dir == 2:
+				self.pos[1]+=1
+			elif dir == 3:
+				self.pos[0]+=1
+				self.pos[1]+=1
+			elif dir == 6:
+				self.pos[0]+=1
+			elif dir == 9:
+				self.pos[0]+=1
+				self.pos[1]-=1
+			elif dir == 8:
+				self.pos[1]-=1
+			elif dir == 7:
+				self.pos[0]-=1
+				self.pos[1]+=1
+			elif dir == 4:
+				self.pos[0]-=1
+			
+			self.path.append(list(self.pos))

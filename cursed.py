@@ -23,10 +23,20 @@ class cursed:
 	def __init__(self):
 		self.screen = [{'name':'main','win':curses.initscr(),'pad':False}]
 
+		#Screen
 		curses.noecho()
 		curses.cbreak()
 		self.screen[0]['win'].keypad(1)
 		curses.curs_set(0)
+		
+		#Colors
+		curses.start_color()
+		self.color = 1
+		curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
+		curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_GREEN)
+	
+	def set_color(self,i):
+		self.color = i
 	
 	def create_window(self,name,spos,epos,pad=False):
 		width = epos[0]-spos[0]
@@ -50,6 +60,11 @@ class cursed:
 			return 'down'
 		else:
 			return text
+	
+	def get_height(self,name):
+		for screen in self.screen:
+			if screen['name'] == name:
+				return screen['height']-1
 	
 	def get_char(self):
 		return self.screen[0]['win'].getch()
@@ -76,7 +91,7 @@ class cursed:
 		for screen in self.screen:
 			if screen['name'] == name:
 				try:
-					screen['win'].addstr(pos[1],pos[0], text)
+					screen['win'].addstr(pos[1]-1,pos[0], text, curses.color_pair(self.color))
 				except:
 					pass
 				

@@ -6,9 +6,11 @@ debug_console = False
 running = True
 interactive = False
 astar_chances = 100
+walker_life = 10
+camera = [0,0]
 
 #Settings
-world_size = (79,18)
+world_size = (79,50)
 room_size = (2,2)
 towns = 5
 

@@ -35,8 +35,8 @@ def parse_input(text):
 			elif text[0] == 'right':
 				text[0] = 'east'
 			
-			var._c.tick()
 			var.player.walk(text[0])
+			var._c.tick()
 		
 		elif text[0] in ['take','pick'] and len(text) >= 2:
 			if text[1] == 'up':
@@ -113,7 +113,7 @@ def parse_input(text):
 				var._c.log('You start talking to %s.' % _person.name[0])
 				_person.brain.get_dialog_options(var.player)
 		
-		var._c.tick()					
+		#var._c.tick()					
 	
 	elif text[0] in words.attacks:
 		#Calculate alignment
@@ -134,6 +134,9 @@ def parse_input(text):
 			except:
 				var._c.log('[DEBUG] Town %s does not exist.' % text[1],error=1)
 			
+	elif text[0] == ord('z'):
+		var.camera[1]+=1
+		var._c.tick()
 	
 	else:
 		if len(var._c.errors)>1:

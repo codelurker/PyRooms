@@ -41,6 +41,25 @@ class room:
 		elif self.type == 'house':
 			_i = item.get_item('light')
 			self.add_object(_i)
+		
+		elif self.type == 'forest':
+			_ws = []
+			for w in range(self.green/10):
+				_w = ai.RandomWalker(self.loc)
+				_w.walk()
+				_ws.append(_w)
+			
+			for w in _ws:
+				for _pos in w.path:
+					if _pos[0]>0 and _pos[0]<var.world_size[0]-2 and _pos[1]>0 and _pos[1]<var.world_size[1]-2 and not var._c.map[_pos[0]][_pos[1]]:
+						r = room(_pos,self.controller)
+						r.type = 'forest'
+						r.flags['sunlit'] = True
+						r.green = self.green - 10
+						#if r.green > 70:
+						r.randomize()
+						var._c.map[_pos[0]][_pos[1]] = r
+						var._c.forests.append(r)
 				
 	def get_description(self,exits=True):
 		self.parse_room(exits=exits)
@@ -216,7 +235,8 @@ class controller:
 		if not error:
 			if len(text)>79:
 				var.window.clear('log')
-				var.window.write('log',text,(0,5-len(text)/79))
+				#var.window.write('log',text,(0,4-len(text)/79))
+				var.window.write('log',text,(0,var.window.get_height('log')-len(text)/79))
 				var.window.refresh('log')
 			else:
 				var.window.write_append('log',text)
@@ -262,7 +282,7 @@ class controller:
 				ycols.append(None)
 			
 			self.map.append(ycols)
-			
+		
 		#Find some spots to place towns
 		self.towns = []
 		for t in range(0,var.towns):
@@ -296,14 +316,16 @@ class controller:
 		
 		#Connect towns
 		self.path_maker(self.towns)
+
+		#Create biomes
+		#Forests
+		self.forests = []
+		for _f in range(4):
+			self.build_forest((random.randint(1,var.world_size[0]-2),random.randint(1,var.world_size[1]-2)))
 		
-		#Build some forests in random areas
-		self.forests = 4
-		for _f in range(self.forests):
-			self.log('FOREST')
-			random.seed()
-			self.build_forest((random.randint(0,var.world_size[0]),random.randint(0,var.world_size[1])))
-			#self.log('Forest at %s,%s' % (x,y))
+		#Dither our forests
+		for forest in self.forests:
+			pass
 		
 		#Finish up by finding room exits
 		l = None
@@ -322,14 +344,13 @@ class controller:
 		self.map[pos[0]][pos[1]] = r
 	
 	def build_forest(self,pos):
-		for x in range(-5,5):
-			for y in range(-5,5):
-				if random.randint(0,20) <= 10:
-					if pos[0]+x > 1 and pos[0]+x < var.world_size[0]-1 and pos[1]+y < 0 and pos[1]+y < var.world_size[1]-1 and not self.map[pos[0]+x][pos[1]+y]:
-						r = room((pos[0]+x,pos[1]+y),self)
-						r.type = 'forest'
-						r.flags['sunlit'] = True
-						self.map[pos[0]+x][pos[1]+y] = r
+		r = room(pos,self)
+		r.type = 'forest'
+		r.flags['sunlit'] = True
+		r.green = 40
+		r.randomize()
+
+		self.map[pos[0]][pos[1]] = r
 	
 	def build_road(self,pos):
 		r = room(pos,self)
@@ -389,6 +410,7 @@ class controller:
 		eve.birthplace = _t
 		var.player.warp_to(_t.loc)
 		var.player.birthplace = var.player
+		var.camera[1] = var.player.loc[1]/2
 		
 		self.jobs.append(job.get_job('carpenter'))
 		self.jobs[0].hire(adam)
@@ -420,6 +442,7 @@ class controller:
 				for _p in self.people:
 					_p.events['lastbirthday']=False
 		
+		var.camera[1] = var.player.loc[1]-12
 		self.draw_map()
 		if var.debug: print 'Done!\n',
 	
@@ -453,18 +476,20 @@ class controller:
 		for y in range(var.world_size[1]):
 			for x in range(var.world_size[0]):
 				if self.map[x][y] and not (x,y) == tuple(var.player.loc):
-					if self.map[x][y].type == 'home':
-						var.window.write('main','H',(x,y))
+					if self.map[x][y].type == 'house':
+						var.window.write('main','H',(x-var.camera[0],y-var.camera[1]))
 					elif self.map[x][y].type == 'clearing':
-						var.window.write('main','.',(x,y))
+						var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
 					elif self.map[x][y].type == 'road':
-						var.window.write('main','#',(x,y))
+						var.window.write('main','#',(x-var.camera[0],y-var.camera[1]))
 					elif self.map[x][y].type == 'forest':
-						var.window.write('main','F',(x,y))
+						var.window.set_color(2)
+						var.window.write('main','F',(x-var.camera[0],y-var.camera[1]))
+						var.window.set_color(1)
 				else:
 					if (x,y) == tuple(var.player.loc):
-						var.window.write('main','@',(x,y))
+						var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
 					else:
-						var.window.write('main',' ',(x,y))
+						var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
 		
 		var.window.refresh('main')

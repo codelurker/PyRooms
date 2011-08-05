@@ -129,7 +129,7 @@ class person:
 		return {'text':'i dunno lol','detail':None}
 	
 	def who_am_i(self, detail=0):
-		#Name.
+		#Name
 		_s = '%s %s %s. ' % (words.get_phrase('introduction'),self.name[0],self.name[1])
 		_d = []
 
@@ -179,7 +179,7 @@ class person:
 		try:
 			var._c.map[self.loc[0]][self.loc[1]].guests.remove(self)
 		except:
-			var._c.log('Guest remove for %s failed with AID[%s].' % (self.get_room().name, self.id), error=True)
+			var._c.log('Guest remove for %s failed with ID[%s].' % (self.get_room().name, self.id), error=True)
 		
 		_tloc = list(self.loc)
 		
@@ -196,7 +196,7 @@ class person:
 			self.loc = _tloc
 			var._c.map[_tloc[0]][_tloc[1]].guests.append(self)
 			
-			var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))			
+			if not self == var.player: var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))			
 			if var.debug: var._c.log('Moving %s, %s,%s' % (dir,str(self.loc[0]),str(self.loc[1])))
 		else:
 			if self == var.player:
