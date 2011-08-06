@@ -10,8 +10,9 @@ walker_life = 10
 camera = [0,0]
 
 #Settings
-world_size = (79,50)
+world_size = (90,50)
 room_size = (2,2)
+biome_distance = 20
 towns = 5
 
 #Stats

@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import functions, people, var, ai, words, towns, random
+import functions, people, var, ai, words, towns, biomes, random
 import items as item
 import jobs as job
 
@@ -52,14 +52,31 @@ class room:
 			for w in _ws:
 				for _pos in w.path:
 					if _pos[0]>0 and _pos[0]<var.world_size[0]-2 and _pos[1]>0 and _pos[1]<var.world_size[1]-2 and not var._c.map[_pos[0]][_pos[1]]:
-						r = room(_pos,self.controller)
+						r = room(_pos,var._c)
 						r.type = 'forest'
 						r.flags['sunlit'] = True
 						r.green = self.green - 10
-						#if r.green > 70:
 						r.randomize()
+						
 						var._c.map[_pos[0]][_pos[1]] = r
-						var._c.forests.append(r)
+		
+		elif self.type == 'river':
+			_ws = []
+			for w in range(self.green/10):
+				_w = ai.DirectionalWalker(self.loc,'south',xchange=10)
+				_w.walk()
+				_ws.append(_w)
+			
+			for w in _ws:
+				for _pos in w.path:
+					if _pos[0]>0 and _pos[0]<var.world_size[0]-2 and _pos[1]>0 and _pos[1]<var.world_size[1]-2 and (not var._c.map[_pos[0]][_pos[1]] or var._c.map[_pos[0]][_pos[1]].type == 'forest'):
+						r = room(_pos,var._c)
+						r.type = 'river'
+						r.flags['sunlit'] = True
+						r.green = self.green - 10
+						r.randomize()
+						
+						var._c.map[_pos[0]][_pos[1]] = r
 				
 	def get_description(self,exits=True):
 		self.parse_room(exits=exits)
@@ -95,7 +112,6 @@ class room:
 		
 		if self.type == 'house':
 			for exit in self.exits:
-				#Place windows on inside.
 				_i = item.get_item('window')
 				_i.place = exit['dir']
 				_i.inside = self
@@ -106,7 +122,7 @@ class room:
 	def add_object(self,obj,place=None):
 		obj.loc = self.loc
 		if not place:
-			obj.location = words.get_phrase('location')#.replace('%place%',obj.place).replace('%roomtype%',self.type)
+			obj.location = words.get_phrase('location')
 		self.objects.append(obj)
 
 	def add_guest(self,person):
@@ -230,15 +246,21 @@ class controller:
 		self.id = 0
 		self.people = []
 		self.jobs = []
+		
+		#Biomes
+		self.forests = []
+		self.rivers = []
 	
 	def log(self,text,error=False):
 		if not error:
 			if len(text)>79:
 				var.window.clear('log')
 				#var.window.write('log',text,(0,4-len(text)/79))
-				var.window.write('log',text,(0,var.window.get_height('log')-len(text)/79))
+				#var.window.write('log',text,(0,var.window.get_height('log')-len(text)/79))
+				var.window.write('log',text,(0,var.window.get_height('log')-3))
 				var.window.refresh('log')
 			else:
+				print 'XD' 
 				var.window.write_append('log',text)
 				var.window.refresh('log')
 			
@@ -271,6 +293,32 @@ class controller:
 		for pos in path:
 			if self.map[pos[0]][pos[1]] == None:
 				self.build_road(pos)
+	
+	def make_biome(self,list,type):
+		for _f in range(4):
+			pos = None
+			
+			while not pos:
+				if type == 'forest':
+					_pos = (random.randint(1,var.world_size[0]-2),random.randint(1,var.world_size[1]-2))
+				elif type == 'river':
+					_pos = (random.randint(1,var.world_size[0]-2),1)
+				
+				count = 0
+				for f in self.forests:
+					if (abs(_pos[0]-f.loc[0])+abs(_pos[1]-f.loc[1]))<=var.biome_distance:
+						count+=1
+				
+				if not count:
+					pos = _pos
+				else:
+					print 'Retrying'
+			
+			r = biomes.biome(pos,type)
+			list.append(r)
+		
+		for b in list:
+			b.generate()
 	
 	def generate(self):
 		#Make a blank map
@@ -308,7 +356,7 @@ class controller:
 			spots = []
 			for x in range(0,4):
 				for y in range(0,4):
-					spots.append((tspot[0]+x,tspot[1]+y))# = self.build_clearing(tspot[0]+x,tspot[1]+y)
+					spots.append((tspot[0]+x,tspot[1]+y))
 			
 			_t = towns.town(tspot,spots,self)
 			_t.generate()
@@ -319,19 +367,20 @@ class controller:
 
 		#Create biomes
 		#Forests
-		self.forests = []
-		for _f in range(4):
-			self.build_forest((random.randint(1,var.world_size[0]-2),random.randint(1,var.world_size[1]-2)))
+		self.make_biome(self.forests,'forest')
+		self.make_biome(self.rivers,'river')
 		
-		#Dither our forests
-		for forest in self.forests:
-			pass
+		#Make clearings
+		for x in range(var.world_size[0]):
+			for y in range(var.world_size[1]):
+				if not self.map[x][y]:
+					self.build_clearing((x,y))
 		
 		#Finish up by finding room exits
 		l = None
-		for x in range(var.world_size[0]):
-			for y in range(var.world_size[1]):
-				if self.map[x][y]:
+		for x in range(1,var.world_size[0]-1):
+			for y in range(1,var.world_size[1]-1):
+				if not self.map[x][y]:
 					self.map[x][y].find_exits()
 					l = self.map[x][y]
 	
@@ -341,15 +390,6 @@ class controller:
 		r.flags['sunlit'] = True
 		r.randomize()
 		
-		self.map[pos[0]][pos[1]] = r
-	
-	def build_forest(self,pos):
-		r = room(pos,self)
-		r.type = 'forest'
-		r.flags['sunlit'] = True
-		r.green = 40
-		r.randomize()
-
 		self.map[pos[0]][pos[1]] = r
 	
 	def build_road(self,pos):
@@ -410,7 +450,11 @@ class controller:
 		eve.birthplace = _t
 		var.player.warp_to(_t.loc)
 		var.player.birthplace = var.player
-		var.camera[1] = var.player.loc[1]/2
+		
+		var.camera[0] = var.player.loc[0]-40
+		var.camera[1] = var.player.loc[1]-12
+		if var.camera[0]<0: var.camera[0] = 0
+		if var.camera[1]<0: var.camera[1] = 0
 		
 		self.jobs.append(job.get_job('carpenter'))
 		self.jobs[0].hire(adam)
@@ -442,7 +486,11 @@ class controller:
 				for _p in self.people:
 					_p.events['lastbirthday']=False
 		
+		var.camera[0] = var.player.loc[0]-40
 		var.camera[1] = var.player.loc[1]-12
+		if var.camera[0]<0: var.camera[0] = 0
+		if var.camera[1]<0: var.camera[1] = 0
+		
 		self.draw_map()
 		if var.debug: print 'Done!\n',
 	
@@ -479,9 +527,15 @@ class controller:
 					if self.map[x][y].type == 'house':
 						var.window.write('main','H',(x-var.camera[0],y-var.camera[1]))
 					elif self.map[x][y].type == 'clearing':
+						var.window.set_color(3)
+						var.window.write('main',',',(x-var.camera[0],y-var.camera[1]))
+						var.window.set_color(1)
+					elif self.map[x][y].type == 'river':
+						var.window.set_color(4)
 						var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
+						var.window.set_color(1)
 					elif self.map[x][y].type == 'road':
-						var.window.write('main','#',(x-var.camera[0],y-var.camera[1]))
+						var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
 					elif self.map[x][y].type == 'forest':
 						var.window.set_color(2)
 						var.window.write('main','F',(x-var.camera[0],y-var.camera[1]))

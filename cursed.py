@@ -30,10 +30,13 @@ class cursed:
 		curses.curs_set(0)
 		
 		#Colors
-		curses.start_color()
-		self.color = 1
-		curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
-		curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_GREEN)
+		if curses.has_colors:
+			curses.start_color()
+			self.color = 1
+			curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
+			curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_GREEN)
+			curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+			curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_BLUE)
 	
 	def set_color(self,i):
 		self.color = i
@@ -64,7 +67,7 @@ class cursed:
 	def get_height(self,name):
 		for screen in self.screen:
 			if screen['name'] == name:
-				return screen['height']-1
+				return screen['height']
 	
 	def get_char(self):
 		return self.screen[0]['win'].getch()
@@ -82,6 +85,16 @@ class cursed:
 		
 		return s
 	
+	def clear(self,name):
+		for screen in self.screen:
+			if screen['name'] == name:
+				screen['win'].clear()
+				
+	def refresh(self,name):
+		for screen in self.screen:
+			if screen['name'] == name:
+				screen['win'].refresh()
+
 	def clear_line(self,line,char=' '):
 		for i in range(0,79):
 			try: self.screen[0]['win'].addstr(line,i, char)
@@ -111,16 +124,6 @@ class cursed:
 					pass
 				
 				return True
-	
-	def clear(self,name):
-		for screen in self.screen:
-			if screen['name'] == name:
-				screen['win'].clear()
-				
-	def refresh(self,name):
-		for screen in self.screen:
-			if screen['name'] == name:
-				screen['win'].refresh()
 	
 	def end(self):
 		curses.nocbreak();

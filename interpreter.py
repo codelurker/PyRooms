@@ -122,9 +122,17 @@ def parse_input(text):
 	elif text[0] == ord('i') or text[0] == 'i':
 		if var.interactive:
 			var.interactive = False
+			
+			#Clear and redraw all windows
+			var.window.clear('log')
+			var.window.clear('main')
+			
+			var._c.draw_map()
 			return False
 		else:
 			var.interactive = True
+			var.window.clear('log')
+			var.window.refresh('log')
 			return False
 	
 	elif text[0] in ['town']:

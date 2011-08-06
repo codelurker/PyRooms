@@ -164,15 +164,18 @@ class AStar:
 			
 			print
 
-class RandomWalker:
-	def __init__(self,start):
+class Walker:
+	def __init__(self,start,bold=0,width=0,xchange=0):
 		self.pos = list(start)
 		
+		self.bold = bold
+		self.width = width
+		
 		self.path = []
-		self.directions = [[1,2,3],[2,3,6],[3,6,9],[6,9,8],[9,8,7],[8,7,4],[7,4,1],[4,1,2]]
-		self.directions = self.directions[random.randint(0,len(self.directions)-1)]
 		self.life = 0
-		self.max_life = var.walker_life
+		
+		self.xchange = xchange
+		self.lxchange = 0
 
 	def walk(self):
 		for w in range(self.max_life):
@@ -198,5 +201,48 @@ class RandomWalker:
 				self.pos[1]+=1
 			elif dir == 4:
 				self.pos[0]-=1
+
+			if len(self.path) and self.xchange:
+				if self.lxchange >= self.xchange:
+					self.lxchange = 0
+				else:
+					ldir = self.path[len(self.path)-1]
+					self.pos[0] = ldir[0]
+					self.lxchange += 1
+								
+				#if self.directions[1] == 2:
+				#	if abs(self.pos[0]-self.ref[0])>=self.width:
+				#		self.pos[0] = ldir[0]
+				#		#print 'WIDTH BRO'
 			
 			self.path.append(list(self.pos))
+
+class RandomWalker(Walker):
+	def __init__(self,start,bold=0):
+		Walker.__init__(self,start=start,bold=bold)
+		
+		self.directions = [[1,2,3],[2,3,6],[3,6,9],[6,9,8],[9,8,7],[8,7,4],[7,4,1],[4,1,2]]
+		self.directions = self.directions[random.randint(0,len(self.directions)-1)]
+		
+		self.max_life = var.walker_life
+
+class DirectionalWalker(Walker):
+	def __init__(self,start,direction,bold=0,xchange=0):
+		Walker.__init__(self,start=start,bold=bold,width=1,xchange=xchange)
+		
+		if direction == 'north':
+			self.directions = [7,8,9]
+		elif direction == 'south':
+			self.directions = [1,2,3]
+		elif direction == 'east':
+			self.directions = [3,6,9]
+		elif direction == 'west':
+			self.directions = [1,4,7]
+		
+		self.max_life = var.walker_life*4
+
+class BidirectionalWalker(Walker):
+	def __init__(self,start):
+		person.__init__(self,start=start)
+		_direction1 = self.directions[random.randint(0,len(self.directions)-1)]
+		_direction2 = [-n for n in _direction1]
