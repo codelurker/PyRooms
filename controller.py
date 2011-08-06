@@ -63,7 +63,14 @@ class room:
 		elif self.type == 'river':
 			_ws = []
 			for w in range(self.green/10):
-				_w = ai.DirectionalWalker(self.loc,'south',xchange=10)
+				if self.walk_dir == 'south':
+					_xchange = 10
+					_ychange = 0
+				elif self.walk_dir == 'east':
+					_xchange = 0
+					_ychange = 5
+				
+				_w = ai.DirectionalWalker(self.loc,self.walk_dir,xchange=_xchange,ychange=_ychange)
 				_w.walk()
 				_ws.append(_w)
 			
@@ -74,6 +81,7 @@ class room:
 						r.type = 'river'
 						r.flags['sunlit'] = True
 						r.green = self.green - 10
+						r.walk_dir = self.walk_dir
 						r.randomize()
 						
 						var._c.map[_pos[0]][_pos[1]] = r
@@ -260,7 +268,6 @@ class controller:
 				var.window.write('log',text,(0,var.window.get_height('log')-3))
 				var.window.refresh('log')
 			else:
-				print 'XD' 
 				var.window.write_append('log',text)
 				var.window.refresh('log')
 			
@@ -300,9 +307,17 @@ class controller:
 			
 			while not pos:
 				if type == 'forest':
+					_dir = None
 					_pos = (random.randint(1,var.world_size[0]-2),random.randint(1,var.world_size[1]-2))
 				elif type == 'river':
-					_pos = (random.randint(1,var.world_size[0]-2),1)
+					_dir = random.randint(1,2) 
+					
+					if _dir == 1:
+						_pos = (random.randint(1,var.world_size[0]-2),1)
+						_dir = 'south'
+					elif _dir == 2:
+						_pos = (1,random.randint(1,var.world_size[1]-2))
+						_dir = 'east'
 				
 				count = 0
 				for f in self.forests:
@@ -314,7 +329,7 @@ class controller:
 				else:
 					print 'Retrying'
 			
-			r = biomes.biome(pos,type)
+			r = biomes.biome(pos,type,dir=_dir)
 			list.append(r)
 		
 		for b in list:
@@ -368,19 +383,19 @@ class controller:
 		#Create biomes
 		#Forests
 		self.make_biome(self.forests,'forest')
-		self.make_biome(self.rivers,'river')
+		#self.make_biome(self.rivers,'river')
 		
 		#Make clearings
-		for x in range(var.world_size[0]):
-			for y in range(var.world_size[1]):
-				if not self.map[x][y]:
-					self.build_clearing((x,y))
+		#for x in range(var.world_size[0]):
+		#	for y in range(var.world_size[1]):
+		#		if not self.map[x][y]:
+		#			self.build_clearing((x,y))
 		
 		#Finish up by finding room exits
 		l = None
 		for x in range(1,var.world_size[0]-1):
 			for y in range(1,var.world_size[1]-1):
-				if not self.map[x][y]:
+				if self.map[x][y]:
 					self.map[x][y].find_exits()
 					l = self.map[x][y]
 	

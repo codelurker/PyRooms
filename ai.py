@@ -165,7 +165,7 @@ class AStar:
 			print
 
 class Walker:
-	def __init__(self,start,bold=0,width=0,xchange=0):
+	def __init__(self,start,bold=0,width=0,xchange=0,ychange=0):
 		self.pos = list(start)
 		
 		self.bold = bold
@@ -175,7 +175,9 @@ class Walker:
 		self.life = 0
 		
 		self.xchange = xchange
+		self.ychange = ychange
 		self.lxchange = 0
+		self.lychange = 0
 
 	def walk(self):
 		for w in range(self.max_life):
@@ -209,11 +211,14 @@ class Walker:
 					ldir = self.path[len(self.path)-1]
 					self.pos[0] = ldir[0]
 					self.lxchange += 1
-								
-				#if self.directions[1] == 2:
-				#	if abs(self.pos[0]-self.ref[0])>=self.width:
-				#		self.pos[0] = ldir[0]
-				#		#print 'WIDTH BRO'
+			
+			if len(self.path) and self.ychange:
+				if self.lychange >= self.ychange:
+					self.lychange = 0
+				else:
+					ldir = self.path[len(self.path)-1]
+					self.pos[1] = ldir[1]
+					self.lychange += 1
 			
 			self.path.append(list(self.pos))
 
@@ -227,8 +232,8 @@ class RandomWalker(Walker):
 		self.max_life = var.walker_life
 
 class DirectionalWalker(Walker):
-	def __init__(self,start,direction,bold=0,xchange=0):
-		Walker.__init__(self,start=start,bold=bold,width=1,xchange=xchange)
+	def __init__(self,start,direction,bold=0,xchange=0,ychange=0):
+		Walker.__init__(self,start=start,bold=bold,width=1,xchange=xchange,ychange=ychange)
 		
 		if direction == 'north':
 			self.directions = [7,8,9]

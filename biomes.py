@@ -1,12 +1,13 @@
 import ai, var, controller
 
 class biome:
-	def __init__(self, loc, type):
+	def __init__(self, loc, type, dir=None):
 		self.type = type
 		self.loc = loc
+		self.walk_dir = dir
 		
 		if self.type == 'forest':
-			self.green = 50
+			self.green = 40
 		elif self.type == 'river':
 			self.green = 30
 	
@@ -17,5 +18,6 @@ class biome:
 			r.type = self.type
 			r.flags['sunlit'] = True
 			r.green = self.green - 10
+			r.walk_dir = self.walk_dir
 			r.randomize()
 			var._c.map[self.loc[0]+pos[0]][self.loc[1]+pos[1]] = r
