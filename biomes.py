@@ -10,6 +10,8 @@ class biome:
 			self.green = 40
 		elif self.type == 'river':
 			self.green = 30
+		elif self.type == 'lake':
+			self.green = 30
 	
 	def generate(self):
 		for pos in [[0,-1],[-1,0],[1,0],[0,1]]:

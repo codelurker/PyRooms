@@ -143,8 +143,9 @@ def parse_input(text):
 				var._c.log('[DEBUG] Town %s does not exist.' % text[1],error=1)
 			
 	elif text[0] == ord('z'):
-		var.camera[1]+=1
-		var._c.tick()
+		var._c.people[0].walk_to((var.player.loc[0],var.player.loc[1]))
+		#var.camera[1]+=1
+		#var._c.tick()
 	
 	else:
 		if len(var._c.errors)>1:

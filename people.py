@@ -192,11 +192,11 @@ class person:
 		elif dir == 'west':
 			_tloc[0] -= 1
 		
-		if var._c.map[_tloc[0]][_tloc[1]]:
+		if _tloc[0] < var.world_size[0] and _tloc[1] < var.world_size[1] and var._c.map[_tloc[0]][_tloc[1]]:
 			self.loc = _tloc
 			var._c.map[_tloc[0]][_tloc[1]].guests.append(self)
 			
-			if not self == var.player: var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))			
+			#if not self == var.player: var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))			
 			if var.debug: var._c.log('Moving %s, %s,%s' % (dir,str(self.loc[0]),str(self.loc[1])))
 		else:
 			if self == var.player:
@@ -213,7 +213,7 @@ class person:
 			return 'south'
 	
 	def walk_to(self, to):
-		p = ai.AStar(self.loc,to)
+		p = ai.AStar(self.loc,to,avoidType='lake')
 		self.path = p.getPath()
 		
 	def warp_to(self,place):
@@ -346,7 +346,6 @@ class person:
 		
 		#Movements.
 		if self.path:
-			#print 'AStar '+str(self.path.pop())
 			self.walk(self.get_walk_dir(self.path.pop()))
 
 class human(person):

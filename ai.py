@@ -28,6 +28,11 @@ class Node:
 				if self.astar.ignoreNone:
 					if not self.astar.map[npos[0]][npos[1]] in self.astar._cl:
 						_n.append(self.astar.map[npos[0]][npos[1]])
+				
+				elif self.astar.avoidType:
+					if self.astar.map[npos[0]][npos[1]] and not self.astar.map[npos[0]][npos[1]] in self.astar._cl:
+						_n.append(self.astar.map[npos[0]][npos[1]])
+				
 				else:
 					if not self.astar.map[npos[0]][npos[1]] == None and not self.astar.map[npos[0]][npos[1]] in self.astar._cl:
 						_n.append(self.astar.map[npos[0]][npos[1]])
@@ -35,7 +40,7 @@ class Node:
 		return _n
 
 class AStar:
-	def __init__(self,start,end,debug=False,ignoreNone=False):
+	def __init__(self,start,end,debug=False,ignoreNone=False,avoidType=False):
 		self.map = []
 		self.start = start
 		self.end = end
@@ -45,15 +50,23 @@ class AStar:
 		self.chance = 0
 		self.max_chances = var.astar_chances
 		self.ignoreNone = ignoreNone
+		self.avoidType = avoidType
 		
 		self.map = []
 		for x in range(0,var.world_size[0]):
 			_y = []
 			for y in range(0,var.world_size[1]):
-				if var._c.map[x][y] or ignoreNone:
-					_y.append(Node((x,y),self))
+				if avoidType==False:
+					if var._c.map[x][y] or ignoreNone:
+						_y.append(Node((x,y),self))
+					else:
+						_y.append(None)
 				else:
-					_y.append(None)
+					if var._c.map[x][y] and not var._c.map[x][y].type == self.avoidType:
+						_y.append(Node((x,y),self))
+					else:
+						_y.append(None)
+				
 			self.map.append(_y)
 		
 		if debug:
@@ -68,10 +81,12 @@ class AStar:
 	def run(self, startnode):
 		self.chance +=1
 		if self.chance >= self.max_chances:
-			print 'Failed.'
+			var._c.log('Failed.')
 		
 		#Add starting point to open list
 		self._ol.append(startnode)
+		
+		var._c.log(str(startnode.loc))
 		
 		#Get adjacent nodes
 		_l = startnode.getAdj()
@@ -221,6 +236,11 @@ class Walker:
 					self.lychange += 1
 			
 			self.path.append(list(self.pos))
+			
+			if self.bold:
+				_l = list(self.pos)
+				for pos in [[0,-1],[-1,0],[1,0],[0,1]]:
+					self.path.append((_l[0]+pos[0],_l[1]+pos[1]))
 
 class RandomWalker(Walker):
 	def __init__(self,start,bold=0):

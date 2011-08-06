@@ -18,14 +18,14 @@ if var.debug: _starttime = time.time()
 var._c.generate()
 var._c.make_human_race()
 #var._c.tick(300)
-var._c.tick_year(1)
+#var._c.tick_year(1)
 
 if var.debug: print 'Generation took %s' % (str(time.time()-_starttime))
 
 var.window.clear('log')
 var.window.refresh('log')
 var._c.draw_map()
-#var._c.log(str(var.window.get_height('log')))
+
 var.window.refresh('log')
 interpreter.get_input()
 var.window.end()

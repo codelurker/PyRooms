@@ -60,15 +60,33 @@ class room:
 						
 						var._c.map[_pos[0]][_pos[1]] = r
 		
+		elif self.type == 'lake':
+			_ws = []
+			for w in range(self.green/10):
+				_w = ai.RandomWalker(self.loc,bold=True)
+				_w.walk()
+				_ws.append(_w)
+			
+			for w in _ws:
+				for _pos in w.path:
+					if _pos[0]>0 and _pos[0]<var.world_size[0]-2 and _pos[1]>0 and _pos[1]<var.world_size[1]-2 and not var._c.map[_pos[0]][_pos[1]]:
+						r = room(_pos,var._c)
+						r.type = 'lake'
+						r.flags['sunlit'] = True
+						r.green = self.green - 10
+						r.randomize()
+						
+						var._c.map[_pos[0]][_pos[1]] = r
+		
 		elif self.type == 'river':
 			_ws = []
 			for w in range(self.green/10):
 				if self.walk_dir == 'south':
-					_xchange = 10
+					_xchange = 5
 					_ychange = 0
 				elif self.walk_dir == 'east':
 					_xchange = 0
-					_ychange = 5
+					_ychange = 15
 				
 				_w = ai.DirectionalWalker(self.loc,self.walk_dir,xchange=_xchange,ychange=_ychange)
 				_w.walk()
@@ -258,13 +276,12 @@ class controller:
 		#Biomes
 		self.forests = []
 		self.rivers = []
+		self.lakes = []
 	
 	def log(self,text,error=False):
 		if not error:
 			if len(text)>79:
 				var.window.clear('log')
-				#var.window.write('log',text,(0,4-len(text)/79))
-				#var.window.write('log',text,(0,var.window.get_height('log')-len(text)/79))
 				var.window.write('log',text,(0,var.window.get_height('log')-3))
 				var.window.refresh('log')
 			else:
@@ -294,21 +311,26 @@ class controller:
 		
 		for l in range(0,len(towns)-1):
 			p = ai.AStar([towns[l].loc[0]+(towns[l].size[0]/2),towns[l].loc[1]+(towns[l].size[1]/2)],(towns[l+1].loc[0]+(towns[l+1].size[0]/2),towns[l+1].loc[1]+(towns[l+1]\
-					.size[1]/2)),ignoreNone=True)
+					.size[1]/2)),avoidType='lake')
 			path.extend(p.getPath())
 		
 		for pos in path:
 			if self.map[pos[0]][pos[1]] == None:
 				self.build_road(pos)
 	
-	def make_biome(self,list,type):
-		for _f in range(4):
+	def make_biome(self,list,type,num=4):
+		for _f in range(num):
 			pos = None
 			
 			while not pos:
 				if type == 'forest':
 					_dir = None
 					_pos = (random.randint(1,var.world_size[0]-2),random.randint(1,var.world_size[1]-2))
+				
+				elif type == 'lake':
+					_dir = None
+					_pos = (random.randint(1,var.world_size[0]-2),random.randint(1,var.world_size[1]-2))
+				
 				elif type == 'river':
 					_dir = random.randint(1,2) 
 					
@@ -345,6 +367,10 @@ class controller:
 				ycols.append(None)
 			
 			self.map.append(ycols)
+
+		#Make rivers and lakes
+		#self.make_biome(self.rivers,'river',num=2)
+		self.make_biome(self.lakes,'lake',num=4)
 		
 		#Find some spots to place towns
 		self.towns = []
@@ -378,18 +404,16 @@ class controller:
 			self.towns.append(_t)
 		
 		#Connect towns
-		self.path_maker(self.towns)
+		#self.path_maker(self.towns)
 
-		#Create biomes
 		#Forests
 		self.make_biome(self.forests,'forest')
-		#self.make_biome(self.rivers,'river')
 		
 		#Make clearings
-		#for x in range(var.world_size[0]):
-		#	for y in range(var.world_size[1]):
-		#		if not self.map[x][y]:
-		#			self.build_clearing((x,y))
+		for x in range(var.world_size[0]):
+			for y in range(var.world_size[1]):
+				if not self.map[x][y]:
+					self.build_clearing((x,y))
 		
 		#Finish up by finding room exits
 		l = None
@@ -536,15 +560,26 @@ class controller:
 					_p.events['lastbirthday']=False
 	
 	def draw_map(self):
-		for y in range(var.world_size[1]):
-			for x in range(var.world_size[0]):
-				if self.map[x][y] and not (x,y) == tuple(var.player.loc):
+		for _y in range(var.camera[1],var.camera[1]+25):
+			for _x in range(var.camera[0],var.camera[0]+80):
+				x = int(_x)
+				y = int(_y)
+				
+				if x>=var.world_size[0]-1:
+					x = var.world_size[0]-1
+				
+				if y>=var.world_size[1]-1:
+					y = var.world_size[1]-1
+				
+				if self.map[x][y]:# and not (x,y) == tuple(var.player.loc):
 					if self.map[x][y].type == 'house':
 						var.window.write('main','H',(x-var.camera[0],y-var.camera[1]))
 					elif self.map[x][y].type == 'clearing':
-						var.window.set_color(3)
-						var.window.write('main',',',(x-var.camera[0],y-var.camera[1]))
-						var.window.set_color(1)
+						var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
+					elif self.map[x][y].type == 'lake':
+						var.window.set_color(4)
+						var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
+						var.window.set_color(1)					
 					elif self.map[x][y].type == 'river':
 						var.window.set_color(4)
 						var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
@@ -555,10 +590,18 @@ class controller:
 						var.window.set_color(2)
 						var.window.write('main','F',(x-var.camera[0],y-var.camera[1]))
 						var.window.set_color(1)
-				else:
-					if (x,y) == tuple(var.player.loc):
+				
+				for p in var._c.people:
+					if (x,y) == tuple(p.loc):
 						var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
-					else:
-						var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
+				
+				if (x,y) == tuple(var.player.loc):
+					var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
+				
+				#else:
+				#	if (x,y) == tuple(var.player.loc):
+				#		var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
+				#	else:
+				#		var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
 		
 		var.window.refresh('main')
