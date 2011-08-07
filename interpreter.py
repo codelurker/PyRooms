@@ -36,7 +36,11 @@ def parse_input(text):
 				text[0] = 'east'
 			
 			var.player.walk(text[0])
-			var._c.tick()
+			
+			if var.player.in_room:
+				var._c.tick()
+			else:
+				var._c.tick(ticks = 30)
 		
 		elif text[0] in ['take','pick'] and len(text) >= 2:
 			if text[1] == 'up':
@@ -146,14 +150,14 @@ def parse_input(text):
 		var._c.people[0].walk_to((var.player.loc[0],var.player.loc[1]))
 	
 	elif text[0] == ord('x'):
-		if var.in_room:
-			var.in_room = False
+		if var.player.in_room:
+			var.player.in_room = False
 			
 			var.window.clear('log')
 			var.window.clear('main')
 			var._c.draw_map()
 		else:
-			var.in_room = True
+			var.player.in_room = True
 			
 			var.window.clear('log')
 			var.window.clear('main')

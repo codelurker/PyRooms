@@ -22,6 +22,8 @@ class person:
 		self.loc = [0,0]
 		self.room_loc = [1,1]
 		self.birthplace = self.get_room()
+		self.in_room = False
+		self.move_ticks = 0
 		
 		self.condition = {'head':10,'eyes':10,\
 						'larm':10,'rarm':10,\
@@ -61,6 +63,7 @@ class person:
 						'seek_partner_age':None}
 		self.schedule = []
 		self.path = None
+		self.room_path = None
 		
 		self.description = ''
 	
@@ -180,7 +183,7 @@ class person:
 			self.get_room().generate()
 	
 	def walk(self,dir):
-		if var.in_room:
+		if self.in_room or (var.player.in_room and self.loc == var.player.loc):
 			_tloc = list(self.room_loc)
 		else:
 			try:
@@ -199,9 +202,43 @@ class person:
 		elif dir == 'west':
 			_tloc[0] -= 1
 		
-		if _tloc[0] < var.world_size[0] and _tloc[1] < var.world_size[1] and var._c.map[_tloc[0]][_tloc[1]] or var.in_room == True:
-			if var.in_room:
-				self.room_loc = _tloc
+		if _tloc[0] < var.world_size[0] and _tloc[1] < var.world_size[1] and var._c.map[_tloc[0]][_tloc[1]] or self.in_room == True:
+			if self.in_room or (var.player.in_room and self.loc == var.player.loc):
+				if _tloc[0] < 0:
+					var._c.map[self.loc[0]][self.loc[1]].guests.remove(self)
+					self.loc[0]-=1
+					self.room_loc[0] = var.room_size[0]-1
+					
+					var._c.map[self.loc[0]][self.loc[1]].guests.append(self)
+					self.enter_room()
+					
+				elif _tloc[0] == var.room_size[0]:
+					var._c.map[self.loc[0]][self.loc[1]].guests.remove(self)
+					self.loc[0]+=1
+					self.room_loc[0] = 0
+					
+					var._c.map[self.loc[0]][self.loc[1]].guests.append(self)
+					self.enter_room()
+				
+				elif _tloc[1] == 0:
+					var._c.map[self.loc[0]][self.loc[1]].guests.remove(self)
+					self.loc[1]-=1
+					self.room_loc[1] = var.room_size[1]-1
+					
+					var._c.map[self.loc[0]][self.loc[1]].guests.append(self)
+					self.enter_room()
+				
+				elif _tloc[1] == var.room_size[1]:
+					var._c.map[self.loc[0]][self.loc[1]].guests.remove(self)
+					self.loc[1]+=1
+					self.room_loc[1] = 1
+					
+					var._c.map[self.loc[0]][self.loc[1]].guests.append(self)
+					self.enter_room()
+				
+				else:
+					self.room_loc = _tloc
+				
 			else:
 				self.loc = _tloc
 				var._c.map[_tloc[0]][_tloc[1]].guests.append(self)
@@ -356,7 +393,17 @@ class person:
 		
 		#Movements.
 		if self.path:
-			self.walk(self.get_walk_dir(self.path.pop()))
+			if var.player.in_room and self.loc == var.player.loc:
+				self.walk(self.get_walk_dir(self.path[len(self.path)-1]))
+				
+			else:
+				if self.move_ticks == 0:
+					self.walk(self.get_walk_dir(self.path.pop()))
+					self.move_ticks = var.move_ticks
+					var._c.log(str(self.move_ticks))
+				else:
+					var._c.log(str(self.move_ticks))
+					self.move_ticks -= 1
 
 class human(person):
 	def __init__(self,player=False):

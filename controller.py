@@ -27,14 +27,46 @@ class room:
 		
 		self.flags = {'sunlit':False}
 		
-		#print self.type
-		
 	def generate(self):
 		for x in range(0,var.room_size[0]):
 			ycols = []
 			
 			for y in range(0,var.room_size[1]):
-				ycols.append(tile(self.loc))
+				t = tile(self.loc)
+				
+				if self.type == 'clearing':
+					if random.randint(0,10) == 1:
+						t.type = 'grass'
+					else:
+						t.type = 'clear'
+				
+				elif self.type == 'field':
+					if random.randint(0,4) <= 2:
+						t.type = 'grass'
+					else:
+						t.type = 'clear'
+				
+				elif self.type == 'forest':
+					green = self.get_green()
+					
+					if green == 0:
+						g = 30
+					elif green == 1:
+						g = 25
+					elif green == 2:
+						g = 15
+					elif green >= 3:
+						g = 10
+					
+					num = random.randint(0,g)
+					if num <= 2:
+						t.type = 'grass'
+					elif num == 3:
+						t.type = 'tree'
+					else:
+						t.type = 'clear'
+
+				ycols.append(t)
 			
 			self.map.append(ycols)
 	
@@ -129,6 +161,14 @@ class room:
 			_s = 'south' + _s
 		
 		return _s
+	
+	def get_green(self):
+		g = 0
+		for pos in [[0,-1],[-1,0],[1,0],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]]:
+			if self.controller.map[self.loc[0]+pos[0]][self.loc[1]+pos[1]].type == 'forest':
+				g += 1
+		
+		return g
 	
 	def find_exits(self):
 		for pos in [[0,-1],[-1,0],[1,0],[0,1]]:
@@ -416,11 +456,11 @@ class controller:
 		#Forests
 		self.make_biome(self.forests,'forest')
 		
-		#Make clearings
+		#Make field
 		for x in range(var.world_size[0]):
 			for y in range(var.world_size[1]):
 				if not self.map[x][y]:
-					self.build_clearing((x,y))
+					self.build_field((x,y))
 		
 		#Finish up by finding room exits
 		l = None
@@ -433,6 +473,14 @@ class controller:
 	def build_clearing(self,pos):
 		r = room(pos,self)
 		r.type = 'clearing'
+		r.flags['sunlit'] = True
+		r.randomize()
+		
+		self.map[pos[0]][pos[1]] = r
+	
+	def build_field(self,pos):
+		r = room(pos,self)
+		r.type = 'field'
 		r.flags['sunlit'] = True
 		r.randomize()
 		
@@ -567,7 +615,7 @@ class controller:
 					_p.events['lastbirthday']=False
 	
 	def draw_map(self):
-		if not var.in_room:
+		if not var.player.in_room:
 			for _y in range(var.camera[1],var.camera[1]+25):
 				for _x in range(var.camera[0],var.camera[0]+80):
 					x = int(_x)
@@ -583,7 +631,11 @@ class controller:
 						if self.map[x][y].type == 'house':
 							var.window.write('main','H',(x-var.camera[0],y-var.camera[1]))
 						elif self.map[x][y].type == 'clearing':
-							var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
+							var.window.set_color(5)
+							var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
+							var.window.set_color(1)
+						if self.map[x][y].type == 'field':
+							var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))						
 						elif self.map[x][y].type == 'lake':
 							var.window.set_color(4)
 							var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
@@ -605,20 +657,22 @@ class controller:
 					
 					if (x,y) == tuple(var.player.loc):
 						var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
-					
-					#else:
-					#	if (x,y) == tuple(var.player.loc):
-					#		var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
-					#	else:
-					#		var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
 		
 		else:
 			room = var.player.get_room()
 			
-			for y in range(0,var.room_size[1]-1):
-				for x in range(0,var.room_size[0]-1):
-					if room.map[x][y]:
+			for y in range(0,var.room_size[1]):
+				for x in range(0,var.room_size[0]):
+					if room.map[x][y].type == 'clear':
+						var.window.write('main',' ',(x,y))
+					elif room.map[x][y].type == 'grass':
+						var.window.set_color(3)
 						var.window.write('main','.',(x,y))
+						var.window.set_color(1)
+					elif room.map[x][y].type == 'tree':
+						var.window.set_color(2)
+						var.window.write('main','F',(x,y))
+						var.window.set_color(1)
 					
 					for guest in room.guests:
 						if (x,y) == tuple(guest.room_loc):
