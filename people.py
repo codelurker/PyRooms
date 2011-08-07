@@ -400,9 +400,7 @@ class person:
 				if self.move_ticks == 0:
 					self.walk(self.get_walk_dir(self.path.pop()))
 					self.move_ticks = var.move_ticks
-					var._c.log(str(self.move_ticks))
 				else:
-					var._c.log(str(self.move_ticks))
 					self.move_ticks -= 1
 
 class human(person):

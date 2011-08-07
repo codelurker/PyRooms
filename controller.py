@@ -6,8 +6,8 @@ import jobs as job
 random.seed()
 
 class tile:
-	def __init__(self, loc):
-		self.loc = loc
+	def __init__(self):
+		pass#self.loc = loc
 
 class room:
 	def __init__(self, loc, controller):
@@ -32,7 +32,50 @@ class room:
 			ycols = []
 			
 			for y in range(0,var.room_size[1]):
-				t = tile(self.loc)
+				#t = tile()#tile(self.loc)
+				
+				if self.type == 'clearing':
+					if random.randint(0,10) == 1:
+						type = 'grass'
+					else:
+						type = 'clear'
+				
+				elif self.type == 'field':
+					if random.randint(0,4) <= 2:
+						type = 'grass'
+					else:
+						type = 'clear'
+				
+				elif self.type == 'forest':
+					green = self.get_green()
+					
+					if green == 0:
+						g = 30
+					elif green == 1:
+						g = 25
+					elif green == 2:
+						g = 15
+					elif green >= 3:
+						g = 10
+					
+					num = random.randint(0,g)
+					if num <= 2:
+						type = 'grass'
+					elif num == 3:
+						type = 'tree'
+					else:
+						type = 'clear'
+
+				ycols.append(type)
+			
+			self.map.append(ycols)
+	
+	def generate_old(self):
+		for x in range(0,var.room_size[0]):
+			ycols = []
+			
+			for y in range(0,var.room_size[1]):
+				t = tile()#tile(self.loc)
 				
 				if self.type == 'clearing':
 					if random.randint(0,10) == 1:
@@ -663,13 +706,13 @@ class controller:
 			
 			for y in range(0,var.room_size[1]):
 				for x in range(0,var.room_size[0]):
-					if room.map[x][y].type == 'clear':
+					if room.map[x][y] == 'clear':
 						var.window.write('main',' ',(x,y))
-					elif room.map[x][y].type == 'grass':
+					elif room.map[x][y] == 'grass':
 						var.window.set_color(3)
 						var.window.write('main','.',(x,y))
 						var.window.set_color(1)
-					elif room.map[x][y].type == 'tree':
+					elif room.map[x][y] == 'tree':
 						var.window.set_color(2)
 						var.window.write('main','F',(x,y))
 						var.window.set_color(1)
@@ -677,5 +720,22 @@ class controller:
 					for guest in room.guests:
 						if (x,y) == tuple(guest.room_loc):
 							var.window.write('main','@',(x,y))
+			
+			#for y in range(0,var.room_size[1]):
+			#	for x in range(0,var.room_size[0]):
+			#		if room.map[x][y].type == 'clear':
+			#			var.window.write('main',' ',(x,y))
+			#		elif room.map[x][y].type == 'grass':
+			#			var.window.set_color(3)
+			#			var.window.write('main','.',(x,y))
+			#			var.window.set_color(1)
+			#		elif room.map[x][y].type == 'tree':
+			#			var.window.set_color(2)
+			#			var.window.write('main','F',(x,y))
+			#			var.window.set_color(1)
+			#		
+			#		for guest in room.guests:
+			#			if (x,y) == tuple(guest.room_loc):
+			#				var.window.write('main','@',(x,y))
 		
 		var.window.refresh('main')
