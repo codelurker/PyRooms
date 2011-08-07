@@ -5,6 +5,10 @@ import jobs as job
 
 random.seed()
 
+class tile:
+	def __init__(self, loc):
+		self.loc = loc
+
 class room:
 	def __init__(self, loc, controller):
 		self.name = 'The TesterToaster House'
@@ -23,11 +27,14 @@ class room:
 		
 		self.flags = {'sunlit':False}
 		
+		#print self.type
+		
+	def generate(self):
 		for x in range(0,var.room_size[0]):
 			ycols = []
 			
 			for y in range(0,var.room_size[1]):
-				ycols.append({'object':0})
+				ycols.append(tile(self.loc))
 			
 			self.map.append(ycols)
 	
@@ -560,48 +567,61 @@ class controller:
 					_p.events['lastbirthday']=False
 	
 	def draw_map(self):
-		for _y in range(var.camera[1],var.camera[1]+25):
-			for _x in range(var.camera[0],var.camera[0]+80):
-				x = int(_x)
-				y = int(_y)
-				
-				if x>=var.world_size[0]-1:
-					x = var.world_size[0]-1
-				
-				if y>=var.world_size[1]-1:
-					y = var.world_size[1]-1
-				
-				if self.map[x][y]:# and not (x,y) == tuple(var.player.loc):
-					if self.map[x][y].type == 'house':
-						var.window.write('main','H',(x-var.camera[0],y-var.camera[1]))
-					elif self.map[x][y].type == 'clearing':
-						var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
-					elif self.map[x][y].type == 'lake':
-						var.window.set_color(4)
-						var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
-						var.window.set_color(1)					
-					elif self.map[x][y].type == 'river':
-						var.window.set_color(4)
-						var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
-						var.window.set_color(1)
-					elif self.map[x][y].type == 'road':
-						var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
-					elif self.map[x][y].type == 'forest':
-						var.window.set_color(2)
-						var.window.write('main','F',(x-var.camera[0],y-var.camera[1]))
-						var.window.set_color(1)
-				
-				for p in var._c.people:
-					if (x,y) == tuple(p.loc):
+		if not var.in_room:
+			for _y in range(var.camera[1],var.camera[1]+25):
+				for _x in range(var.camera[0],var.camera[0]+80):
+					x = int(_x)
+					y = int(_y)
+					
+					if x>=var.world_size[0]-1:
+						x = var.world_size[0]-1
+					
+					if y>=var.world_size[1]-1:
+						y = var.world_size[1]-1
+					
+					if self.map[x][y]:# and not (x,y) == tuple(var.player.loc):
+						if self.map[x][y].type == 'house':
+							var.window.write('main','H',(x-var.camera[0],y-var.camera[1]))
+						elif self.map[x][y].type == 'clearing':
+							var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
+						elif self.map[x][y].type == 'lake':
+							var.window.set_color(4)
+							var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
+							var.window.set_color(1)					
+						elif self.map[x][y].type == 'river':
+							var.window.set_color(4)
+							var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
+							var.window.set_color(1)
+						elif self.map[x][y].type == 'road':
+							var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
+						elif self.map[x][y].type == 'forest':
+							var.window.set_color(2)
+							var.window.write('main','F',(x-var.camera[0],y-var.camera[1]))
+							var.window.set_color(1)
+					
+					for p in var._c.people:
+						if (x,y) == tuple(p.loc):
+							var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
+					
+					if (x,y) == tuple(var.player.loc):
 						var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
-				
-				if (x,y) == tuple(var.player.loc):
-					var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
-				
-				#else:
-				#	if (x,y) == tuple(var.player.loc):
-				#		var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
-				#	else:
-				#		var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
+					
+					#else:
+					#	if (x,y) == tuple(var.player.loc):
+					#		var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
+					#	else:
+					#		var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
+		
+		else:
+			room = var.player.get_room()
+			
+			for y in range(0,var.room_size[1]-1):
+				for x in range(0,var.room_size[0]-1):
+					if room.map[x][y]:
+						var.window.write('main','.',(x,y))
+					
+					for guest in room.guests:
+						if (x,y) == tuple(guest.room_loc):
+							var.window.write('main','@',(x,y))
 		
 		var.window.refresh('main')

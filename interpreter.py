@@ -144,8 +144,21 @@ def parse_input(text):
 			
 	elif text[0] == ord('z'):
 		var._c.people[0].walk_to((var.player.loc[0],var.player.loc[1]))
-		#var.camera[1]+=1
-		#var._c.tick()
+	
+	elif text[0] == ord('x'):
+		if var.in_room:
+			var.in_room = False
+			
+			var.window.clear('log')
+			var.window.clear('main')
+			var._c.draw_map()
+		else:
+			var.in_room = True
+			
+			var.window.clear('log')
+			var.window.clear('main')
+			var.player.enter_room()
+			var._c.draw_map()
 	
 	else:
 		if len(var._c.errors)>1:

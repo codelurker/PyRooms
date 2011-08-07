@@ -5,13 +5,14 @@ debug = False
 debug_console = False
 running = True
 interactive = False
+in_room = False
 astar_chances = 900
 walker_life = 10
 camera = [0,0]
 
 #Settings
 world_size = (110,80)
-room_size = (79,24)
+room_size = (80,24)
 biome_distance = 20
 towns = 5
 

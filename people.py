@@ -20,6 +20,7 @@ class person:
 		self.children = []
 		self.siblings = []
 		self.loc = [0,0]
+		self.room_loc = [1,1]
 		self.birthplace = self.get_room()
 		
 		self.condition = {'head':10,'eyes':10,\
@@ -89,7 +90,6 @@ class person:
 			else:
 				_s += ' nothing, '
 			
-			#_s += '%s appears to be ' % (_ref[1][0].upper()+_ref[1][1:])
 			_s += 'appears to be '
 			neg = -1
 			if self.age <= 12:
@@ -175,13 +175,20 @@ class person:
 		self.schedule.append({'time':time,'event':event,'args':args})
 		if var.debug: print '[Schedule] Event added by %s %s.' % (self.name[0],self.name[1])
 	
+	def enter_room(self):
+		if not len(self.get_room().map):
+			self.get_room().generate()
+	
 	def walk(self,dir):
-		try:
-			var._c.map[self.loc[0]][self.loc[1]].guests.remove(self)
-		except:
-			var._c.log('Guest remove for %s failed with ID[%s].' % (self.get_room().name, self.id), error=True)
-		
-		_tloc = list(self.loc)
+		if var.in_room:
+			_tloc = list(self.room_loc)
+		else:
+			try:
+				var._c.map[self.loc[0]][self.loc[1]].guests.remove(self)
+			except:
+				var._c.log('Guest remove for %s failed with ID[%s].' % (self.get_room().name, self.id), error=True)
+				
+			_tloc = list(self.loc)
 		
 		if dir == 'north':
 			_tloc[1] -= 1
@@ -192,9 +199,12 @@ class person:
 		elif dir == 'west':
 			_tloc[0] -= 1
 		
-		if _tloc[0] < var.world_size[0] and _tloc[1] < var.world_size[1] and var._c.map[_tloc[0]][_tloc[1]]:
-			self.loc = _tloc
-			var._c.map[_tloc[0]][_tloc[1]].guests.append(self)
+		if _tloc[0] < var.world_size[0] and _tloc[1] < var.world_size[1] and var._c.map[_tloc[0]][_tloc[1]] or var.in_room == True:
+			if var.in_room:
+				self.room_loc = _tloc
+			else:
+				self.loc = _tloc
+				var._c.map[_tloc[0]][_tloc[1]].guests.append(self)
 			
 			#if not self == var.player: var._c.log(self.parse(words.get_phrase('room_exit'),search={'find':'%direction%','replace':dir}))			
 			if var.debug: var._c.log('Moving %s, %s,%s' % (dir,str(self.loc[0]),str(self.loc[1])))
