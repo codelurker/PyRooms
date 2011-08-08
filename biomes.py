@@ -1,4 +1,4 @@
-import ai, var, controller
+import ai, var, rooms
 
 class biome:
 	def __init__(self, loc, type, dir=None):
@@ -15,7 +15,7 @@ class biome:
 	
 	def generate(self):
 		for pos in [[0,-1],[-1,0],[1,0],[0,1]]:
-			r = controller.room((self.loc[0]+pos[0],self.loc[1]+pos[1]),var._c)
+			r = rooms.room((self.loc[0]+pos[0],self.loc[1]+pos[1]),var._c)
 			r.parent_pos = self.loc
 			r.type = self.type
 			r.flags['sunlit'] = True
