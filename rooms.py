@@ -13,6 +13,7 @@ class room:
 		
 		self.objects = []
 		self.guests = []
+		self.dungeons = []
 				
 		self.map = []
 		self.exits = []

@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import functions, people, var, ai, rooms, words, towns, biomes, random
+import functions, people, var, ai, rooms, towns, dungeons, words,  biomes, random
 import items as item
 import jobs as job
 
@@ -101,6 +101,15 @@ class controller:
 		for b in list:
 			b.generate()
 	
+	def make_dungeon(self,num=1):
+		for _f in range(num):
+			d = dungeons.dungeon((2,2))
+			d.generate()
+			d.iterate()
+			self.map[1][1].generate()
+			self.map[1][1].dungeons.append(d)
+			self.map[1][1].map[2][2]='stairsdown'
+	
 	def generate(self):
 		#Make a blank map
 		for x in range(var.world_size[0]):
@@ -158,6 +167,9 @@ class controller:
 			for y in range(var.world_size[1]):
 				if not self.map[x][y]:
 					self.build_field((x,y))
+
+		#Dungeons
+		self.make_dungeon()
 		
 		#Finish up by finding room exits
 		l = None
@@ -239,7 +251,7 @@ class controller:
 		adam.birthplace = _t
 		eve.warp_to(_t.loc)
 		eve.birthplace = _t
-		var.player.warp_to(_t.loc)
+		var.player.warp_to([1,1])
 		var.player.birthplace = var.player
 		
 		var.camera[0] = var.player.loc[0]-40
@@ -277,8 +289,13 @@ class controller:
 				for _p in self.people:
 					_p.events['lastbirthday']=False
 		
-		var.camera[0] = var.player.loc[0]-40
-		var.camera[1] = var.player.loc[1]-12
+		if not var.player.in_room:
+			var.camera[0] = var.player.loc[0]-(var.win_size[0]/2)
+			var.camera[1] = var.player.loc[1]-(var.win_size[1]/2)
+		elif var.player.in_dungeon:
+			var.camera[0] = var.player.room_loc[0]-(var.win_size[0]/2)
+			var.camera[1] = var.player.room_loc[1]-(var.win_size[1]/2)
+		
 		if var.camera[0]<0: var.camera[0] = 0
 		if var.camera[1]<0: var.camera[1] = 0
 		
@@ -355,24 +372,69 @@ class controller:
 					if (x,y) == tuple(var.player.loc):
 						var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
 		
-		else:
+		elif var.player.in_room and not var.player.in_dungeon:
+			#if var.player.in_dungeon:
+			#	room = var.player.get_room().dungeons[0]
 			room = var.player.get_room()
 			
 			for y in range(0,var.room_size[1]):
 				for x in range(0,var.room_size[0]):
-					if room.map[x][y] == 'clear':
-						var.window.write('main',' ',(x+28,y))
+					if room.map[x][y] == 'clear' or room.map[x][y] == 'floor':
+						var.window.write('main',' ',(x+var.offset,y))
 					elif room.map[x][y] == 'grass':
 						var.window.set_color(3)
-						var.window.write('main','.',(x+28,y))
+						var.window.write('main','.',(x+var.offset,y))
 						var.window.set_color(1)
 					elif room.map[x][y] == 'tree':
 						var.window.set_color(2)
-						var.window.write('main','F',(x+28,y))
+						var.window.write('main','F',(x+var.offset,y))
+						var.window.set_color(1)
+					elif room.map[x][y] == 'wall':
+						var.window.write('main','#',(x+var.offset,y))
+					elif room.map[x][y] == 'stairsdown':
+						var.window.set_color(6)
+						var.window.write('main','>',(x+var.offset,y))
 						var.window.set_color(1)
 					
 					for guest in room.guests:
 						if (x,y) == tuple(guest.room_loc):
-							var.window.write('main','@',(x+28,y))
+							var.window.write('main','@',(x+var.offset,y))
+		
+		elif var.player.in_dungeon:
+			room = var.player.get_room().dungeons[0]
+			
+			for _y in range(var.camera[1],var.camera[1]+var.win_size[1]):
+				for _x in range(var.camera[0],var.camera[0]+var.win_size[0]):
+					x = int(_x)
+					y = int(_y)
+					
+					if x>=var.dungeon_size[0]-1:
+						x = var.dungeon_size[0]-1
+					
+					if y>=var.dungeon_size[1]-1:
+						y = var.dungeon_size[1]-1
+					
+					if room.map[x][y] == 'clear' or room.map[x][y] == 'floor':
+						var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
+					elif room.map[x][y] == 'grass':
+						var.window.set_color(3)
+						var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
+						var.window.set_color(1)
+					elif room.map[x][y] == 'tree':
+						var.window.set_color(2)
+						var.window.write('main','F',(x-var.camera[0],y-var.camera[1]))
+						var.window.set_color(1)
+					elif room.map[x][y] == 'wall':
+						var.window.set_color(6)
+						var.window.write('main','#',(x-var.camera[0],y-var.camera[1]))
+						var.window.set_color(1)
+					elif room.map[x][y] == 'stairsdown':
+						var.window.set_color(6)
+						var.window.write('main','>',(x-var.camera[0],y-var.camera[1]))
+						var.window.set_color(1)
+					
+					for guest in room.guests:
+						if (x,y) == tuple(guest.room_loc):
+							var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
 		
 		var.window.refresh('main')

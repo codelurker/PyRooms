@@ -10,8 +10,11 @@ walker_life = 10
 camera = [0,0]
 
 #Settings
+win_size = (80,24)
 world_size = (110,80)
 room_size = (24,24)
+dungeon_size = (80,80)
+offset = (win_size[0]/2)-(room_size[0]/2)
 biome_distance = 20
 towns = 5
 move_ticks = 30

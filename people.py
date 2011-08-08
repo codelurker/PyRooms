@@ -23,6 +23,7 @@ class person:
 		self.room_loc = [1,1]
 		self.birthplace = self.get_room()
 		self.in_room = False
+		self.in_dungeon = False
 		self.move_ticks = 0
 		
 		self.condition = {'head':10,'eyes':10,\
@@ -182,6 +183,14 @@ class person:
 		if not len(self.get_room().map):
 			self.get_room().generate()
 	
+	def enter_dungeon(self,dungeon):
+		var.player.in_dungeon = True
+		dungeon.guests.append(self)
+	
+	def leave_dungeon(self,dungeon):
+		var.player.in_dungeon = False
+		dungeon.guests.remove(self)
+	
 	def walk(self,dir):
 		if self.in_room or (var.player.in_room and self.loc == var.player.loc):
 			_tloc = list(self.room_loc)
@@ -203,7 +212,7 @@ class person:
 			_tloc[0] -= 1
 		
 		if _tloc[0] < var.world_size[0] and _tloc[1] < var.world_size[1] and var._c.map[_tloc[0]][_tloc[1]] or self.in_room == True:
-			if self.in_room or (var.player.in_room and self.loc == var.player.loc):
+			if self.in_room and not self.in_dungeon or (var.player.in_room and self.loc == var.player.loc and not var.player.in_dungeon):
 				if _tloc[0] < 0:
 					var._c.map[self.loc[0]][self.loc[1]].guests.remove(self)
 					self.loc[0]-=1
@@ -238,7 +247,10 @@ class person:
 				
 				else:
 					self.room_loc = _tloc
-				
+			
+			elif self.in_dungeon:
+				self.room_loc = _tloc
+			
 			else:
 				self.loc = _tloc
 				var._c.map[_tloc[0]][_tloc[1]].guests.append(self)
