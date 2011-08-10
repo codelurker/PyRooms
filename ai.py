@@ -24,7 +24,7 @@ class Node:
 		for pos in [[0,-1],[-1,0],[1,0],[0,1]]:
 			npos = [self.loc[0]+pos[0],self.loc[1]+pos[1]]
 			
-			if npos[0] >= 0 and npos[0] <= var.world_size[0] and npos[1] >= 0 and npos[1] <= var.world_size[1]:
+			if npos[0] >= 0 and npos[0] <= self.astar.size[0]-1 and npos[1] >= 0 and npos[1] <= self.astar.size[1]-1:
 				if self.astar.ignoreNone:
 					if not self.astar.map[npos[0]][npos[1]] in self.astar._cl:
 						_n.append(self.astar.map[npos[0]][npos[1]])
@@ -36,12 +36,21 @@ class Node:
 				else:
 					if not self.astar.map[npos[0]][npos[1]] == None and not self.astar.map[npos[0]][npos[1]] in self.astar._cl:
 						_n.append(self.astar.map[npos[0]][npos[1]])
+						#var._c.log('come on')
+					else:
+						#var._c.log('not workin')
+						pass
 		
 		return _n
 
 class AStar:
-	def __init__(self,start,end,debug=False,ignoreNone=False,avoidType=False):
-		self.map = []
+	def __init__(self,start,end,omap=None,size=var.world_size,room=False,debug=False,ignoreNone=False,avoidType=False):
+		if omap == None:
+			omap = var._c.map
+		else:
+			var._c.log('Generating ASTAR using non-world map.')
+
+		self.size = size
 		self.start = start
 		self.end = end
 		self._ol = []
@@ -53,21 +62,44 @@ class AStar:
 		self.avoidType = avoidType
 		
 		self.map = []
-		for x in range(0,var.world_size[0]):
-			_y = []
-			for y in range(0,var.world_size[1]):
-				if avoidType==False:
-					if var._c.map[x][y] or ignoreNone:
-						_y.append(Node((x,y),self))
+		
+		var._c.log('%s,%s to %s,%s' % (start[0],start[1],end[0],end[1]))
+		if start[0] == end[0] and start[1] == end[1]:
+			var._c.log('HOLY SHIT SAME THING!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+			return None
+		
+		if not room:
+			for x in range(0,self.size[0]):
+				_y = []
+				for y in range(0,self.size[1]):
+					if avoidType==False:
+						if omap[x][y] or ignoreNone:
+							_y.append(Node((x,y),self))
+						else:
+							_y.append(None)
 					else:
-						_y.append(None)
-				else:
-					if var._c.map[x][y] and not var._c.map[x][y].type == self.avoidType:
-						_y.append(Node((x,y),self))
+						if omap[x][y] and not omap[x][y].type == self.avoidType:
+							_y.append(Node((x,y),self))
+						else:
+							_y.append(None)
+					
+				self.map.append(_y)
+		else:
+			for x in range(0,self.size[0]):
+				_y = []
+				for y in range(0,self.size[1]):
+					if avoidType==False:
+						if omap[x][y] or ignoreNone:
+							_y.append(Node((x,y),self))
+						else:
+							_y.append(None)
 					else:
-						_y.append(None)
-				
-			self.map.append(_y)
+						if omap[x][y] and not omap[x][y] == self.avoidType:
+							_y.append(Node((x,y),self))
+						else:
+							_y.append(None)
+					
+				self.map.append(_y)
 		
 		if debug:
 			import time
@@ -86,7 +118,7 @@ class AStar:
 		#Add starting point to open list
 		self._ol.append(startnode)
 		
-		var._c.log(str(startnode.loc))
+		#var._c.log(str(startnode.loc))
 		
 		#Get adjacent nodes
 		_l = startnode.getAdj()
@@ -147,7 +179,8 @@ class AStar:
 			
 			p = node.parent
 		
-		path.pop()
+		if path:
+			path.pop()
 		return path
 	
 	def drawPath(self,node):

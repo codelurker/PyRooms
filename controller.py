@@ -249,8 +249,10 @@ class controller:
 		_t = self.get_random_town()
 		adam.warp_to(_t.loc)
 		adam.birthplace = _t
+		adam.enter_room()
 		eve.warp_to(_t.loc)
 		eve.birthplace = _t
+		eve.enter_room()
 		var.player.warp_to(list(_t.loc))
 		var.player.birthplace = var.player
 		var.player.add_item(item.get_item('light'))
@@ -390,7 +392,13 @@ class controller:
 						var.window.write('main','F',(x+var.offset,y))
 						var.window.set_color(1)
 					elif room.map[x][y] == 'wall':
+						var.window.set_color(7)
 						var.window.write('main','#',(x+var.offset,y))
+						var.window.set_color(1)
+					elif room.map[x][y] == 'floor':
+						var.window.set_color(8)
+						var.window.write('main','.',(x+var.offset,y))
+						var.window.set_color(1)
 					elif room.map[x][y] == 'stairsdown':
 						var.window.set_color(6)
 						var.window.write('main','>',(x+var.offset,y))
@@ -398,7 +406,7 @@ class controller:
 					
 					for item in room.objects:
 						if (x,y) == tuple(item.room_loc):
-							var.window.write('main','C',(x+var.offset,y))
+							var.window.write('main',item.icon,(x+var.offset,y))
 					
 					for guest in room.guests:
 						if (x,y) == tuple(guest.room_loc):

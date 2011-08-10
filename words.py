@@ -178,12 +178,15 @@ def load_config_files(flush=False):
 			elif file == 'items':
 				if _j['type'] == 'light':
 					_i = items.light()
+					_i.icon = _j['icon']
 				elif _j['type'] == 'table':
 					_i = items.table()
+					_i.icon = _j['icon']
 				elif _j['type'] == 'foliage':
 					_i = items.foliage()
 				elif _j['type'] == 'window':
 					_i = items.window()
+					_i.icon = 'w'
 				elif _j['type'] == 'clothing':
 					_i = items.clothing()
 					_i.madeof = _j['madeof']

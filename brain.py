@@ -1,5 +1,4 @@
 import var
-
 class brain:
 	def __init__(self, owner):
 		self.owner = owner
@@ -172,6 +171,12 @@ class brain:
 		for i in range(len(self.owner.likes)):
 			_v += obj.stat[self.owner.likes[i]] * ((len(self.owner.likes)+1)-i)
 		
+		for i in range(len(self.owner.wants)):
+			if self.owner.wants[i]=='rest' and obj.name=='chair':
+				_v+= (100 / self.owner.get_dist_to(obj.room_loc))
+				#var._c.log(self.owner.name[0] + ': %s valued at %s' % (obj.name,_v))
+			#_v += obj.stat[self.owner.likes[i]] * ((len(self.owner.likes)+1)-i)
+		
 		#var._c.log(self.owner.name[0] + ': %s valued at %s' % (obj.name,_v))
 		return _v
 	
@@ -187,9 +192,14 @@ class brain:
 		
 		#Assuming friendly for now...
 		love = (1000 * (obj.get_perc_strength() / self.get_perc_strength())) / float(_dist)
+		
+		if self.owner.spouse == obj.owner:
+			#var._c.log(self.owner.name[0]+': I am married to %s' % (obj.owner.name[0]))
+			love+=500
+		
 		fear = False
 		
-		#var._c.log(self.owner.name[0] + ': friendship with %s is %s' % (obj.owner.name,love))
+		#var._c.log(self.owner.name[0] + ': friendship with %s is %s' % (obj.owner.name[0],love))
 		
 		return [love,fear]
 
@@ -203,10 +213,20 @@ class brain:
 				self.need = {'obj':o,'value':value}
 		
 		for a in self.owner.get_room().guests:
+			if a == self.owner: break
+
 			_r = self.examine_person(a.brain)
 			
 			if _r[0] and self.love == None or _r[0] > self.love['value']:
 				self.love = {'obj':a,'value':_r[0]}						
 		
-		#var._c.log(self.owner.name[0]+': Need %s' % self.need['obj'].name)
-		#var._c.log(self.owner.name[0]+': Love %s' % self.love['obj'].name[0])
+		if self.need:
+			#var._c.log(self.owner.name[0]+': Need %s' % self.need['obj'].name)
+			if self.owner.room_loc[0] == self.need['obj'].room_loc[0] and self.owner.room_loc[1] == self.need['obj'].room_loc[1]:
+				pass
+			else:
+				if not self.owner.path:
+					self.owner.walk_to_room((self.need['obj'].room_loc[0],self.need['obj'].room_loc[1]))
+
+		#if self.love:
+		#	var._c.log(self.owner.name[0]+': Love %s' % self.love['obj'].name[0])

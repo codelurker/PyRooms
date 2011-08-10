@@ -20,12 +20,13 @@ class person:
 		self.children = []
 		self.siblings = []
 		self.loc = [0,0]
-		self.room_loc = [1,1]
+		self.room_loc = [2,2]
 		self.birthplace = self.get_room()
 		self.in_room = False
 		self.in_dungeon = False
 		self.move_ticks = 0
 		
+		self.wants = ['rest']
 		self.likes = ['price','damage','defense']
 		
 		self.condition = {'head':10,'eyes':10,\
@@ -184,6 +185,7 @@ class person:
 		if var.debug: print '[Schedule] Event added by %s %s.' % (self.name[0],self.name[1])
 	
 	def enter_room(self):
+		self.in_room = True
 		if not len(self.get_room().map):
 			self.get_room().generate()
 			self.get_room().tick()
@@ -197,7 +199,7 @@ class person:
 		dungeon.guests.remove(self)
 	
 	def walk(self,dir):
-		if self.in_room or (var.player.in_room and self.loc == var.player.loc):
+		if self.in_room:# or (var.player.in_room and self.loc == var.player.loc):
 			_tloc = list(self.room_loc)
 		else:
 			try:
@@ -217,7 +219,7 @@ class person:
 			_tloc[0] -= 1
 		
 		if _tloc[0] < var.world_size[0] and _tloc[1] < var.world_size[1] and var._c.map[_tloc[0]][_tloc[1]] or self.in_room == True:
-			if self.in_room and not self.in_dungeon or (var.player.in_room and self.loc == var.player.loc and not var.player.in_dungeon):
+			if self.in_room:# and not self.in_dungeon or (var.player.in_room and self.loc == var.player.loc and not var.player.in_dungeon):
 				if _tloc[0] < 0:
 					var._c.map[self.loc[0]][self.loc[1]].guests.remove(self)
 					self.loc[0]-=1
@@ -251,10 +253,19 @@ class person:
 					self.enter_room()
 				
 				else:
-					self.room_loc = _tloc
-					if self == var.player:
-						for i in self.items:
-							i.room_loc = self.room_loc
+					if not self.get_room().map[_tloc[0]][_tloc[1]] == 'wall':
+						self.room_loc = _tloc
+						if self == var.player:
+							for i in self.items:
+								i.room_loc = self.room_loc
+							
+							var.window.clear('status')
+							var.window.refresh('status')
+							
+							for o in self.get_room().objects:
+								if o.room_loc == self.room_loc:
+									var.window.write('status','You see a %s here.' % (o.name),(0,1))
+									var.window.refresh('status')
 			
 			elif self.in_dungeon:
 				self.room_loc = _tloc
@@ -269,19 +280,35 @@ class person:
 			if self == var.player:
 				var._c.log('There is nothing in that direction.')
 	
-	def get_walk_dir(self, npos):
-		if npos[0]-self.loc[0] == -1:
-			return 'west'
-		elif npos[0]-self.loc[0] == 1:
-			return 'east'
-		elif npos[1]-self.loc[1] == -1:
-			return 'north'
-		elif npos[1]-self.loc[1] == 1:
-			return 'south'
+	def get_walk_dir(self, npos, room=False):
+		if room:
+			if npos[0]-self.room_loc[0] == -1:
+				return 'west'
+			elif npos[0]-self.room_loc[0] == 1:
+				return 'east'
+			elif npos[1]-self.room_loc[1] == -1:
+				return 'north'
+			elif npos[1]-self.room_loc[1] == 1:
+				return 'south'
+		else:
+			if npos[0]-self.loc[0] == -1:
+				return 'west'
+			elif npos[0]-self.loc[0] == 1:
+				return 'east'
+			elif npos[1]-self.loc[1] == -1:
+				return 'north'
+			elif npos[1]-self.loc[1] == 1:
+				return 'south'
 	
 	def walk_to(self, to):
 		p = ai.AStar(self.loc,to,avoidType='lake')
 		self.path = p.getPath()
+	
+	def walk_to_room(self, to):
+		var._c.log('Going from %s,%s to %s,%s' % (self.room_loc[0],self.room_loc[1],to[0],to[1]))
+		p = ai.AStar(self.room_loc,to,self.get_room().map,room=True,size=var.room_size)
+		self.path = p.getPath()
+		#self.path.reverse()
 		
 	def warp_to(self,place):
 		self.loc = place
@@ -289,6 +316,9 @@ class person:
 	
 	def get_room(self):
 		return var._c.map[self.loc[0]][self.loc[1]]
+	
+	def get_dist_to(self,pos):
+		return (abs(self.room_loc[0]-pos[0])+abs(self.room_loc[1]-pos[1]))+1
 	
 	def find_partner(self):
 		for person in var._c.people:
@@ -418,8 +448,11 @@ class person:
 		
 		#Movements.
 		if self.path:
-			if var.player.in_room and self.loc == var.player.loc:
-				self.walk(self.get_walk_dir(self.path[len(self.path)-1]))
+			if self.in_room:# and self.loc == var.player.loc:
+				_p = self.path.pop()
+				_w = self.get_walk_dir(_p,room=True)
+				self.walk(_w)
+				#self.walk(self.get_walk_dir(self.path.pop()))
 				
 			else:
 				if self.move_ticks == 0:

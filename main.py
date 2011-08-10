@@ -5,6 +5,7 @@ import cursed
 
 var.window = cursed.cursed()
 var.window.create_window('log',(0,19),(79,24),pad=True)
+var.window.create_window('status',(0,24),(79,25),pad=True)
 
 var._c = controller.controller()
 

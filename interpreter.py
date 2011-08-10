@@ -147,7 +147,10 @@ def parse_input(text):
 				var._c.log('[DEBUG] Town %s does not exist.' % text[1],error=1)
 			
 	elif text[0] == ord('z'):
-		var._c.people[0].walk_to((var.player.loc[0],var.player.loc[1]))
+		if not var.player.in_room:
+			var._c.people[0].walk_to((var.player.loc[0],var.player.loc[1]))
+		else:
+			var._c.people[0].walk_to_room((var.player.room_loc[0],var.player.room_loc[1]))
 	
 	elif text[0] == ord('x'):
 		if var.player.in_room:

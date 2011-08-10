@@ -37,7 +37,10 @@ class room:
 					type = 'clear'
 				
 				elif self.type == 'house':
-					type = 'grass'
+					if x == 0 or y == 1 or x==var.room_size[0]-1 or y==var.room_size[1]-1:
+						type = 'wall'
+					else:
+						type = 'floor'
 				
 				elif self.type == 'field':
 					if random.randint(0,4) <= 2:
@@ -80,8 +83,37 @@ class room:
 		
 		elif self.type == 'house':
 			_i = item.get_item('light')
-			_i.room_loc=[5,5]
-			self.add_object(_i)
+			
+			pos = (random.randint(3,var.room_size[0]-3),random.randint(3,var.room_size[1]-5))
+			
+			for x in range(0,3):
+				for y in range(0,3):
+					_t = item.get_item_name('table')
+					_t.room_loc=[pos[0]+x,pos[1]+y]
+					
+					if x == 0 and y == 1:
+						_c = item.get_item_name('chair')
+						_c.room_loc=[pos[0]+x-1,pos[1]+y]
+						self.add_object(_c)
+					
+					elif x == 2 and y == 1:
+						_c = item.get_item_name('chair')
+						_c.room_loc=[pos[0]+x+1,pos[1]+y]
+						self.add_object(_c)
+					
+					elif x == 1 and y == 0:
+						_c = item.get_item_name('chair')
+						_c.room_loc=[pos[0]+x,pos[1]+y-1]
+						self.add_object(_c)
+					
+					elif x == 1 and y == 2:
+						_c = item.get_item_name('chair')
+						_c.room_loc=[pos[0]+x,pos[1]+y+1]
+						self.add_object(_c)
+					
+					self.add_object(_t)
+			
+			self.add_object(_i)	
 		
 		elif self.type == 'forest':
 			_ws = []
@@ -162,10 +194,8 @@ class room:
 		if not self.type == 'house' and self.flags['sunlit']: return True
 		
 		for o in self.objects:
-			if not o.type in ['light','window']: break
-			if o.type == 'window' and not var._c.is_daytime(): break
-			
-			lights.append(o)
+			if o.type in ['light','window']: lights.append(o)
+			#if o.type == 'window' and not var._c.is_daytime(): break
 		
 		for g in self.guests:
 			for i in g.items:
@@ -173,8 +203,8 @@ class room:
 				lights.append(i)
 		
 		for o in lights:
-			x = 1
-			y = 1
+			x = 0
+			y = 0
 			
 			if o.type == 'window':
 				size = 30

@@ -14,7 +14,7 @@ class item:
 		self.action = ''
 		self.place = ''
 		self.loc = [0,0]
-		self.room_loc = [0,0]
+		self.room_loc = [0,1]
 		self.location = ''
 		
 		self.wearable = False
@@ -139,6 +139,18 @@ def get_item(type):
 	
 	for item in var.items:
 		if item.type == type:
+			_l.append(copy.copy(item))
+	
+	if _l:
+		return _l[functions.random.randint(0,len(_l)-1)]
+	else:
+		print 'Couldn\'t get any items of type %s' % type
+
+def get_item_name(name):
+	_l = []
+	
+	for item in var.items:
+		if item.name == name:
 			_l.append(copy.copy(item))
 	
 	if _l:
