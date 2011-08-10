@@ -16,6 +16,7 @@ class room:
 		self.dungeons = []
 				
 		self.map = []
+		self.lmap = []
 		self.exits = []
 		
 		self.flags = {'sunlit':False}
@@ -23,10 +24,9 @@ class room:
 	def generate(self):
 		for x in range(0,var.room_size[0]):
 			ycols = []
+			ycols2 = []
 			
-			for y in range(0,var.room_size[1]):
-				#t = tile()#tile(self.loc)
-				
+			for y in range(0,var.room_size[1]):				
 				if self.type == 'clearing':
 					if random.randint(0,10) == 1:
 						type = 'grass'
@@ -37,7 +37,7 @@ class room:
 					type = 'clear'
 				
 				elif self.type == 'house':
-					type = 'clear'
+					type = 'grass'
 				
 				elif self.type == 'field':
 					if random.randint(0,4) <= 2:
@@ -66,8 +66,10 @@ class room:
 						type = 'clear'
 
 				ycols.append(type)
+				ycols2.append(0)
 			
 			self.map.append(ycols)
+			self.lmap.append(ycols2)
 	
 	def randomize(self):
 		if self.type == 'clearing':
@@ -78,6 +80,7 @@ class room:
 		
 		elif self.type == 'house':
 			_i = item.get_item('light')
+			_i.room_loc=[5,5]
 			self.add_object(_i)
 		
 		elif self.type == 'forest':
@@ -142,6 +145,64 @@ class room:
 						
 						var._c.map[_pos[0]][_pos[1]] = r
 				
+	def tick(self):
+		lights = []
+		
+		self.lmap = []
+		for x in range(0,var.room_size[0]):
+			ycols = []
+			for y in range(0,var.room_size[1]):	
+				if not self.type == 'house' and self.flags['sunlit']:
+					ycols.append(1)
+				else:
+					ycols.append(0)
+			
+			self.lmap.append(ycols)
+		
+		if not self.type == 'house' and self.flags['sunlit']: return True
+		
+		for o in self.objects:
+			if not o.type in ['light','window']: break
+			if o.type == 'window' and not var._c.is_daytime(): break
+			
+			lights.append(o)
+		
+		for g in self.guests:
+			for i in g.items:
+				if not i.type == 'light': break
+				lights.append(i)
+		
+		for o in lights:
+			x = 1
+			y = 1
+			
+			if o.type == 'window':
+				size = 30
+			else:
+				size = 10
+			
+			pos = (o.room_loc[0]-(size/2),o.room_loc[1])
+
+			while x<size:
+				if x<=size/2:
+					for y1 in range(0,x):
+						if pos[0]+x >= 0 and pos[0]+x < var.room_size[0] and pos[1]+y1 >= 0 and pos[1]+y1 < var.room_size[1]:
+							self.lmap[pos[0]+x][pos[1]+y1] = 1
+						
+						if pos[0]+x >= 0 and pos[1]-y1 > 0 and pos[0]+x < var.room_size[0]:
+							self.lmap[pos[0]+x][pos[1]-y1] = 1
+							pass
+							
+				else:
+					for y1 in range(0,size-x):
+						if pos[0]+x >= 0 and pos[0]+x < var.room_size[0] and pos[1]+y1 >= 0 and pos[1]+y1 < var.room_size[1]:
+							self.lmap[pos[0]+x][pos[1]+y1] = 1
+						
+						if pos[1]-y1 > 0 and pos[0]+x < var.room_size[0]:
+							self.lmap[pos[0]+x][pos[1]-y1] = 1
+				
+				x+=1
+	
 	def get_description(self,exits=True):
 		self.parse_room(exits=exits)
 		
@@ -188,6 +249,16 @@ class room:
 				_i.place = exit['dir']
 				_i.inside = self
 				_i.outside = exit['room']
+				
+				if _i.place == 'west':
+					_i.room_loc = [0,12]
+				elif _i.place == 'east':
+					_i.room_loc = [24,12]
+				elif _i.place == 'north':
+					_i.room_loc = [12,1]
+				elif _i.place == 'south':
+					_i.room_loc = [12,23]
+				
 				exit['obj'] = _i
 				self.add_object(_i)
 				

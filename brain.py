@@ -6,6 +6,12 @@ class brain:
 		
 		self.locations = []  	#dict: name:name, loc:x,y, path:[{start:startpos,path:path}]
 		self.people = []		#dict: name:(fname,lname), id:id, description:physdescription, detail:[details]
+		
+		self.base = 'instinct'
+		
+		self.need = None
+		self.love = None
+		self.fear = None
 	
 	def get_compatibility_with(self, person):
 		_p = 0 #how comfortable this person is with talking to <person>
@@ -159,3 +165,48 @@ class brain:
 					_d.append(d)
 		
 		return _d
+
+	def get_item_value(self,obj):
+		_v = 0
+		
+		for i in range(len(self.owner.likes)):
+			_v += obj.stat[self.owner.likes[i]] * ((len(self.owner.likes)+1)-i)
+		
+		#var._c.log(self.owner.name[0] + ': %s valued at %s' % (obj.name,_v))
+		return _v
+	
+	def get_perc_strength(self):
+		_s = self.owner.strength * (self.owner.hp/float(self.owner.mhp))
+		
+		return _s
+
+	def examine_person(self,obj):
+		#Temp
+		_dan = 5
+		_dist = 10
+		
+		#Assuming friendly for now...
+		love = (1000 * (obj.get_perc_strength() / self.get_perc_strength())) / float(_dist)
+		fear = False
+		
+		#var._c.log(self.owner.name[0] + ': friendship with %s is %s' % (obj.owner.name,love))
+		
+		return [love,fear]
+
+	def think(self):
+		for o in self.owner.get_room().objects:
+			if o.type == 'window': break
+			
+			value = self.get_item_value(o)
+			
+			if self.need == None or value > self.need['value']:
+				self.need = {'obj':o,'value':value}
+		
+		for a in self.owner.get_room().guests:
+			_r = self.examine_person(a.brain)
+			
+			if _r[0] and self.love == None or _r[0] > self.love['value']:
+				self.love = {'obj':a,'value':_r[0]}						
+		
+		#var._c.log(self.owner.name[0]+': Need %s' % self.need['obj'].name)
+		#var._c.log(self.owner.name[0]+': Love %s' % self.love['obj'].name[0])

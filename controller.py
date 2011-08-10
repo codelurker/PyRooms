@@ -251,8 +251,9 @@ class controller:
 		adam.birthplace = _t
 		eve.warp_to(_t.loc)
 		eve.birthplace = _t
-		var.player.warp_to([1,1])
+		var.player.warp_to(list(_t.loc))
 		var.player.birthplace = var.player
+		var.player.add_item(item.get_item('light'))
 		
 		var.camera[0] = var.player.loc[0]-40
 		var.camera[1] = var.player.loc[1]-12
@@ -299,6 +300,7 @@ class controller:
 		if var.camera[0]<0: var.camera[0] = 0
 		if var.camera[1]<0: var.camera[1] = 0
 		
+		var.player.get_room().tick()
 		self.draw_map()
 		if var.debug: print 'Done!\n',
 	
@@ -330,8 +332,8 @@ class controller:
 	
 	def draw_map(self):
 		if not var.player.in_room:
-			for _y in range(var.camera[1],var.camera[1]+25):
-				for _x in range(var.camera[0],var.camera[0]+80):
+			for _y in range(var.camera[1],var.camera[1]+var.win_size[1]-1):
+				for _x in range(var.camera[0],var.camera[0]+var.win_size[0]):
 					x = int(_x)
 					y = int(_y)
 					
@@ -373,13 +375,11 @@ class controller:
 						var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
 		
 		elif var.player.in_room and not var.player.in_dungeon:
-			#if var.player.in_dungeon:
-			#	room = var.player.get_room().dungeons[0]
 			room = var.player.get_room()
 			
 			for y in range(0,var.room_size[1]):
 				for x in range(0,var.room_size[0]):
-					if room.map[x][y] == 'clear' or room.map[x][y] == 'floor':
+					if room.map[x][y] == 'clear':
 						var.window.write('main',' ',(x+var.offset,y))
 					elif room.map[x][y] == 'grass':
 						var.window.set_color(3)
@@ -396,9 +396,15 @@ class controller:
 						var.window.write('main','>',(x+var.offset,y))
 						var.window.set_color(1)
 					
+					for item in room.objects:
+						if (x,y) == tuple(item.room_loc):
+							var.window.write('main','C',(x+var.offset,y))
+					
 					for guest in room.guests:
 						if (x,y) == tuple(guest.room_loc):
 							var.window.write('main','@',(x+var.offset,y))
+					
+					if not room.lmap[x][y]: var.window.write('main',' ',(x+var.offset,y))
 		
 		elif var.player.in_dungeon:
 			room = var.player.get_room().dungeons[0]

@@ -13,7 +13,8 @@ class item:
 		self.name = ''
 		self.action = ''
 		self.place = ''
-		self.loc = (0,0)
+		self.loc = [0,0]
+		self.room_loc = [0,0]
 		self.location = ''
 		
 		self.wearable = False
@@ -28,6 +29,8 @@ class item:
 		self.max_contain = 5
 		self.max_stack = 2
 		self.active = False #True = Someone is sitting on it, light is on, etc
+		
+		self.stat = {'price':20,'damage':0,'defense':0}
 		
 	def sanitize(self,text,tag):
 		return text.rpartition(tag)[0].split('|')[0]+' '+words.get_desc_light_filler(self)+'.'

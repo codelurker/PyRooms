@@ -26,6 +26,8 @@ class person:
 		self.in_dungeon = False
 		self.move_ticks = 0
 		
+		self.likes = ['price','damage','defense']
+		
 		self.condition = {'head':10,'eyes':10,\
 						'larm':10,'rarm':10,\
 						'lhand':10,'rhand':10,\
@@ -33,6 +35,8 @@ class person:
 						'torso':10,'groin':10,\
 						'lleg':10,'rleg':10,\
 						'lfoot':10,'rfoot':10}
+		self.hp = 10
+		self.mhp = 10
 		self.strength = 0
 		self.dexterity = 0
 		self.intelligence = 0
@@ -182,6 +186,7 @@ class person:
 	def enter_room(self):
 		if not len(self.get_room().map):
 			self.get_room().generate()
+			self.get_room().tick()
 	
 	def enter_dungeon(self,dungeon):
 		var.player.in_dungeon = True
@@ -247,6 +252,9 @@ class person:
 				
 				else:
 					self.room_loc = _tloc
+					if self == var.player:
+						for i in self.items:
+							i.room_loc = self.room_loc
 			
 			elif self.in_dungeon:
 				self.room_loc = _tloc
@@ -391,6 +399,11 @@ class person:
 					_e['event'](_e['args'])
 				
 				self.schedule.remove(_e)
+		
+		self.brain.think()
+		
+		for i in self.items:
+			i.room_loc = self.room_loc
 		
 		#check for birthday
 		if var._c.date[0] == self.born[0] and self.events['lastbirthday'] == False:
