@@ -25,9 +25,10 @@ class person:
 		self.in_room = False
 		self.in_dungeon = False
 		self.move_ticks = 0
+		self.action = None
 		
-		self.wants = ['rest']
 		self.likes = ['price','damage','defense']
+		self.needs = ['rest']
 		
 		self.condition = {'head':10,'eyes':10,\
 						'larm':10,'rarm':10,\
@@ -43,7 +44,13 @@ class person:
 		self.intelligence = 0
 		self.charisma = 0
 		self.weight = 0
-				
+		self.stamina = 9
+		
+		#For self.brain...
+		self.alert = 1
+		
+		self.max_stamina = 10
+
 		self.potential_strength = 0
 		self.potential_dexterity = 0
 		self.potential_intelligence = 0
@@ -305,7 +312,7 @@ class person:
 		self.path = p.getPath()
 	
 	def walk_to_room(self, to):
-		var._c.log('Going from %s,%s to %s,%s' % (self.room_loc[0],self.room_loc[1],to[0],to[1]))
+		if var.debug: var._c.log('Going from %s,%s to %s,%s' % (self.room_loc[0],self.room_loc[1],to[0],to[1]))
 		p = ai.AStar(self.room_loc,to,self.get_room().map,room=True,size=var.room_size)
 		self.path = p.getPath()
 		#self.path.reverse()
@@ -429,6 +436,21 @@ class person:
 					_e['event'](_e['args'])
 				
 				self.schedule.remove(_e)
+		
+		if self.action:
+			if self.action == 'rest':
+				if self.stamina < self.max_stamina:
+					self.stamina += 1
+					self.alert = 0
+					
+					var._c.log('You hear %s snoring.' % self.name[0])
+				
+				else:
+					self.action = None
+					self.brain.need = {'value':0,'obj':None}
+					self.alert = 1
+					
+					var._c.log('%s wakes up.' % self.name[0])
 		
 		self.brain.think()
 		

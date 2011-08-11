@@ -47,8 +47,6 @@ class AStar:
 	def __init__(self,start,end,omap=None,size=var.world_size,room=False,debug=False,ignoreNone=False,avoidType=False):
 		if omap == None:
 			omap = var._c.map
-		else:
-			var._c.log('Generating ASTAR using non-world map.')
 
 		self.size = size
 		self.start = start
@@ -63,9 +61,7 @@ class AStar:
 		
 		self.map = []
 		
-		var._c.log('%s,%s to %s,%s' % (start[0],start[1],end[0],end[1]))
 		if start[0] == end[0] and start[1] == end[1]:
-			var._c.log('HOLY SHIT SAME THING!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 			return None
 		
 		if not room:

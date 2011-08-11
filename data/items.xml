@@ -26,7 +26,7 @@
 	<ref>chair</ref>
 	<weight>20</weight>
 	<prefix>the</prefix>
-	<action>sit</action>
+	<action>rest</action>
 	<surface>True</surface>
 	<room_desc>%prefix% %ref% %action% %pos%.</room_desc>
 	<desc>It is made out of a dark colored wood|, its surface is worn| and has several scars on it from years of use</desc>

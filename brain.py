@@ -8,7 +8,9 @@ class brain:
 		
 		self.base = 'instinct'
 		
-		self.need = None
+		self.want = {'value':0,'obj':None}
+		self.need = {'value':0,'obj':None}
+		self.focus = None
 		self.love = None
 		self.fear = None
 	
@@ -138,7 +140,6 @@ class brain:
 		else:
 			pass
 					
-
 	def know_person(self, person):
 		for _person in self.people:
 			if _person['id'] == person.id:
@@ -166,20 +167,31 @@ class brain:
 		return _d
 
 	def get_item_value(self,obj):
-		_v = 0
+		_w = 0
+		_n = 0
 		
+		#Wants
 		for i in range(len(self.owner.likes)):
-			_v += obj.stat[self.owner.likes[i]] * ((len(self.owner.likes)+1)-i)
+			_w += (obj.stat[self.owner.likes[i]] * ((len(self.owner.likes)+1)-i)) * self.owner.alert
 		
-		for i in range(len(self.owner.wants)):
-			if self.owner.wants[i]=='rest' and obj.name=='chair':
-				_v+= (100 / self.owner.get_dist_to(obj.room_loc))
-				#var._c.log(self.owner.name[0] + ': %s valued at %s' % (obj.name,_v))
-			#_v += obj.stat[self.owner.likes[i]] * ((len(self.owner.likes)+1)-i)
+		#Needs
+		for i in range(len(self.owner.needs)):
+			if self.owner.needs[i]=='rest' and obj.name=='chair':
+				if not obj.in_use and not obj.user == self.owner:
+					_n+= ((100 * (10-self.owner.stamina)) / self.owner.get_dist_to(obj.room_loc)) * self.owner.alert
+
+		if obj.in_use and not obj.user == self.owner:
+			_w = 0
+			_n = 0
 		
-		#var._c.log(self.owner.name[0] + ': %s valued at %s' % (obj.name,_v))
-		return _v
-	
+		#var._c.log(self.owner.name[0] + ': %s want value at %s' % (obj.name,_w))
+		#var._c.log(self.owner.name[0] + ': %s need value at %s' % (obj.name,_n))
+		
+		if _n >= _w:
+			return ('needs',_n)
+		else:
+			return ('wants',_w)
+
 	def get_perc_strength(self):
 		_s = self.owner.strength * (self.owner.hp/float(self.owner.mhp))
 		
@@ -194,7 +206,6 @@ class brain:
 		love = (1000 * (obj.get_perc_strength() / self.get_perc_strength())) / float(_dist)
 		
 		if self.owner.spouse == obj.owner:
-			#var._c.log(self.owner.name[0]+': I am married to %s' % (obj.owner.name[0]))
 			love+=500
 		
 		fear = False
@@ -204,14 +215,24 @@ class brain:
 		return [love,fear]
 
 	def think(self):
+		#Want/Need
 		for o in self.owner.get_room().objects:
 			if o.type == 'window': break
 			
 			value = self.get_item_value(o)
 			
-			if self.need == None or value > self.need['value']:
-				self.need = {'obj':o,'value':value}
+			if value[0] == 'wants':
+				if value[1] > self.want['value']:
+					self.want = {'obj':o,'value':value[1]}
+			elif value[0] == 'needs':
+				if value[1] > self.need['value']:
+					if self.need['obj']:
+						self.need['obj'].in_use = False
+						self.need['obj'].user = None
+					
+					self.need = {'obj':o,'value':value[1]}
 		
+		#Love
 		for a in self.owner.get_room().guests:
 			if a == self.owner: break
 
@@ -220,12 +241,23 @@ class brain:
 			if _r[0] and self.love == None or _r[0] > self.love['value']:
 				self.love = {'obj':a,'value':_r[0]}						
 		
-		if self.need:
-			#var._c.log(self.owner.name[0]+': Need %s' % self.need['obj'].name)
+		if self.want['obj'] == None and self.need['obj'] == None:
+			var._c.log('%s: I\'m bored...' % (self.owner.name[0]))
+			return False
+		
+		if self.want['value'] > self.need['value']:
+			var._c.log(self.owner.name[0]+': Want %s' % self.want['obj'].name)
+
+		else:			
 			if self.owner.room_loc[0] == self.need['obj'].room_loc[0] and self.owner.room_loc[1] == self.need['obj'].room_loc[1]:
-				pass
+				if not self.owner.action:
+					var._c.log(self.owner.name[0]+': I\'m going to bed.')
+					self.owner.action = self.need['obj'].action
 			else:
-				if not self.owner.path:
+				self.need['obj'].in_use = True
+				self.need['obj'].user = self.owner
+				
+				if not self.owner.path or not self.owner.path[0] == self.need['obj'].room_loc:
 					self.owner.walk_to_room((self.need['obj'].room_loc[0],self.need['obj'].room_loc[1]))
 
 		#if self.love:
