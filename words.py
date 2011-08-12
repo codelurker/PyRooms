@@ -3,6 +3,8 @@ import var, items, jobs, os, sys, random, json, xml2json, hashlib
 
 random.seed()
 
+translate = {'larm':'left arm','rarm':'right arm','lhand':'left hand','rhand':'right hand'}	
+
 def opposite(text):
 	if text == 'north':
 		return 'south'
@@ -184,9 +186,13 @@ def load_config_files(flush=False):
 					_i.icon = _j['icon']
 				elif _j['type'] == 'foliage':
 					_i = items.foliage()
+					_i.icon = 'b'
 				elif _j['type'] == 'window':
 					_i = items.window()
-					_i.icon = 'w'
+					_i.icon = ':'
+				elif _j['type'] == 'weapon':
+					_i = items.weapon()
+					_i.icon = 'S'				
 				elif _j['type'] == 'clothing':
 					_i = items.clothing()
 					_i.madeof = _j['madeof']
@@ -197,7 +203,8 @@ def load_config_files(flush=False):
 				_i.action = _j['action']
 				_i.room_description = _j['room_desc']
 				_i.description = _j['desc']
-				_i.weight = _j['weight']
+				_i.weight = int(_j['weight'])
+				_i.stat['price'] = int(_j['price'])
 		
 		_f.close()
 

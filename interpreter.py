@@ -176,6 +176,10 @@ def parse_input(text):
 				var.player.enter_dungeon(var.player.get_room().dungeons[0])
 				var._c.draw_map()
 	
+	elif text[0] == ord('a'):
+		if var.player.in_room:
+			var.player.attacking = True
+	
 	else:
 		if len(var._c.errors)>1:
 			var._c.log('===ERRORS===')

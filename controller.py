@@ -37,6 +37,10 @@ class controller:
 			self.errors.append(text)
 		
 		self.history.append(text)
+	
+	def status(self,text):
+		var.window.write('status',text,(0,1))
+		var.window.refresh('status')
 		
 	def get_random_town(self):
 		_t = self.towns[random.randint(0,len(self.towns)-1)]
@@ -277,6 +281,8 @@ class controller:
 		for _t in range(ticks):
 			if var.debug: print '.',
 			
+			var.player.player_tick()
+			
 			for _p in self.people:
 				_p.tick()
 			
@@ -314,6 +320,8 @@ class controller:
 			self.log('[Time] Advancing %s years.' % amnt)
 		
 		for _y in range(14400*amnt):
+			var.player.player_tick()
+			
 			for _p in self.people:
 				_p.tick()
 			

@@ -177,15 +177,17 @@ class brain:
 		#Needs
 		for i in range(len(self.owner.needs)):
 			if self.owner.needs[i]=='rest' and obj.name=='chair':
-				if not obj.in_use and not obj.user == self.owner:
+				if not obj.in_use and not obj.user == self.owner and not obj.owner:
 					_n+= ((100 * (10-self.owner.stamina)) / self.owner.get_dist_to(obj.room_loc)) * self.owner.alert
 
 		if obj.in_use and not obj.user == self.owner:
 			_w = 0
 			_n = 0
 		
-		#var._c.log(self.owner.name[0] + ': %s want value at %s' % (obj.name,_w))
-		#var._c.log(self.owner.name[0] + ': %s need value at %s' % (obj.name,_n))
+		#if _w:
+		#	var._c.log(self.owner.name[0] + ': %s want value at %s' % (obj.name,_w))
+		#if _n:
+		#	var._c.log(self.owner.name[0] + ': %s need value at %s' % (obj.name,_n))
 		
 		if _n >= _w:
 			return ('needs',_n)
@@ -215,6 +217,9 @@ class brain:
 		return [love,fear]
 
 	def think(self):
+		self.need = {'value':0,'obj':None}
+		self.want = {'value':0,'obj':None}
+		
 		#Want/Need
 		for o in self.owner.get_room().objects:
 			if o.type == 'window': break
@@ -242,11 +247,20 @@ class brain:
 				self.love = {'obj':a,'value':_r[0]}						
 		
 		if self.want['obj'] == None and self.need['obj'] == None:
-			var._c.log('%s: I\'m bored...' % (self.owner.name[0]))
+			#var._c.log('%s: I\'m bored...' % (self.owner.name[0]))
 			return False
 		
 		if self.want['value'] > self.need['value']:
-			var._c.log(self.owner.name[0]+': Want %s' % self.want['obj'].name)
+			#var._c.log(self.owner.name[0]+': I want that %s' % self.want['obj'].name)				
+			if self.owner.room_loc[0] == self.want['obj'].room_loc[0] and self.owner.room_loc[1] == self.want['obj'].room_loc[1] and not self.want['obj'].owner:
+				#var._c.log(self.owner.name[0]+': Picking up %s' % self.want['obj'].name)				
+				self.want['obj'].take(self.owner)
+				
+				self.want = {'value':0,'obj':None}
+				
+			else:
+				if not self.owner.path or not self.owner.path[0] == self.want['obj'].room_loc:
+					self.owner.walk_to_room((self.want['obj'].room_loc[0],self.want['obj'].room_loc[1]))
 
 		else:			
 			if self.owner.room_loc[0] == self.need['obj'].room_loc[0] and self.owner.room_loc[1] == self.need['obj'].room_loc[1]:

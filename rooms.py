@@ -22,9 +22,11 @@ class room:
 		self.flags = {'sunlit':False}
 		
 	def generate(self):
+		for y in range(0,var.room_size[1]):
+			self.lmap.append([0] * var.room_size[0])
+		
 		for x in range(0,var.room_size[0]):
 			ycols = []
-			ycols2 = []
 			
 			for y in range(0,var.room_size[1]):				
 				if self.type == 'clearing':
@@ -38,10 +40,12 @@ class room:
 				
 				elif self.type == 'house':
 					if x == 0 or y == 1 or x==var.room_size[0]-1 or y==var.room_size[1]-1:
+						type = 'grass'
+					elif x == 1 or y == 2 or x==var.room_size[0]-2 or y==var.room_size[1]-2:
 						type = 'wall'
 					else:
 						type = 'floor'
-				
+					
 				elif self.type == 'field':
 					if random.randint(0,4) <= 2:
 						type = 'grass'
@@ -69,10 +73,16 @@ class room:
 						type = 'clear'
 
 				ycols.append(type)
-				ycols2.append(0)
 			
 			self.map.append(ycols)
-			self.lmap.append(ycols2)
+			
+			#Clean windows
+			for obj in self.objects:
+				if obj.type == 'window':
+						try:
+							self.map[obj.room_loc[0]][obj.room_loc[1]] = 'clear'
+						except:
+							pass
 	
 	def randomize(self):
 		if self.type == 'clearing':
@@ -83,8 +93,10 @@ class room:
 		
 		elif self.type == 'house':
 			_i = item.get_item('light')
+			_d = item.get_item_name('iron dagger')
+			_d.room_loc = [5,5]
 			
-			pos = (random.randint(3,var.room_size[0]-3),random.randint(3,var.room_size[1]-5))
+			pos = (random.randint(3,var.room_size[0]-6),random.randint(4,var.room_size[1]-6))
 			
 			for x in range(0,3):
 				for y in range(0,3):
@@ -113,7 +125,8 @@ class room:
 					
 					self.add_object(_t)
 			
-			self.add_object(_i)	
+			self.add_object(_i)
+			self.add_object(_d)
 		
 		elif self.type == 'forest':
 			_ws = []
@@ -193,45 +206,40 @@ class room:
 		
 		if not self.type == 'house' and self.flags['sunlit']: return True
 		
-		for o in self.objects:
-			if o.type in ['light','window']: lights.append(o)
-			#if o.type == 'window' and not var._c.is_daytime(): break
+		lights = []
+		for obj in self.objects:
+			if obj.type in ['light','window']:
+				lights.append(obj)
 		
-		for g in self.guests:
-			for i in g.items:
-				if not i.type == 'light': break
-				lights.append(i)
+		for guest in self.guests:
+			for obj in guest.items:
+				if obj.type == 'light':
+					lights.append(obj)
 		
-		for o in lights:
-			x = 0
-			y = 0
-			
-			if o.type == 'window':
-				size = 30
-			else:
-				size = 10
-			
-			pos = (o.room_loc[0]-(size/2),o.room_loc[1])
-
-			while x<size:
-				if x<=size/2:
-					for y1 in range(0,x):
-						if pos[0]+x >= 0 and pos[0]+x < var.room_size[0] and pos[1]+y1 >= 0 and pos[1]+y1 < var.room_size[1]:
-							self.lmap[pos[0]+x][pos[1]+y1] = 1
-						
-						if pos[0]+x >= 0 and pos[1]-y1 > 0 and pos[0]+x < var.room_size[0]:
-							self.lmap[pos[0]+x][pos[1]-y1] = 1
+		for obj in lights:
+			for y in range(-10,11):
+				for x in range(-10,11):
+					if 0 < obj.room_loc[0]+x < var.room_size[0]:
+					
+						try:
+							l = ai.line((obj.room_loc[0],obj.room_loc[1]),(obj.room_loc[0]+x,obj.room_loc[1]+y))
+								
+							if not l.path[0] == (obj.room_loc[0],obj.room_loc[1]):
+								l.path.reverse()
+														
+							done = False
+							for lpos in l.path:
+								if done: break				
+								
+								if lpos[0]>=0 and lpos[0]<var.room_size[0] and lpos[1]>=0 and lpos[1]<var.room_size[1] and not self.map[lpos[0]][lpos[1]]=='wall':
+									self.lmap[lpos[0]][lpos[1]] = 1
+									#var._c.log('hit at %s,%s' % ((obj.room_loc[0],obj.room_loc[1]),(obj.room_loc[0]+x,obj.room_loc[1]+y)))
+								else:
+									self.lmap[lpos[0]][lpos[1]] = 1
+									#var._c.log('hit at %s,%s' % ((obj.room_loc[0],obj.room_loc[1]),(obj.room_loc[0]+x,obj.room_loc[1]+y)))
+									done = True
+						except:
 							pass
-							
-				else:
-					for y1 in range(0,size-x):
-						if pos[0]+x >= 0 and pos[0]+x < var.room_size[0] and pos[1]+y1 >= 0 and pos[1]+y1 < var.room_size[1]:
-							self.lmap[pos[0]+x][pos[1]+y1] = 1
-						
-						if pos[1]-y1 > 0 and pos[0]+x < var.room_size[0]:
-							self.lmap[pos[0]+x][pos[1]-y1] = 1
-				
-				x+=1
 	
 	def get_description(self,exits=True):
 		self.parse_room(exits=exits)
@@ -281,13 +289,13 @@ class room:
 				_i.outside = exit['room']
 				
 				if _i.place == 'west':
-					_i.room_loc = [0,12]
+					_i.room_loc = [1,12]
 				elif _i.place == 'east':
-					_i.room_loc = [24,12]
+					_i.room_loc = [23,12]
 				elif _i.place == 'north':
-					_i.room_loc = [12,1]
+					_i.room_loc = [12,2]
 				elif _i.place == 'south':
-					_i.room_loc = [12,23]
+					_i.room_loc = [12,22]
 				
 				exit['obj'] = _i
 				self.add_object(_i)

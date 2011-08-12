@@ -26,17 +26,25 @@ class person:
 		self.in_dungeon = False
 		self.move_ticks = 0
 		self.action = None
+		self.attacking = False
 		
 		self.likes = ['price','damage','defense']
 		self.needs = ['rest']
 		
+		self.bleeding = {'head':0,'eyes':0,\
+						'larm':0,'rarm':0,\
+						'lhand':0,'rhand':0,\
+						'chest':0,'stomach':0,\
+						'torso':0,'groin':0,\
+						'lleg':0,'rleg':0,\
+						'lfoot':0,'rfoot':0}		
 		self.condition = {'head':10,'eyes':10,\
 						'larm':10,'rarm':10,\
 						'lhand':10,'rhand':10,\
 						'chest':10,'stomach':10,\
 						'torso':10,'groin':10,\
 						'lleg':10,'rleg':10,\
-						'lfoot':10,'rfoot':10}
+						'lfoot':10,'rfoot':10}		
 		self.hp = 10
 		self.mhp = 10
 		self.strength = 0
@@ -44,7 +52,7 @@ class person:
 		self.intelligence = 0
 		self.charisma = 0
 		self.weight = 0
-		self.stamina = 9
+		self.stamina = 10
 		
 		#For self.brain...
 		self.alert = 1
@@ -69,6 +77,7 @@ class person:
 		
 		self.items = []
 		self.wearing = []
+		self.wielding = {'lhand':None,'rhand':None}
 		self.events = {'lastbirthday':False,\
 						'pregnant':False,\
 						'pregnanton':False,\
@@ -205,6 +214,16 @@ class person:
 		var.player.in_dungeon = False
 		dungeon.guests.remove(self)
 	
+	def attack(self,pos):
+		for obj in self.get_room().objects:
+			if obj.room_loc == pos:
+				if not self.wielding['lhand'] and not self.wielding['rhand']:
+					if var.player == self:
+						var._c.log('You punch the %s.' % obj.name)
+						var._c.log(obj.attacked(self,'lhand'))
+		
+		self.attacking = False
+	
 	def walk(self,dir):
 		if self.in_room:# or (var.player.in_room and self.loc == var.player.loc):
 			_tloc = list(self.room_loc)
@@ -260,8 +279,19 @@ class person:
 					self.enter_room()
 				
 				else:
-					if not self.get_room().map[_tloc[0]][_tloc[1]] == 'wall':
-						self.room_loc = _tloc
+					if self.get_room().map[_tloc[0]][_tloc[1]] == 'wall':
+						var._c.status('There is a wall in the way.')
+					else:
+						if self.attacking:
+							self.attack(_tloc)
+						else:
+							for obj in self.get_room().objects:
+								if obj.room_loc == [_tloc[0],_tloc[1]] and obj.blocking:
+									var._c.status('There is a %s in the way.' % obj.name)
+									return False								
+						
+							self.room_loc = _tloc
+						
 						if self == var.player:
 							for i in self.items:
 								i.room_loc = self.room_loc
@@ -315,7 +345,6 @@ class person:
 		if var.debug: var._c.log('Going from %s,%s to %s,%s' % (self.room_loc[0],self.room_loc[1],to[0],to[1]))
 		p = ai.AStar(self.room_loc,to,self.get_room().map,room=True,size=var.room_size)
 		self.path = p.getPath()
-		#self.path.reverse()
 		
 	def warp_to(self,place):
 		self.loc = place
@@ -343,6 +372,7 @@ class person:
 		_spouse.name[1] = self.name[1]
 
 		#var._c.log('%s %s %s has married %s %s' % (var._c.date,self.name[0],self.name[1],_spouse.name[0],_spouse.maiden_name))
+		pass
 	
 	def impregnate(self,male):
 		if self.male and var.debug: print 'What are you doing?'
@@ -356,6 +386,7 @@ class person:
 		self.schedule_add(_f_date,self.have_child,args=male)
 		
 		#var._c.log('%s %s %s is pregnant.' % (self.events['pregnanton'],self.name[0],self.name[1]))
+		pass
 	
 	def have_child(self,male):
 		_child = person()
@@ -408,7 +439,23 @@ class person:
 		self.events['pregnant'] = False
 		
 		#var._c.log('%s %s %s has been born.' % (functions.get_date(),_child.name[0],_child.name[1]))
+		pass
 	
+	def examine_inventory(self):
+		for i in self.items:
+			if i.type == 'weapon' and i.wielding == False:
+				for hand in self.wielding.iterkeys():
+					if not self.wielding[hand] and i.wielding == False:
+						self.wielding[hand] = i
+						i.wielding = True
+						#var._c.log(self.name[0]+' equips a %s' % i.name)				
+
+	def player_tick(self):
+		for bodypart in self.bleeding.iterkeys():
+			if self.bleeding[bodypart]:
+				self.condition[bodypart]-=1
+				var._c.status('Your %s is bleeding.' % (words.translate[bodypart]))
+
 	def tick(self):
 		if self.male:
 			if self.age >= self.events['seek_partner_age'] and self.spouse == None:
@@ -442,17 +489,14 @@ class person:
 				if self.stamina < self.max_stamina:
 					self.stamina += 1
 					self.alert = 0
-					
-					var._c.log('You hear %s snoring.' % self.name[0])
 				
 				else:
 					self.action = None
 					self.brain.need = {'value':0,'obj':None}
 					self.alert = 1
-					
-					var._c.log('%s wakes up.' % self.name[0])
-		
+
 		self.brain.think()
+		self.examine_inventory()
 		
 		for i in self.items:
 			i.room_loc = self.room_loc

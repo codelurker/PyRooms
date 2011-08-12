@@ -19,6 +19,7 @@ class item:
 		
 		self.in_use = False
 		self.user = None
+		self.blocking = False
 		
 		self.wearable = False
 		self.container = False
@@ -27,6 +28,7 @@ class item:
 		self.surface = False
 		self.chair = False
 		
+		self.smashable = False
 		self.weight = 0
 		self.contains = []
 		self.max_contain = 5
@@ -38,6 +40,10 @@ class item:
 	def sanitize(self,text,tag):
 		return text.rpartition(tag)[0].split('|')[0]+' '+words.get_desc_light_filler(self)+'.'
 	
+	def attacked(self,by,wep):
+		if self.smashable and self.blocking:
+			self.blocking = False
+	
 	def sit_on(self,object):
 		self.location = object.location+' on a %s' % object.name
 		self.place = object.place
@@ -45,12 +51,11 @@ class item:
 		object.contains.append(self)
 	
 	def take(self,who):
-		self.get_room().objects.remove(self)
-		self.place = ''
-		self.location = 'in %s\'s inventory' % who.name
-		
-		if self.parent: self.parent.contains.remove(self)
-		
+		if self in self.get_room().objects:
+			self.get_room().objects.remove(self)
+
+		self.owner = who
+
 		self.parent = None
 		who.items.append(self)
 	
@@ -97,10 +102,10 @@ class light(item):
 		self.type = 'light'
 		self.parent = None
 
-		self.on = True
+		self.lit = True
 
 	def get_description(self):
-		if self.on:
+		if self.lit:
 			if self.parent:
 				return self.description.replace('%parent%',self.parent.name).replace('|','')
 			else:
@@ -130,6 +135,28 @@ class window(item):
 		item.__init__(self)
 		
 		self.type = 'window'
+		self.blocking = True
+		self.smashable = True
+	
+	def attacked(self,by,wep):
+		item.attacked(self,by,wep)
+		
+		if wep in ['lhand','rhand']:
+			by.condition[wep]-=1
+			by.bleeding[wep] = 1
+			
+			#names = {'lhand':'left hand','rhand':'right hand'}
+			return ('The glass breaks. Tiny shards cut into your %s.' % (words.translate[wep]))
+	
+	def get_description(self):
+		return self.parse_description()
+
+class weapon(item):
+	def __init__(self):
+		item.__init__(self)
+		
+		self.type = 'weapon'
+		self.wielding = False
 	
 	def get_description(self):
 		return self.parse_description()
