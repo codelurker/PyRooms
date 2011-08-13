@@ -216,27 +216,25 @@ class room:
 		for obj in lights:
 			for y in range(-10,11):
 				for x in range(-10,11):
-					if 0 < obj.room_loc[0]+x < var.room_size[0]:
+					if not 0 < obj.room_loc[0]+x < var.room_size[0] and not 0 < obj.room_loc[1]+y < var.room_size[1]: continue
 					
-						try:
-							l = ai.line((obj.room_loc[0],obj.room_loc[1]),(obj.room_loc[0]+x,obj.room_loc[1]+y))
-								
-							if not l.path[0] == (obj.room_loc[0],obj.room_loc[1]):
-								l.path.reverse()
-														
-							done = False
-							for lpos in l.path:
-								if done: break				
-								
-								if lpos[0]>=0 and lpos[0]<var.room_size[0] and lpos[1]>=0 and lpos[1]<var.room_size[1] and not self.map[lpos[0]][lpos[1]]=='wall':
-									self.lmap[lpos[0]][lpos[1]] = 1
-									#var._c.log('hit at %s,%s' % ((obj.room_loc[0],obj.room_loc[1]),(obj.room_loc[0]+x,obj.room_loc[1]+y)))
-								else:
-									self.lmap[lpos[0]][lpos[1]] = 1
-									#var._c.log('hit at %s,%s' % ((obj.room_loc[0],obj.room_loc[1]),(obj.room_loc[0]+x,obj.room_loc[1]+y)))
-									done = True
-						except:
-							pass
+					if (obj.room_loc[0],obj.room_loc[1]) == (obj.room_loc[0]+x,obj.room_loc[1]+y): continue
+					
+					l = ai.line((obj.room_loc[0],obj.room_loc[1]),(obj.room_loc[0]+x,obj.room_loc[1]+y))
+						
+					if not l.path[0] == (obj.room_loc[0],obj.room_loc[1]):
+						l.path.reverse()
+												
+					done = False
+					for lpos in l.path:
+						if done: break				
+						
+						if lpos[0]>=0 and lpos[0]<var.room_size[0] and lpos[1]>=0 and lpos[1]<var.room_size[1]:
+							if not self.map[lpos[0]][lpos[1]]=='wall':
+								self.lmap[lpos[0]][lpos[1]] = 1
+							else:
+								self.lmap[lpos[0]][lpos[1]] = 1
+								done = True
 	
 	def get_description(self,exits=True):
 		self.parse_room(exits=exits)

@@ -45,6 +45,14 @@ class person:
 						'torso':10,'groin':10,\
 						'lleg':10,'rleg':10,\
 						'lfoot':10,'rfoot':10}		
+		self.wearing = {'head':None,'eyes':None,\
+						'larm':None,'rarm':None,\
+						'lhand':None,'rhand':None,\
+						'chest':None,'stomach':None,\
+						'torso':None,'groin':None,\
+						'lleg':None,'rleg':None,\
+						'lfoot':None,'rfoot':None}	
+		self.wielding = {'lhand':None,'rhand':None}
 		self.hp = 10
 		self.mhp = 10
 		self.strength = 0
@@ -57,6 +65,7 @@ class person:
 		#For self.brain...
 		self.alert = 1
 		self.notoriety = 0
+		self.lastattacked = None
 		
 		self.max_stamina = 10
 
@@ -71,15 +80,14 @@ class person:
 		#skills
 		self.medicine = 5
 		self.speech = 2
-		self.handtohand = 3
+		
+		self.skills = {'handtohand':3,'defense':2}
 		
 		#attributes
 		self.attributes = {'naturalbeauty':False,\
 							'conartist':False}
 		
 		self.items = []
-		self.wearing = []
-		self.wielding = {'lhand':None,'rhand':None}
 		self.events = {'lastbirthday':False,\
 						'pregnant':False,\
 						'pregnanton':False,\
@@ -151,7 +159,7 @@ class person:
 		self.items.append(item)
 	
 	def wear(self, item):
-		self.wearing.append(item)
+		self.wearing[item.slot] = item
 	
 	def about_place(self, place):
 		return {'text':'i dunno lol','detail':None}
@@ -222,9 +230,11 @@ class person:
 		
 		if var.player.loc == self.loc:
 			if action:
-				_s = '%s %s.' % (self.name[0],text)
+				_s = '%s %s' % (self.name[0],text)
 			else:
-				_s = '%s: %s.' % (self.name[0],text)
+				_s = '%s: %s' % (self.name[0],text)
+			
+			if not _s[len(_s)-1] in ['!','?']: _s+='.'
 			
 			if quiet:
 				if var.player.listening:
@@ -247,17 +257,24 @@ class person:
 				if not self.wielding['lhand'] and not self.wielding['rhand']:
 					if var.player == self:
 						var._c.log('You punch %s.' % guest.name[0])
-						var._c.log(guest.attacked(self,'lhand'))
+						var._c.log(guest.attacked(self,'head','lhand'))
+						self.lastattacked = guest
 						self.notoriety = 1
 					else:
-						self.say('punches %s' % guest.name[0],action=True)
-						self.say(guest.attacked(self,'lhand'))
+						if guest == var.player:
+							self.say('punches you',action=True)
+							self.lastattacked = guest
+							self.say(guest.attacked(self,'head','lhand'),action=True)
+						else:
+							self.say('punches %s' % guest.name[0],action=True)
+							self.lastattacked = guest
+							self.say(guest.attacked(self,'head','lhand'),action=True)
 						
 						return True
 		
 		self.attacking = False
 	
-	def attacked(self,by,wep):
+	def attacked(self,by,to,wep):
 		#Surprise?
 		surprise = False
 		
@@ -273,11 +290,11 @@ class person:
 
 		if wep in ['lhand','rhand']:
 			#Calc real damage before defense
-			_rd = ((by.handtohand)*10 / ((10-by.condition[wep])+1))/10
+			_rd = ((by.skills['handtohand'])*10 / ((10-by.condition[wep])+1))/10
 			
 			#Block
-			if self.handtohand > 2 and surprise == False and self.alert:
-				if random.randint(0,10-self.handtohand) <= self.handtohand:
+			if self.skills['handtohand'] > 2 and surprise == False and self.alert:
+				if random.randint(0,15-self.skills['handtohand']) <= self.skills['handtohand']:
 					if self == var.player:
 						var._c.log('You block %s\'s punch' % by.name[0])
 					else:
@@ -286,11 +303,33 @@ class person:
 					_rd = 0
 			else:
 				#self.condition['head'] -= 5#_rd
-				var._c.log('Your fist connects perfectly with %s\'s jaw.' % (self.name[0]))
+				if by == var.player:
+					var._c.log('Your fist connects perfectly with %s\'s jaw.' % (self.name[0]))
 			
+			#var._c.log(str(_rd))
+			
+			#Subtract defense
+			if self.wearing[to] and _rd:
+				_de = ((self.wearing[to].defense*5) / (10-self.skills['defense']))
+				
+				if by == var.player:
+					var._c.log(self.name[0]+'\'s %s absorbs your punch.' % self.wearing[to].name)
+					
+					if by.stamina <= (10-by.skills['handtohand']):
+						by.condition[wep] -= 1
+						var._c.log('Your %s hurts a bit.' % (words.translate[wep] ))
+				
+				_rd -= _de
+		
 			#Toss?
-			self.condition['head'] -= _rd
-			return ('+%s damage.' % _rd)
+			
+			by.stamina -= ((10-by.skills['handtohand']) / float(by.condition[wep]))
+			
+			if _rd:
+				self.condition[to] -= _rd
+				return ('+%s damage' % _rd)
+			else:
+				return ('+0 damage')
 	
 	def walk(self,dir):
 		if self.in_room:# or (var.player.in_room and self.loc == var.player.loc):
@@ -525,7 +564,7 @@ class person:
 					self.alert = 0
 					self.say('passes out',action=True)
 				elif self.condition[part] <= 0:
-					self.say('dies from a severe head wound.',action=True)
+					self.say('dies from a severe head wound',action=True)
 					self.kill()			
 	
 	def player_tick(self):
@@ -536,6 +575,7 @@ class person:
 		for part in words.body_parts:
 			_t += self.condition[part]
 		
+		health.append('Condition:')
 		health.append('%s/%s' % (_t,140))
 		
 		for bodypart in self.bleeding.iterkeys():
@@ -548,7 +588,12 @@ class person:
 				else:
 					health.append('Bleeding.')
 		
+		health.append(' ')
+		health.append('Time:')
 		health.append(str(var._c.ticks))
+		health.append(' ')
+		health.append('STA:')
+		health.append(str(self.stamina))
 		
 		if self.in_room or self.in_dungeon:	
 			var.window.clear('health')
@@ -631,10 +676,10 @@ class person:
 	
 	def kill(self):
 		var._c.log('You feel a life pass from this world.')
-		try:
-			self.get_room().guests.remove(self)
-		except:
-			pass
+		self.get_room().guests.remove(self)
+		var._c.people.remove(self)
+		#except:
+		#	pass
 
 class human(person):
 	def __init__(self,player=False):

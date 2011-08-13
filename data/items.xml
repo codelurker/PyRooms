@@ -51,11 +51,26 @@
 
 <item>
 	<type>clothing</type>
-	<ref>cloak</ref>
-	<madeof>cotton</madeof>
+	<ref>cotton cloak</ref>
 	<slot>chest</slot>
 	<weight>1</weight>
 	<price>0</price>
+	<defense>2</defense>
+	
+	<prefix>a</prefix>
+	<action>wearing</action>
+	<room_desc>%prefix% %ref% is in %pos%</room_desc>
+	<desc></desc>
+</item>
+
+<item>
+	<type>clothing</type>
+	<ref>cowhide helmet</ref>
+	<slot>head</slot>
+	<weight>1</weight>
+	<price>0</price>
+	<defense>3</defense>
+	
 	<prefix>a</prefix>
 	<action>wearing</action>
 	<room_desc>%prefix% %ref% is in %pos%</room_desc>
@@ -65,10 +80,11 @@
 <item>
 	<type>clothing</type>
 	<ref>shoes</ref>
-	<madeof>leather</madeof>
 	<slot>feet</slot>
 	<weight>1</weight>
 	<price>0</price>
+	<defense>2</defense>
+	
 	<prefix></prefix>
 	<action>wearing</action>
 	<room_desc>%prefix% %ref% is in %pos%</room_desc>

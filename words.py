@@ -195,8 +195,8 @@ def load_config_files(flush=False):
 					_i.icon = 'S'				
 				elif _j['type'] == 'clothing':
 					_i = items.clothing()
-					_i.madeof = _j['madeof']
 					_i.slot = _j['slot']
+					_i.defense = int(_j['defense'])
 					
 				_i.name = _j['ref']
 				_i.prefix = _j['prefix']

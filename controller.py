@@ -227,6 +227,8 @@ class controller:
 		adam.wear(adam.items[0])
 		adam.add_item(item.get_item_clothing('feet'))
 		adam.wear(adam.items[1])
+		adam.add_item(item.get_item_clothing('head'))		
+		adam.wear(adam.items[2])
 		
 		eve = people.human()
 		eve.name = ['Eve',functions.get_last_name(adam.race)]

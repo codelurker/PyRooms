@@ -255,6 +255,16 @@ class brain:
 					self.love = {'obj':a,'value':_r[0]}
 				elif _r[1] and _r[1] < self.hate['value']:
 					self.hate = {'obj':a,'value':_r[1]}
+					
+					if self.hate['obj'] == var.player:
+						self.owner.say('seems angered towards you',action=True)
+						if self.hate['obj'].lastattacked == self.owner.spouse:
+							if self.owner.spouse.male:
+								self.owner.say('Get your hands off my husband!')
+							else:
+								self.owner.say('Get your hands off my wife!')
+					else:
+						self.owner.say('seems angered towards %s' % (self.hate['obj'].name[0]),action=True)
 		
 		if self.want['obj'] == None and self.need['obj'] == None and self.hate == None:
 			#var._c.log('%s: I\'m bored...' % (self.owner.name[0]))
@@ -295,7 +305,7 @@ class brain:
 					self.owner.attack([self.owner.room_loc[0]+pos[0],self.owner.room_loc[1]+pos[1]])
 					found = True
 			
-			if not found:
+			if not found:				
 				self.owner.walk_to_room((self.hate['obj'].room_loc[0],self.hate['obj'].room_loc[1]))
 		
 		#if self.love:
