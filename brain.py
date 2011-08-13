@@ -1,4 +1,5 @@
 import var
+
 class brain:
 	def __init__(self, owner):
 		self.owner = owner
@@ -11,8 +12,8 @@ class brain:
 		self.want = {'value':0,'obj':None}
 		self.need = {'value':0,'obj':None}
 		self.focus = None
-		self.love = None
-		self.fear = None
+		self.love = {'value':0,'obj':None}
+		self.hate = {'value':0,'obj':None}
 	
 	def get_compatibility_with(self, person):
 		_p = 0 #how comfortable this person is with talking to <person>
@@ -205,16 +206,24 @@ class brain:
 		_dist = 10
 		
 		#Assuming friendly for now...
-		love = (1000 * (obj.get_perc_strength() / self.get_perc_strength())) / float(_dist)
+		_v = ((1000 * (obj.get_perc_strength() / self.get_perc_strength())) - (obj.owner.notoriety*1000)) / float(_dist)
 		
 		if self.owner.spouse == obj.owner:
-			love+=500
+			_v+=500
 		
-		fear = False
+		if _v >= 0:
+			love = _v
+			hate = None
+		else:
+			hate = _v
+			love = None
 		
-		#var._c.log(self.owner.name[0] + ': friendship with %s is %s' % (obj.owner.name[0],love))
+		if self.owner.name[0] == 'Adam':
+			if hate:
+				#var._c.log(self.owner.name[0] + ': friendship with %s is %s' % (obj.owner.name[0],hate))
+				pass
 		
-		return [love,fear]
+		return [love,hate]
 
 	def think(self):
 		self.need = {'value':0,'obj':None}
@@ -239,21 +248,22 @@ class brain:
 		
 		#Love
 		for a in self.owner.get_room().guests:
-			if a == self.owner: break
-
-			_r = self.examine_person(a.brain)
-			
-			if _r[0] and self.love == None or _r[0] > self.love['value']:
-				self.love = {'obj':a,'value':_r[0]}						
+			if not a == self.owner:
+				_r = self.examine_person(a.brain)
+				
+				if _r[0] and _r[0] > self.love['value']:
+					self.love = {'obj':a,'value':_r[0]}
+				elif _r[1] and _r[1] < self.hate['value']:
+					self.hate = {'obj':a,'value':_r[1]}
 		
-		if self.want['obj'] == None and self.need['obj'] == None:
+		if self.want['obj'] == None and self.need['obj'] == None and self.hate == None:
 			#var._c.log('%s: I\'m bored...' % (self.owner.name[0]))
 			return False
 		
-		if self.want['value'] > self.need['value']:
-			#var._c.log(self.owner.name[0]+': I want that %s' % self.want['obj'].name)				
+		if self.want['value'] > self.need['value'] and self.want['value'] > abs(self.hate['value']):
+			#var._c.log(self.owner.name[0]+': I want that %s' % self.want['obj'].name)	
 			if self.owner.room_loc[0] == self.want['obj'].room_loc[0] and self.owner.room_loc[1] == self.want['obj'].room_loc[1] and not self.want['obj'].owner:
-				#var._c.log(self.owner.name[0]+': Picking up %s' % self.want['obj'].name)				
+				#var._c.log(self.owner.name[0]+': Picking up %s' % self.want['obj'].name)
 				self.want['obj'].take(self.owner)
 				
 				self.want = {'value':0,'obj':None}
@@ -262,7 +272,7 @@ class brain:
 				if not self.owner.path or not self.owner.path[0] == self.want['obj'].room_loc:
 					self.owner.walk_to_room((self.want['obj'].room_loc[0],self.want['obj'].room_loc[1]))
 
-		else:			
+		elif self.want['value'] <= self.need['value'] and self.need['value'] > abs(self.hate['value']):	
 			if self.owner.room_loc[0] == self.need['obj'].room_loc[0] and self.owner.room_loc[1] == self.need['obj'].room_loc[1]:
 				if not self.owner.action:
 					var._c.log(self.owner.name[0]+': I\'m going to bed.')
@@ -273,6 +283,20 @@ class brain:
 				
 				if not self.owner.path or not self.owner.path[0] == self.need['obj'].room_loc:
 					self.owner.walk_to_room((self.need['obj'].room_loc[0],self.need['obj'].room_loc[1]))
-
+		
+		elif self.hate['obj']:
+			#self.owner.say('Die, %s!' % self.hate['obj'].name[0])
+			
+			#Find out where he/she is
+			#Check surroundings
+			found = False
+			for pos in [[-1,0],[1,0],[0,-1],[0,1]]:
+				if [self.owner.room_loc[0]+pos[0],self.owner.room_loc[1]+pos[1]] == self.hate['obj'].room_loc:
+					self.owner.attack([self.owner.room_loc[0]+pos[0],self.owner.room_loc[1]+pos[1]])
+					found = True
+			
+			if not found:
+				self.owner.walk_to_room((self.hate['obj'].room_loc[0],self.hate['obj'].room_loc[1]))
+		
 		#if self.love:
 		#	var._c.log(self.owner.name[0]+': Love %s' % self.love['obj'].name[0])

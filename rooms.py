@@ -92,9 +92,9 @@ class room:
 				self.add_object(_i)
 		
 		elif self.type == 'house':
-			_i = item.get_item('light')
-			_d = item.get_item_name('iron dagger')
-			_d.room_loc = [5,5]
+			#_d = item.get_item_name('iron dagger')
+			#_d.room_loc = [5,5]
+			#self.add_object(_d)
 			
 			pos = (random.randint(3,var.room_size[0]-6),random.randint(4,var.room_size[1]-6))
 			
@@ -125,9 +125,6 @@ class room:
 					
 					self.add_object(_t)
 			
-			self.add_object(_i)
-			self.add_object(_d)
-		
 		elif self.type == 'forest':
 			_ws = []
 			for w in range(self.green/10):

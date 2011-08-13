@@ -56,6 +56,7 @@ class person:
 		
 		#For self.brain...
 		self.alert = 1
+		self.notoriety = 0
 		
 		self.max_stamina = 10
 
@@ -70,6 +71,7 @@ class person:
 		#skills
 		self.medicine = 5
 		self.speech = 2
+		self.handtohand = 3
 		
 		#attributes
 		self.attributes = {'naturalbeauty':False,\
@@ -85,6 +87,7 @@ class person:
 						'seek_partner_age':None}
 		self.schedule = []
 		self.path = None
+		self.history = []
 		self.room_path = None
 		
 		self.description = ''
@@ -214,6 +217,21 @@ class person:
 		var.player.in_dungeon = False
 		dungeon.guests.remove(self)
 	
+	def say(self,text,action=False,quiet=False):
+		self.history.append(text)
+		
+		if var.player.loc == self.loc:
+			if action:
+				_s = '%s %s.' % (self.name[0],text)
+			else:
+				_s = '%s: %s.' % (self.name[0],text)
+			
+			if quiet:
+				if var.player.listening:
+					var._c.log(_s)
+			else:
+				var._c.log(_s)
+	
 	def attack(self,pos):
 		for obj in self.get_room().objects:
 			if obj.room_loc == pos:
@@ -221,8 +239,58 @@ class person:
 					if var.player == self:
 						var._c.log('You punch the %s.' % obj.name)
 						var._c.log(obj.attacked(self,'lhand'))
+						
+						return True
+		
+		for guest in self.get_room().guests:
+			if guest.room_loc == pos:
+				if not self.wielding['lhand'] and not self.wielding['rhand']:
+					if var.player == self:
+						var._c.log('You punch %s.' % guest.name[0])
+						var._c.log(guest.attacked(self,'lhand'))
+						self.notoriety = 1
+					else:
+						self.say('punches %s' % guest.name[0],action=True)
+						self.say(guest.attacked(self,'lhand'))
+						
+						return True
 		
 		self.attacking = False
+	
+	def attacked(self,by,wep):
+		#Surprise?
+		surprise = False
+		
+		#if not self.brain.examine_person(by.brain)[1] and self.alert:
+		if not self.alert:
+			if by == var.player:
+				var._c.log('%s doesn\'t see you coming.' % self.name[0])
+			else:
+				var._c.log('You don\'t see %s coming.' % by.name[0])
+			
+			#self.alert = True
+			#surprise = True
+
+		if wep in ['lhand','rhand']:
+			#Calc real damage before defense
+			_rd = ((by.handtohand)*10 / ((10-by.condition[wep])+1))/10
+			
+			#Block
+			if self.handtohand > 2 and surprise == False and self.alert:
+				if random.randint(0,10-self.handtohand) <= self.handtohand:
+					if self == var.player:
+						var._c.log('You block %s\'s punch' % by.name[0])
+					else:
+						self.say('blocks your punch',action=True)
+					
+					_rd = 0
+			else:
+				#self.condition['head'] -= 5#_rd
+				var._c.log('Your fist connects perfectly with %s\'s jaw.' % (self.name[0]))
+			
+			#Toss?
+			self.condition['head'] -= _rd
+			return ('+%s damage.' % _rd)
 	
 	def walk(self,dir):
 		if self.in_room:# or (var.player.in_room and self.loc == var.player.loc):
@@ -448,13 +516,44 @@ class person:
 					if not self.wielding[hand] and i.wielding == False:
 						self.wielding[hand] = i
 						i.wielding = True
-						#var._c.log(self.name[0]+' equips a %s' % i.name)				
+						self.say('equips a %s' % i.name,action=True)
 
+	def check_body_parts(self):
+		for part in words.body_parts:
+			if part == 'head':
+				if self.condition[part] <= 3 and self.alert:
+					self.alert = 0
+					self.say('passes out',action=True)
+				elif self.condition[part] <= 0:
+					self.say('dies from a severe head wound.',action=True)
+					self.kill()			
+	
 	def player_tick(self):
+		#Health
+		health = []
+		
+		_t = 0
+		for part in words.body_parts:
+			_t += self.condition[part]
+		
+		health.append('%s/%s' % (_t,140))
+		
 		for bodypart in self.bleeding.iterkeys():
 			if self.bleeding[bodypart]:
 				self.condition[bodypart]-=1
-				var._c.status('Your %s is bleeding.' % (words.translate[bodypart]))
+				self.bleeding[bodypart]-=1
+				
+				if not self.bleeding[bodypart]:
+					var._c.log('Your %s stops bleeding.' % (words.translate[bodypart]))
+				else:
+					health.append('Bleeding.')
+		
+		health.append(str(var._c.ticks))
+		
+		if self.in_room or self.in_dungeon:	
+			var.window.clear('health')
+			var.window.write('health',' '.join(health),(0,1))
+			var.window.refresh('health')
 
 	def tick(self):
 		if self.male:
@@ -489,14 +588,17 @@ class person:
 				if self.stamina < self.max_stamina:
 					self.stamina += 1
 					self.alert = 0
+					self.say('snores',action=True,quiet=True)
 				
 				else:
 					self.action = None
 					self.brain.need = {'value':0,'obj':None}
 					self.alert = 1
 
-		self.brain.think()
-		self.examine_inventory()
+		self.check_body_parts()
+		if self.alert:
+			self.brain.think()
+			self.examine_inventory()
 		
 		for i in self.items:
 			i.room_loc = self.room_loc
@@ -526,6 +628,13 @@ class person:
 					self.move_ticks = var.move_ticks
 				else:
 					self.move_ticks -= 1
+	
+	def kill(self):
+		var._c.log('You feel a life pass from this world.')
+		try:
+			self.get_room().guests.remove(self)
+		except:
+			pass
 
 class human(person):
 	def __init__(self,player=False):

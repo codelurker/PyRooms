@@ -117,12 +117,12 @@ class cursed:
 	def write_append(self,name,text):
 		for screen in self.screen:
 			if screen['name'] == name and screen['pad']:
-				screen['win'].clear()
+				#screen['win'].clear()
 				screen['log'].pop(0)
 				screen['log'].append(text)
 				
 				try:
-					for i in range(0,screen['height']):
+					for i in range(0,screen['height']+1):
 						screen['win'].addstr(screen['height']-i,0, screen['log'][screen['height']-i])
 				except:
 					pass

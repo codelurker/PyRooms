@@ -75,6 +75,9 @@ class item:
 	def parse_description(self):
 		return words.cut_text(self.description,self.get_room().get_lights())
 
+	def destroy(self):
+		self.get_room().objects.remove(self)
+
 class container(item):
 	def __init__(self):
 		item.__init__(self)
@@ -143,9 +146,9 @@ class window(item):
 		
 		if wep in ['lhand','rhand']:
 			by.condition[wep]-=1
-			by.bleeding[wep] = 1
+			by.bleeding[wep] = 5
+			self.destroy()
 			
-			#names = {'lhand':'left hand','rhand':'right hand'}
 			return ('The glass breaks. Tiny shards cut into your %s.' % (words.translate[wep]))
 	
 	def get_description(self):
@@ -160,9 +163,6 @@ class weapon(item):
 	
 	def get_description(self):
 		return self.parse_description()
-
-def load_items():
-	pass
 
 def get_item(type):
 	_l = []

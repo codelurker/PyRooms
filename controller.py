@@ -23,21 +23,20 @@ class controller:
 		self.lakes = []
 	
 	def log(self,text,error=False):
+		if len(self.history)==15: self.history.pop(0)
+		self.history.append(text)
+		
 		if not error:
-			if len(text)>79:
-				var.window.clear('log')
-				var.window.write('log',text,(0,var.window.get_height('log')-3))
+			var.window.clear('log')
+			for i in range(len(self.history)):
+				#var.window.write_append('log',text)
+				var.window.write('log',self.history[i],(0,i))
 				var.window.refresh('log')
-			else:
-				var.window.write_append('log',text)
-				var.window.refresh('log')
-			
-			var.window.refresh('main')
+				var.window.refresh('main')
+				i+=1
 		else:
 			self.errors.append(text)
 		
-		self.history.append(text)
-	
 	def status(self,text):
 		var.window.write('status',text,(0,1))
 		var.window.refresh('status')
@@ -251,10 +250,10 @@ class controller:
 		
 		adam.marry(eve)
 		_t = self.get_random_town()
-		adam.warp_to(_t.loc)
+		adam.warp_to(list(_t.loc))
 		adam.birthplace = _t
 		adam.enter_room()
-		eve.warp_to(_t.loc)
+		eve.warp_to(list(_t.loc))
 		eve.birthplace = _t
 		eve.enter_room()
 		var.player.warp_to(list(_t.loc))
@@ -278,7 +277,7 @@ class controller:
 	def tick(self,ticks=1):
 		if var.debug: print 'Ticking',
 		
-		for _t in range(ticks):
+		for _t in range(1,ticks+1):
 			if var.debug: print '.',
 			
 			var.player.player_tick()
@@ -390,37 +389,37 @@ class controller:
 			for y in range(0,var.room_size[1]):
 				for x in range(0,var.room_size[0]):
 					if room.map[x][y] == 'clear':
-						var.window.write('main',' ',(x+var.offset,y))
+						var.window.write('main',' ',(x+var.offset[0],y+var.offset[1]))
 					elif room.map[x][y] == 'grass':
 						var.window.set_color(3)
-						var.window.write('main','.',(x+var.offset,y))
+						var.window.write('main','.',(x+var.offset[0],y+var.offset[1]))
 						var.window.set_color(1)
 					elif room.map[x][y] == 'tree':
 						var.window.set_color(2)
-						var.window.write('main','F',(x+var.offset,y))
+						var.window.write('main','F',(x+var.offset[0],y+var.offset[1]))
 						var.window.set_color(1)
 					elif room.map[x][y] == 'wall':
 						var.window.set_color(7)
-						var.window.write('main','#',(x+var.offset,y))
+						var.window.write('main','#',(x+var.offset[0],y+var.offset[1]))
 						var.window.set_color(1)
 					elif room.map[x][y] == 'floor':
 						var.window.set_color(8)
-						var.window.write('main','.',(x+var.offset,y))
+						var.window.write('main','.',(x+var.offset[0],y+var.offset[1]))
 						var.window.set_color(1)
 					elif room.map[x][y] == 'stairsdown':
 						var.window.set_color(6)
-						var.window.write('main','>',(x+var.offset,y))
+						var.window.write('main','>',(x+var.offset[0],y+var.offset[1]))
 						var.window.set_color(1)
 					
 					for item in room.objects:
 						if (x,y) == tuple(item.room_loc):
-							var.window.write('main',item.icon,(x+var.offset,y))
+							var.window.write('main',item.icon,(x+var.offset[0],y+var.offset[1]))
 					
 					for guest in room.guests:
 						if (x,y) == tuple(guest.room_loc):
-							var.window.write('main','@',(x+var.offset,y))
+							var.window.write('main','@',(x+var.offset[0],y+var.offset[1]))
 					
-					if not room.lmap[x][y]: var.window.write('main',' ',(x+var.offset,y))
+					if not room.lmap[x][y]: var.window.write('main',' ',(x+var.offset[0],y+var.offset[1]))
 		
 		elif var.player.in_dungeon:
 			room = var.player.get_room().dungeons[0]
