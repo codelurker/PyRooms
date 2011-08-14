@@ -22,20 +22,49 @@ class room:
 		self.flags = {'sunlit':False}
 		
 	def generate(self):
-		for y in range(0,var.room_size[1]):
+		for y in range(0,var.room_size[1]+1):
 			self.lmap.append([0] * var.room_size[0])
+			if self.type == 'house': self.map.append(['clear'] * (var.room_size[0]))
 		
 		if self.type == 'house':
 			self.house = {'spos':(random.randint(0,(var.room_size[0]/2)-4),random.randint(1,(var.room_size[1]/2)-4)),\
 							'size':random.randint(4,10),'windows':random.randint(1,6)}
 			windows = 0
+			walls = []
+			self.walkingspace = []
+			
+			for n in range(6):
+				size = (15,15)
+				pos = (random.randint(3,size[0]-5),random.randint(4,size[1]-5))
+				_size = (random.randint(3,size[0]-pos[0]),random.randint(3,size[1]-pos[1]))
+				
+				for x in range(_size[0]):
+					for y in range(_size[1]):
+						if x == 0 or x == (_size[0])-1 or y == 0 or y == (_size[1])-1:
+							if self.map[pos[0]+x][pos[1]+y] == 'clear':
+								self.map[pos[0]+x][pos[1]+y] = 'wall'
+								walls.append([pos[0]+x,pos[1]+y])	
+						else:
+							self.map[pos[0]+x][pos[1]+y] = 'floor'
+							self.walkingspace.append([pos[0]+x,pos[1]+y])
+				
+			for x in range(0,var.room_size[0]):
+				for y in range(0,var.room_size[1]):
+					if not [x,y] in walls and not [x,y] in self.walkingspace and random.randint(1,8) <= 1:
+						self.map[x][y] = 'grass'
+					elif [x,y] in walls and random.randint(1,8) <= 1:
+						self.map[x][y] = 'grass'
+						
 		
 		for x in range(0,var.room_size[0]):
 			ycols = []
 			
+			if self.type == 'house':
+				break
+			
 			for y in range(0,var.room_size[1]):				
 				if self.type == 'clearing':
-					if random.randint(0,10) == 1:
+					if random.randint(0,8) == 1:
 						type = 'grass'
 					else:
 						type = 'clear'
@@ -43,26 +72,9 @@ class room:
 				elif self.type == 'lake':
 					type = 'clear'
 				
-				elif self.type == 'house':
-					if x == self.house['spos'][0] and y>=self.house['spos'][1] and y<self.house['spos'][1]+self.house['size'] or\
-						x == self.house['spos'][0]+self.house['size'] and y>=self.house['spos'][1] and y<self.house['spos'][1]+self.house['size'] or\
-						y == self.house['spos'][1] and x>=self.house['spos'][0] and x<self.house['spos'][0]+self.house['size'] or\
-						y == self.house['spos'][1]+self.house['size'] and x>=self.house['spos'][0] and x<=self.house['spos'][0]+self.house['size']:
-						
-						if windows < self.house['windows'] and random.randint(1,10) <= 1:
-							type = 'grass'
-							_i = item.get_item('window')
-							_i.loc = self.loc
-							_i.room_loc = [x,y]
-							self.add_object(_i)
-						else:
-							type = 'wall'
-					elif x >= self.house['spos'][0] and x < self.house['spos'][0]+self.house['size'] and\
-						y >= self.house['spos'][1] and y < self.house['spos'][1]+self.house['size']:
-						type = 'floor'
-					else:
-						type = 'grass'
-					
+				#elif self.type == 'house':
+				
+				
 				elif self.type == 'field':
 					if random.randint(0,4) <= 2:
 						type = 'grass'
@@ -91,6 +103,7 @@ class room:
 
 				ycols.append(type)
 			
+
 			self.map.append(ycols)
 			
 			#for self.

@@ -13,7 +13,7 @@ class family:
 		_r = var._c.map[self.loc[0]][self.loc[1]]
 		_r.tick()
 		
-		self.house = (_r.house['spos'][0]+1,_r.house['spos'][1]+1)
+		self.house = (_r.walkingspace[0][0],_r.walkingspace[0][1])
 		
 		#Generate a husband and wife
 		husband = people.human()
