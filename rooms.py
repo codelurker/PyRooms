@@ -57,8 +57,8 @@ class room:
 							self.add_object(_i)
 						else:
 							type = 'wall'
-					elif x >= self.house['spos'][0] and x <= self.house['spos'][0]+self.house['size'] and\
-						y >= self.house['spos'][1] and y <= self.house['spos'][1]+self.house['size']:
+					elif x >= self.house['spos'][0] and x < self.house['spos'][0]+self.house['size'] and\
+						y >= self.house['spos'][1] and y < self.house['spos'][1]+self.house['size']:
 						type = 'floor'
 					else:
 						type = 'grass'
@@ -107,34 +107,17 @@ class room:
 			#_d.room_loc = [5,5]
 			#self.add_object(_d)
 			
-			pos = (random.randint(3,var.room_size[0]-6),random.randint(4,var.room_size[1]-6))
+			#Decorate
+			pos = (random.randint(self.house['spos'][0]+1,self.house['spos'][0]+self.house['size']),random.randint(self.house['spos'][1]+1,self.house['spos'][1]+self.house['size']))
 			
-			for x in range(0,3):
-				for y in range(0,3):
-					_t = item.get_item_name('table')
-					_t.room_loc=[pos[0]+x,pos[1]+y]
-					
-					if x == 0 and y == 1:
-						_c = item.get_item_name('chair')
-						_c.room_loc=[pos[0]+x-1,pos[1]+y]
-						self.add_object(_c)
-					
-					elif x == 2 and y == 1:
-						_c = item.get_item_name('chair')
-						_c.room_loc=[pos[0]+x+1,pos[1]+y]
-						self.add_object(_c)
-					
-					elif x == 1 and y == 0:
-						_c = item.get_item_name('chair')
-						_c.room_loc=[pos[0]+x,pos[1]+y-1]
-						self.add_object(_c)
-					
-					elif x == 1 and y == 2:
-						_c = item.get_item_name('chair')
-						_c.room_loc=[pos[0]+x,pos[1]+y+1]
-						self.add_object(_c)
-					
-					self.add_object(_t)
+			_t = item.get_item_name('table')
+			_t.room_loc=[pos[0],pos[1]]
+			#if x == 0 and y == 1:
+			#	_c = item.get_item_name('chair')
+			#	_c.room_loc=[pos[0]+x-1,pos[1]+y]
+			#	self.add_object(_c)
+			
+			self.add_object(_t)
 			
 		elif self.type == 'forest':
 			_ws = []

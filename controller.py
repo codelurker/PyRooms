@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-import functions, people, var, ai, rooms, towns, dungeons, words,  biomes, random
+import functions, people, var, ai, rooms, towns, dungeons, words,  biomes, families, random
 import items as item
 import jobs as job
 
@@ -29,7 +29,6 @@ class controller:
 		if not error:
 			var.window.clear('log')
 			for i in range(len(self.history)):
-				#var.window.write_append('log',text)
 				var.window.write('log',self.history[i],(0,i))
 				var.window.refresh('log')
 				var.window.refresh('main')
@@ -181,6 +180,11 @@ class controller:
 				if self.map[x][y]:
 					self.map[x][y].find_exits()
 					l = self.map[x][y]
+		
+		#Make families
+		for town in self.towns:
+			for house in town.houses:
+				families.family('Kraft',house).generate()
 	
 	def build_clearing(self,pos):
 		r = rooms.room(pos,self)
@@ -208,6 +212,7 @@ class controller:
 	def build_house(self,pos):
 		r = rooms.room(pos,self)
 		r.type = 'house'
+		r.generate()
 		r.randomize()
 		
 		self.map[pos[0]][pos[1]] = r
@@ -216,33 +221,8 @@ class controller:
 		self.jobs.append(job)
 	
 	def make_human_race(self):
-		adam = people.human()
-		adam.name = ['Adam',functions.get_last_name(adam.race)]
-		adam.age = 30
-		adam.strength = 6
-		adam.dexterity = 4
-		adam.intelligence = 6
-		adam.charisma = 6
-		adam.add_item(item.get_item_clothing('chest'))
-		adam.wear(adam.items[0])
-		adam.add_item(item.get_item_clothing('feet'))
-		adam.wear(adam.items[1])
-		adam.add_item(item.get_item_clothing('head'))		
-		adam.wear(adam.items[2])
-		
-		eve = people.human()
-		eve.name = ['Eve',functions.get_last_name(adam.race)]
-		eve.male = False
-		eve.age = 25
-		eve.strength = 4
-		eve.dexterity = 5
-		eve.intelligence = 3
-		eve.charisma = 8
-		eve.add_item(item.get_item('clothing'))
-		eve.wear(adam.items[0])
-		
 		var.player = people.human(player=True)
-		var.player.name = ['Player',functions.get_last_name(adam.race)]
+		var.player.name = ['Player','Derp']
 		var.player.male = False
 		var.player.age = 25
 		var.player.strength = 4
@@ -250,15 +230,7 @@ class controller:
 		var.player.intelligence = 3
 		var.player.charisma = 8
 		
-		adam.marry(eve)
-		_t = self.get_random_town()
-		adam.warp_to(list(_t.loc))
-		adam.birthplace = _t
-		adam.enter_room()
-		eve.warp_to(list(_t.loc))
-		eve.birthplace = _t
-		eve.enter_room()
-		var.player.warp_to(list(_t.loc))
+		var.player.warp_to(list(self.get_random_town().loc))
 		var.player.birthplace = var.player
 		var.player.add_item(item.get_item('light'))
 		
@@ -266,13 +238,7 @@ class controller:
 		var.camera[1] = var.player.loc[1]-12
 		if var.camera[0]<0: var.camera[0] = 0
 		if var.camera[1]<0: var.camera[1] = 0
-		
-		self.jobs.append(job.get_job('carpenter'))
-		self.jobs[0].hire(adam)
-		
-		for _r in range(2,people.random.randint(4,5)):
-			eve.impregnate(adam)
-		
+	
 	def is_daytime(self):
 		return True
 	

@@ -6,8 +6,9 @@ class town:
 		self.loc = loc
 		self.map = map
 		self.size = (map[len(map)-1][0]-map[0][0]+1,map[len(map)-1][1]-map[0][1]+1)
-		
 		self.controller = controller
+		
+		self.houses=[]
 		
 	def get_population(self):
 		for pos in self.map:
@@ -21,5 +22,8 @@ class town:
 		
 		#Start placing housing based on size
 		if self.size >= 3:
-			self.controller.build_house((self.loc[0]+random.randint(1,self.size[0]-2),self.loc[1]+random.randint(1,self.size[1]-2)))
+			hpos = (self.loc[0]+random.randint(1,self.size[0]-2),self.loc[1]+random.randint(1,self.size[1]-2))
+			self.controller.build_house(hpos)
+			
+			self.houses.append(hpos)
 		
