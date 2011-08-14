@@ -26,7 +26,7 @@ class room:
 			self.lmap.append([0] * var.room_size[0])
 		
 		if self.type == 'house':
-			self.house = {'spos':(random.randint(2,(var.room_size[0]/2)-4),random.randint(2,(var.room_size[1]/2)-4)),\
+			self.house = {'spos':(random.randint(0,(var.room_size[0]/2)-4),random.randint(1,(var.room_size[1]/2)-4)),\
 							'size':random.randint(4,10),'windows':random.randint(1,6)}
 			windows = 0
 		
@@ -228,6 +228,7 @@ class room:
 			for y in range(-24,25):
 				for x in range(-24,25):
 					if not 0 < obj.room_loc[0]+x < var.room_size[0] and not 0 < obj.room_loc[1]+y < var.room_size[1]: continue
+					if (abs(obj.room_loc[0]-(obj.room_loc[0]+x))+abs(obj.room_loc[1]-(obj.room_loc[1]+y))) > 15: continue
 					
 					if (obj.room_loc[0],obj.room_loc[1]) == (obj.room_loc[0]+x,obj.room_loc[1]+y): continue
 					
