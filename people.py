@@ -1,5 +1,6 @@
 #!/usr/bin/python2
 import random, functions, brain, words, ai, var
+import items as item
 
 random.seed()
 
@@ -61,6 +62,9 @@ class person:
 		self.charisma = 0
 		self.weight = 0
 		self.stamina = 10
+		
+		#GAHHHHHHHHHHH CHANGEEEEEEEEEEEEEE
+		self.defense = 3
 		
 		#For self.brain...
 		self.alert = 1
@@ -248,88 +252,73 @@ class person:
 				if not self.wielding['lhand'] and not self.wielding['rhand']:
 					if var.player == self:
 						var._c.log('You punch the %s.' % obj.name)
-						var._c.log(obj.attacked(self,'lhand'))
-						
+						obj.attacked(self,'lhand')
+						self.attacking = False
 						return True
 		
 		for guest in self.get_room().guests:
 			if guest.room_loc == pos:
 				if not self.wielding['lhand'] and not self.wielding['rhand']:
 					if var.player == self:
-						var._c.log('You punch %s.' % guest.name[0])
-						var._c.log(guest.attacked(self,'head','lhand'))
+						guest.attacked(self,'head','lhand')
 						self.lastattacked = guest
 						self.notoriety = 1
 					else:
 						if guest == var.player:
-							self.say('punches you',action=True)
 							self.lastattacked = guest
-							self.say(guest.attacked(self,'head','lhand'),action=True)
+							guest.attacked(self,'head','lhand')
 						else:
-							self.say('punches %s' % guest.name[0],action=True)
 							self.lastattacked = guest
-							self.say(guest.attacked(self,'head','lhand'),action=True)
+							guest.attacked(self,'head','lhand')
 						
 						return True
 		
 		self.attacking = False
 	
 	def attacked(self,by,to,wep):
-		#Surprise?
-		surprise = False
+		ar = by.strength / 4
+		dr = 0
 		
-		#if not self.brain.examine_person(by.brain)[1] and self.alert:
-		if not self.alert:
-			if by == var.player:
-				var._c.log('%s doesn\'t see you coming.' % self.name[0])
-			else:
-				var._c.log('You don\'t see %s coming.' % by.name[0])
-			
-			#self.alert = True
-			#surprise = True
-
+		#Add bonuses based on weapon type
+		#While we're here, calculate damage
 		if wep in ['lhand','rhand']:
-			#Calc real damage before defense
-			_rd = ((by.skills['handtohand'])*10 / ((10-by.condition[wep])+1))/10
+			ar += by.skills['handtohand']
+			dam = functions.roll(1,by.skills['handtohand'])
 			
-			#Block
-			if self.skills['handtohand'] > 2 and surprise == False and self.alert:
-				if random.randint(0,15-self.skills['handtohand']) <= self.skills['handtohand']:
-					if self == var.player:
-						var._c.log('You block %s\'s punch' % by.name[0])
-					else:
-						self.say('blocks your punch',action=True)
-					
-					_rd = 0
-			else:
-				#self.condition['head'] -= 5#_rd
-				if by == var.player:
-					var._c.log('Your fist connects perfectly with %s\'s jaw.' % (self.name[0]))
-			
-			#var._c.log(str(_rd))
-			
-			#Subtract defense
-			if self.wearing[to] and _rd:
-				_de = ((self.wearing[to].defense*5) / (10-self.skills['defense']))
-				
-				if by == var.player:
-					var._c.log(self.name[0]+'\'s %s absorbs your punch.' % self.wearing[to].name)
-					
-					if by.stamina <= (10-by.skills['handtohand']):
-						by.condition[wep] -= 1
-						var._c.log('Your %s hurts a bit.' % (words.translate[wep] ))
-				
-				_rd -= _de
+			dr += by.skills['handtohand']
+		#elif wep in ['lhand','rhand']:
 		
-			#Toss?
+		#Find defense rating
+		if self.alert: dr += self.defense * 4			
+		
+		#Random number + roll
+		n = random.randint(1,100)
+		
+		if ar+n > dr or self.alert == False:			
+			#Subtract damage from armor
+			if self.wearing[to]:
+				dam -= functions.roll(1,self.wearing[to].defense - ((self.wearing[to].defense/2)*(not self.alert)))
 			
-			by.stamina -= ((10-by.skills['handtohand']) / float(by.condition[wep]))
+			#Correct damage
+			if dam <= 0:
+				if by == var.player:
+					var._c.log('%s\'s %s absorbs your hit.' % (self.name[0],self.wearing[to].name))
+				else:
+					var._c.log('You are unharmed.')
+				
+				return False
 			
-			if _rd:
-				self.condition[to] -= _rd
-				return ('+%s damage' % _rd)
+			if by == var.player:
+				var._c.log('You punch %s in the %s for %s damage.' % (self.name[0],words.translate[to],dam))
+				self.condition[to] -= dam
 			else:
-				return ('+0 damage')
+				by.say('punches you in the %s for %s damage' % (words.translate[to],dam),action=True)
+				self.condition[to] -= dam
+		else:
+			if self == var.player:
+				var._c.log('You block %s\'s punch' % by.name[0])
+			else:
+				self.say('blocks your punch',action=True)
 	
 	def walk(self,dir):
 		if self.in_room:# or (var.player.in_room and self.loc == var.player.loc):
@@ -675,11 +664,12 @@ class person:
 					self.move_ticks -= 1
 	
 	def kill(self):
+		c = item.corpse(self.name,self.loc,self.room_loc)
+		self.get_room().add_object(c)
+		
 		var._c.log('You feel a life pass from this world.')
 		self.get_room().guests.remove(self)
 		var._c.people.remove(self)
-		#except:
-		#	pass
 
 class human(person):
 	def __init__(self,player=False):

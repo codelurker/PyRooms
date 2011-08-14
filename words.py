@@ -3,7 +3,7 @@ import var, items, jobs, os, sys, random, json, xml2json, hashlib
 
 random.seed()
 
-translate = {'larm':'left arm','rarm':'right arm','lhand':'left hand','rhand':'right hand'}	
+translate = {'larm':'left arm','rarm':'right arm','lhand':'left hand','rhand':'right hand','head':'head'}	
 
 def opposite(text):
 	if text == 'north':

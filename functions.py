@@ -125,3 +125,11 @@ def get_last_name(race):
 		words.human_lnames.remove(_ret)
 		
 		return _ret
+
+def roll(count,sides):
+	_v = 0
+	for c in range(1,count+1):
+		_t =random.randint(1,sides)
+		_v += _t
+	
+	return _v

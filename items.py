@@ -163,6 +163,21 @@ class weapon(item):
 	
 	def get_description(self):
 		return self.parse_description()
+		
+class corpse(item):
+	def __init__(self,name,loc,room_loc):
+		item.__init__(self)
+		
+		self.name = 'corpse of %s' % name[0]
+		self.type = 'corpse'
+		self.loc = loc
+		self.room_loc = room_loc
+		self.icon = '@'
+		
+		self.weight = 500
+	
+	def get_description(self):
+		return self.parse_description()
 
 def get_item(type):
 	_l = []
