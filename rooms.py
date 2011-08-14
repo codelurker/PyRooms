@@ -14,7 +14,7 @@ class room:
 		self.objects = []
 		self.guests = []
 		self.dungeons = []
-				
+		
 		self.map = []
 		self.lmap = []
 		self.exits = []
@@ -24,6 +24,11 @@ class room:
 	def generate(self):
 		for y in range(0,var.room_size[1]):
 			self.lmap.append([0] * var.room_size[0])
+		
+		if self.type == 'house':
+			self.house = {'spos':(random.randint(2,(var.room_size[0]/2)-4),random.randint(2,(var.room_size[1]/2)-4)),\
+							'size':random.randint(4,10),'windows':random.randint(1,6)}
+			windows = 0
 		
 		for x in range(0,var.room_size[0]):
 			ycols = []
@@ -39,12 +44,24 @@ class room:
 					type = 'clear'
 				
 				elif self.type == 'house':
-					if x == 0 or y == 1 or x==var.room_size[0]-1 or y==var.room_size[1]-1:
-						type = 'grass'
-					elif x == 1 or y == 2 or x==var.room_size[0]-2 or y==var.room_size[1]-2:
-						type = 'wall'
-					else:
+					if x == self.house['spos'][0] and y>=self.house['spos'][1] and y<self.house['spos'][1]+self.house['size'] or\
+						x == self.house['spos'][0]+self.house['size'] and y>=self.house['spos'][1] and y<self.house['spos'][1]+self.house['size'] or\
+						y == self.house['spos'][1] and x>=self.house['spos'][0] and x<self.house['spos'][0]+self.house['size'] or\
+						y == self.house['spos'][1]+self.house['size'] and x>=self.house['spos'][0] and x<=self.house['spos'][0]+self.house['size']:
+						
+						if windows < self.house['windows'] and random.randint(1,10) <= 1:
+							type = 'grass'
+							_i = item.get_item('window')
+							_i.loc = self.loc
+							_i.room_loc = [x,y]
+							self.add_object(_i)
+						else:
+							type = 'wall'
+					elif x >= self.house['spos'][0] and x <= self.house['spos'][0]+self.house['size'] and\
+						y >= self.house['spos'][1] and y <= self.house['spos'][1]+self.house['size']:
 						type = 'floor'
+					else:
+						type = 'grass'
 					
 				elif self.type == 'field':
 					if random.randint(0,4) <= 2:
@@ -76,13 +93,7 @@ class room:
 			
 			self.map.append(ycols)
 			
-			#Clean windows
-			for obj in self.objects:
-				if obj.type == 'window':
-						try:
-							self.map[obj.room_loc[0]][obj.room_loc[1]] = 'clear'
-						except:
-							pass
+			#for self.
 	
 	def randomize(self):
 		if self.type == 'clearing':
@@ -205,7 +216,7 @@ class room:
 		
 		lights = []
 		for obj in self.objects:
-			if obj.type in ['light','window']:
+			if obj.type in ['light']:
 				lights.append(obj)
 		
 		for guest in self.guests:
@@ -214,8 +225,8 @@ class room:
 					lights.append(obj)
 		
 		for obj in lights:
-			for y in range(-10,11):
-				for x in range(-10,11):
+			for y in range(-24,25):
+				for x in range(-24,25):
 					if not 0 < obj.room_loc[0]+x < var.room_size[0] and not 0 < obj.room_loc[1]+y < var.room_size[1]: continue
 					
 					if (obj.room_loc[0],obj.room_loc[1]) == (obj.room_loc[0]+x,obj.room_loc[1]+y): continue
@@ -276,24 +287,24 @@ class room:
 				elif pos == [-1,0]:
 					self.exits.append({'dir':'west','room':_r,'window':True,'obj':None})
 		
-		if self.type == 'house':
-			for exit in self.exits:
-				_i = item.get_item('window')
-				_i.place = exit['dir']
-				_i.inside = self
-				_i.outside = exit['room']
-				
-				if _i.place == 'west':
-					_i.room_loc = [1,12]
-				elif _i.place == 'east':
-					_i.room_loc = [23,12]
-				elif _i.place == 'north':
-					_i.room_loc = [12,2]
-				elif _i.place == 'south':
-					_i.room_loc = [12,22]
-				
-				exit['obj'] = _i
-				self.add_object(_i)
+		#if self.type == 'house':
+		#	for exit in self.exits:
+		#		_i = item.get_item('window')
+		#		_i.place = exit['dir']
+		#		_i.inside = self
+		#		_i.outside = exit['room']
+		#		
+		#		if _i.place == 'west':
+		#			_i.room_loc = [1,12]
+		#		elif _i.place == 'east':
+		#			_i.room_loc = [23,12]
+		#		elif _i.place == 'north':
+		#			_i.room_loc = [12,2]
+		#		elif _i.place == 'south':
+		#			_i.room_loc = [12,22]
+		#		
+		#		exit['obj'] = _i
+		#		self.add_object(_i)
 				
 	def add_object(self,obj,place=None):
 		obj.loc = self.loc

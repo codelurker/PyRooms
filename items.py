@@ -149,7 +149,7 @@ class window(item):
 			by.bleeding[wep] = 5
 			self.destroy()
 			
-			return ('The glass breaks. Tiny shards cut into your %s.' % (words.translate[wep]))
+			var._c.log('The glass breaks. Tiny shards cut into your %s.' % (words.translate[wep]))
 	
 	def get_description(self):
 		return self.parse_description()

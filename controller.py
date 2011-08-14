@@ -309,7 +309,9 @@ class controller:
 		if var.camera[0]<0: var.camera[0] = 0
 		if var.camera[1]<0: var.camera[1] = 0
 		
-		var.player.get_room().tick()
+		if var.player.in_room:
+			var.player.get_room().tick()
+		
 		self.draw_map()
 		if var.debug: print 'Done!\n',
 	
