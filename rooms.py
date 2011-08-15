@@ -18,6 +18,7 @@ class room:
 		self.map = []
 		self.lmap = []
 		self.exits = []
+		self.noises = []
 		
 		self.flags = {'sunlit':False}
 		
@@ -30,7 +31,7 @@ class room:
 			self.house = {'spos':(random.randint(0,(var.room_size[0]/2)-4),random.randint(1,(var.room_size[1]/2)-4)),\
 							'size':random.randint(4,10),'windows':random.randint(1,6)}
 			windows = 0
-			walls = []
+			self.walls = []
 			self.walkingspace = []
 			
 			for n in range(6):
@@ -43,18 +44,20 @@ class room:
 						if x == 0 or x == (_size[0])-1 or y == 0 or y == (_size[1])-1:
 							if self.map[pos[0]+x][pos[1]+y] == 'clear':
 								self.map[pos[0]+x][pos[1]+y] = 'wall'
-								walls.append([pos[0]+x,pos[1]+y])	
+								self.walls.append([pos[0]+x,pos[1]+y])	
 						else:
 							self.map[pos[0]+x][pos[1]+y] = 'floor'
 							self.walkingspace.append([pos[0]+x,pos[1]+y])
-				
+			
+			#Remove walking space from self.walls array
+			for place in self.walkingspace:
+				if place in self.walls: self.walls.remove(place)
+	
+			#Grass
 			for x in range(0,var.room_size[0]):
 				for y in range(0,var.room_size[1]):
-					if not [x,y] in walls and not [x,y] in self.walkingspace and random.randint(1,8) <= 1:
-						self.map[x][y] = 'grass'
-					elif [x,y] in walls and random.randint(1,8) <= 1:
-						self.map[x][y] = 'grass'
-						
+					if not [x,y] in self.walls and not [x,y] in self.walkingspace and random.randint(1,6) <= 1:
+						self.map[x][y] = 'grass'						
 		
 		for x in range(0,var.room_size[0]):
 			ycols = []
@@ -116,21 +119,34 @@ class room:
 				self.add_object(_i)
 		
 		elif self.type == 'house':
-			#_d = item.get_item_name('iron dagger')
-			#_d.room_loc = [5,5]
-			#self.add_object(_d)
+			_d = item.get_item_name('iron dagger')
+			_d.room_loc = [2,2]
+			self.add_object(_d)
 			
-			#Decorate
-			pos = (random.randint(self.house['spos'][0]+1,self.house['spos'][0]+self.house['size']),random.randint(self.house['spos'][1]+1,self.house['spos'][1]+self.house['size']))
+			#Decorate~~!!
 			
-			_t = item.get_item_name('table')
-			_t.room_loc=[pos[0],pos[1]]
-			#if x == 0 and y == 1:
-			#	_c = item.get_item_name('chair')
-			#	_c.room_loc=[pos[0]+x-1,pos[1]+y]
-			#	self.add_object(_c)
+			#Windows - Corner check.
+			for wall in self.walls:
+				if random.randint(1,8) <= 1:
+					_h = 0
+					_v = 0
+					for pos in [[-1,0],[1,0]]:
+						if [wall[0]+pos[0],wall[1]+pos[1]] in self.walls:
+							_h += 1
+					
+					for pos in [[0,-1],[0,1]]:
+						if [wall[0]+pos[0],wall[1]+pos[1]] in self.walls:
+							_v += 1
+					
+					if _h == 2 and not _v or _v == 2 and not _h:
+						self.map[wall[0]][wall[1]] = 'grass'
+						_i = item.get_item('window')
+						_i.room_loc = [wall[0],wall[1]]
+						self.add_object(_i)	
 			
-			self.add_object(_t)
+			#_t = item.get_item_name('table')
+			#_t.room_loc=[pos[0],pos[1]]
+			#self.add_object(_t)
 			
 		elif self.type == 'forest':
 			_ws = []

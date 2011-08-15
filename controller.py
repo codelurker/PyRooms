@@ -23,6 +23,11 @@ class controller:
 		self.lakes = []
 	
 	def log(self,text,error=False):
+		#if len(self.history) and text == self.history[len(self.history)-1] and not self.history[len(self.history)-1].count('Again.'):
+		#	self.history[len(self.history)-1] += ' Again.'
+		#elif len(self.history) and self.history[len(self.history)-1].count('Again.'):
+		#	pass		
+		#else:
 		if len(self.history)==15: self.history.pop(0)
 		self.history.append(text)
 		
@@ -247,6 +252,9 @@ class controller:
 		
 		for _t in range(1,ticks+1):
 			if var.debug: print '.',
+			
+			if var.player.in_room:
+				var.player.get_room().noises = []
 			
 			var.player.player_tick()
 			

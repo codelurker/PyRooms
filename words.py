@@ -74,6 +74,26 @@ def get_phrase(type):
 	
 	return _l[random.randint(0,len(_l)-1)]
 
+def get_name(race,male):
+	random.seed()
+	
+	if male:
+		if race == 'Human':
+			return human_male_fnames[random.randint(0,len(human_male_fnames)-1)]
+	
+	else:
+		if race == 'Human':
+			return human_female_fnames[random.randint(0,len(human_female_fnames)-1)]
+
+def get_last_name(race):
+	random.seed()
+	
+	if race == 'Human':
+		_ret = human_lnames[random.randint(0,len(human_lnames)-1)]
+		human_lnames.remove(_ret)
+		
+		return _ret
+
 interior_descriptions = []
 outside_descriptions = []
 human_male_fnames = []
@@ -192,7 +212,9 @@ def load_config_files(flush=False):
 					_i.icon = ':'
 				elif _j['type'] == 'weapon':
 					_i = items.weapon()
-					_i.icon = 'S'				
+					_i.category = _j['category']
+					_i.attack = int(_j['attack'])
+					_i.icon = 'S'	
 				elif _j['type'] == 'clothing':
 					_i = items.clothing()
 					_i.slot = _j['slot']

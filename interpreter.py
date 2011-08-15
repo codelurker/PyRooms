@@ -150,7 +150,7 @@ def parse_input(text):
 		if not var.player.in_room:
 			var._c.people[0].walk_to((var.player.loc[0],var.player.loc[1]))
 		else:
-			var._c.people[0].walk_to_room((var.player.room_loc[0],var.player.room_loc[1]))
+			var.player.get_room().guests[0].walk_to_room((var.player.room_loc[0],var.player.room_loc[1]))
 	
 	elif text[0] == ord('x'):
 		if var.player.in_room:
@@ -166,6 +166,17 @@ def parse_input(text):
 			var.window.clear('main')
 			var.player.enter_room()
 			var._c.draw_map()
+	
+	elif text[0] == ord('l'):
+		var._c.log('You listen...')
+		
+		if var.player.in_room:
+			for line in var.player.get_room().noises:
+				var._c.log(line)
+	
+	elif text[0] == ord(','):
+		if var.player.in_room:
+			var.player.pick_up()
 	
 	elif text[0] == ord('>'):
 		if var.player.in_room:

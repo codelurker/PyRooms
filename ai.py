@@ -64,6 +64,9 @@ class AStar:
 		if start[0] == end[0] and start[1] == end[1]:
 			return None
 		
+		if room and omap[end[0]][end[1]] == 'wall':
+			return None
+		
 		if not room:
 			for x in range(0,self.size[0]):
 				_y = []
@@ -74,7 +77,9 @@ class AStar:
 						else:
 							_y.append(None)
 					else:
-						if omap[x][y] and not omap[x][y].type == self.avoidType:
+						if not room and omap[x][y] and not omap[x][y].type == self.avoidType:
+							_y.append(Node((x,y),self))
+						elif omap[x][y] and not omap[x][y] == self.avoidType:
 							_y.append(Node((x,y),self))
 						else:
 							_y.append(None)

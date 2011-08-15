@@ -96,6 +96,10 @@
 	<ref>iron dagger</ref>
 	<weight>3</weight>
 	<price>5</price>
+	<category>knife</category>
+	<attack>4</attack>
+	
+	
 	<prefix></prefix>
 	<action>wielding</action>
 	<room_desc>%prefix% %ref% is in %pos%</room_desc>

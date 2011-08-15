@@ -1,4 +1,4 @@
-import var
+import var, ai
 
 class brain:
 	def __init__(self, owner):
@@ -198,15 +198,17 @@ class brain:
 	def get_perc_strength(self):
 		_s = self.owner.strength * (self.owner.hp/float(self.owner.mhp))
 		
+		if _s <= 0: _s = 1
+		
 		return _s
 
 	def examine_person(self,obj):
 		#Temp
-		_dan = 5
-		_dist = 10
+		_dist = abs(self.owner.room_loc[0]-obj.owner.room_loc[0])+abs(self.owner.room_loc[1]-obj.owner.room_loc[1])
+		if not _dist: _dist = 1
 		
 		#Assuming friendly for now...
-		_v = ((1000 * (obj.get_perc_strength() / self.get_perc_strength())) - (obj.owner.notoriety*1000)) / float(_dist)
+		_v = ((1000 * (obj.get_perc_strength() / self.get_perc_strength())) - (obj.owner.notoriety*1000))# / float(_dist)
 		
 		if self.owner.spouse == obj.owner:
 			_v+=500
@@ -218,20 +220,28 @@ class brain:
 			hate = _v
 			love = None
 		
-		if self.owner.name[0] == 'Adam':
-			if hate:
-				#var._c.log(self.owner.name[0] + ': friendship with %s is %s' % (obj.owner.name[0],hate))
-				pass
+		#if hate:
+		#	var._c.log(self.owner.name[0] + ': friendship with %s is %s' % (obj.owner.name[0],hate))
+		#	pass
 		
 		return [love,hate]
 
 	def think(self):
 		self.need = {'value':0,'obj':None}
 		self.want = {'value':0,'obj':None}
+		self.lhate = self.hate['obj']
 		
 		#Want/Need
 		for o in self.owner.get_room().objects:
-			if o.type == 'window': break
+			if o.type == 'window': continue
+			
+			can_see = True
+			if not self.owner.room_loc == o.room_loc:
+				for pos in ai.line((self.owner.room_loc[0],self.owner.room_loc[1]),(o.room_loc[0],o.room_loc[1])).path:
+					if self.owner.get_room().map[pos[0]][pos[1]] == 'wall':
+						can_see = False
+			
+			if not can_see: break
 			
 			value = self.get_item_value(o)
 			
@@ -246,7 +256,7 @@ class brain:
 					
 					self.need = {'obj':o,'value':value[1]}
 		
-		#Love
+		#Love/Hate
 		for a in self.owner.get_room().guests:
 			if not a == self.owner:
 				_r = self.examine_person(a.brain)
@@ -256,15 +266,17 @@ class brain:
 				elif _r[1] and _r[1] < self.hate['value']:
 					self.hate = {'obj':a,'value':_r[1]}
 					
-					if self.hate['obj'] == var.player:
-						self.owner.say('seems angered towards you',action=True)
-						if self.hate['obj'].lastattacked == self.owner.spouse:
-							if self.owner.spouse.male:
-								self.owner.say('Get your hands off my husband!')
-							else:
-								self.owner.say('Get your hands off my wife!')
+		if self.hate['obj'] == var.player:
+			if not self.hate['obj'] == self.lhate:
+				self.owner.say('seems angered towards you',action=True)
+				if self.hate['obj'].lastattacked == self.owner.spouse:
+					if self.owner.spouse.male:
+						self.owner.say('Get your hands off my husband!')
 					else:
-						self.owner.say('seems angered towards %s' % (self.hate['obj'].name[0]),action=True)
+						self.owner.say('Get your hands off my wife!')
+		
+		elif not self.hate['obj'] == None:
+			self.owner.say('seems angered towards %s' % (self.hate['obj'].name[0]),action=True)
 		
 		if self.want['obj'] == None and self.need['obj'] == None and self.hate == None:
 			#var._c.log('%s: I\'m bored...' % (self.owner.name[0]))

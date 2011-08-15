@@ -106,26 +106,6 @@ def get_future_date(ticks):
 	
 	return _d
 
-def get_name(race,male):
-	random.seed()
-	
-	if male:
-		if race == 'Human':
-			return words.human_male_fnames[random.randint(0,len(words.human_male_fnames)-1)]
-	
-	else:
-		if race == 'Human':
-			return words.human_female_fnames[random.randint(0,len(words.human_female_fnames)-1)]
-
-def get_last_name(race):
-	random.seed()
-	
-	if race == 'Human':
-		_ret = words.human_lnames[random.randint(0,len(words.human_lnames)-1)]
-		words.human_lnames.remove(_ret)
-		
-		return _ret
-
 def roll(count,sides):
 	_v = 0
 	for c in range(1,count+1):

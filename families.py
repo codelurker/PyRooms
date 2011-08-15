@@ -1,4 +1,4 @@
-import var, people
+import var, people, words
 import items as item
 
 class family:
@@ -17,7 +17,7 @@ class family:
 		
 		#Generate a husband and wife
 		husband = people.human()
-		husband.name = ['Adam',self.name]
+		husband.name = [words.get_name(husband.race,husband.male),self.name]
 		husband.age = 30
 		husband.strength = 6
 		husband.dexterity = 4
@@ -34,7 +34,8 @@ class family:
 		husband.enter_room()
 		
 		wife = people.human()
-		wife.name = ['Eve',self.name]
+		wife.male = False
+		wife.name = [words.get_name(wife.race,wife.male),self.name]
 		wife.age = 30
 		wife.strength = 6
 		wife.dexterity = 4

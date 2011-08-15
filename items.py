@@ -55,9 +55,14 @@ class item:
 			self.get_room().objects.remove(self)
 
 		self.owner = who
-
 		self.parent = None
 		who.items.append(self)
+		
+		if who == var.player:
+			var._c.status('You pick up the %s.' % self.name)
+			who.examine_inventory()
+		else:
+			who.say('picks up the %s' % self.name,action=True,quiet=True)
 	
 	def get_room(self):
 		return var._c.map[self.loc[0]][self.loc[1]]
@@ -147,9 +152,11 @@ class window(item):
 		if wep in ['lhand','rhand']:
 			by.condition[wep]-=1
 			by.bleeding[wep] = 5
-			self.destroy()
-			
 			var._c.log('The glass breaks. Tiny shards cut into your %s.' % (words.translate[wep]))
+		else:
+			var._c.log('The glass breaks.')
+		
+		self.destroy()		
 	
 	def get_description(self):
 		return self.parse_description()

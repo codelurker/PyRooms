@@ -53,6 +53,13 @@ class person:
 						'torso':None,'groin':None,\
 						'lleg':None,'rleg':None,\
 						'lfoot':None,'rfoot':None}	
+		self.multiplier = {'head':2.0,'eyes':2.5,\
+						'larm':.40,'rarm':.40,\
+						'lhand':.20,'rhand':.20,\
+						'chest':1.5,'stomach':1.0,\
+						'torso':1.5,'groin':2.0,\
+						'lleg':1.0,'rleg':1.0,\
+						'lfoot':.40,'rfoot':.40}	
 		self.wielding = {'lhand':None,'rhand':None}
 		self.hp = 10
 		self.mhp = 10
@@ -85,7 +92,7 @@ class person:
 		self.medicine = 5
 		self.speech = 2
 		
-		self.skills = {'handtohand':3,'defense':2}
+		self.skills = {'smallblades':3,'handtohand':3,'defense':2}
 		
 		#attributes
 		self.attributes = {'naturalbeauty':False,\
@@ -215,6 +222,12 @@ class person:
 		self.schedule.append({'time':time,'event':event,'args':args})
 		if var.debug: print '[Schedule] Event added by %s %s.' % (self.name[0],self.name[1])
 	
+	def pick_up(self):
+		for item in self.get_room().objects:
+			if item.room_loc == self.room_loc:
+				item.take(self)
+				break
+	
 	def enter_room(self):
 		self.in_room = True
 		if not len(self.get_room().map):
@@ -233,17 +246,19 @@ class person:
 		self.history.append(text)
 		
 		if var.player.loc == self.loc:
-			if action:
+			_s = ''
+			
+			if action and not quiet:
 				_s = '%s %s' % (self.name[0],text)
-			else:
+			elif action and quiet:
+				self.get_room().noises.append('%s %s.' % (self.name[0],text))
+			elif not action and not quiet:
 				_s = '%s: %s' % (self.name[0],text)
+			elif not action and quiet:
+				self.get_room().noises.append('%s: %s.' % (self.name[0],text))
 			
-			if not _s[len(_s)-1] in ['!','?']: _s+='.'
-			
-			if quiet:
-				if var.player.listening:
-					var._c.log(_s)
-			else:
+			if _s:
+				if not _s[len(_s)-1] in ['!','?']: _s+='.'
 				var._c.log(_s)
 	
 	def attack(self,pos):
@@ -255,6 +270,15 @@ class person:
 						obj.attacked(self,'lhand')
 						self.attacking = False
 						return True
+				
+				else:
+					if var.player == self:
+						var._c.log('You stab the %s.' % obj.name)
+						for hand in self.wielding.iterkeys():
+							if self.wielding[hand]:
+								obj.attacked(self,self.wielding[hand])
+								self.attacking = False
+								return True
 		
 		for guest in self.get_room().guests:
 			if guest.room_loc == pos:
@@ -272,6 +296,14 @@ class person:
 							guest.attacked(self,'head','lhand')
 						
 						return True
+				
+				else:
+					if var.player == self:
+						for hand in self.wielding.iterkeys():
+							if self.wielding[hand]:
+								guest.attacked(self,'head',self.wielding[hand])
+								self.lastattacked = guest
+								self.notoriety = 1
 		
 		self.attacking = False
 	
@@ -282,11 +314,17 @@ class person:
 		#Add bonuses based on weapon type
 		#While we're here, calculate damage
 		if wep in ['lhand','rhand']:
+			action = 'punch'
 			ar += by.skills['handtohand']
 			dam = functions.roll(1,by.skills['handtohand'])
 			
 			dr += by.skills['handtohand']
-		#elif wep in ['lhand','rhand']:
+		elif wep.category in ['knife','ssword']:
+			action = 'stab'
+			ar += by.skills['smallblades']
+			ar += wep.attack
+			dam = functions.roll(1,by.skills['handtohand'])
+			dam += functions.roll(1,wep.attack)
 		
 		#Find defense rating
 		if self.alert: dr += self.defense * 4			
@@ -309,11 +347,15 @@ class person:
 				return False
 			
 			if by == var.player:
-				var._c.log('You punch %s in the %s for %s damage.' % (self.name[0],words.translate[to],dam))
+				_dam = dam*float(self.multiplier[to])
+				var._c.log('You %s %s in the %s for %s damage.' % (action,self.name[0],words.translate[to],_dam))
 				self.condition[to] -= dam
+				self.hp -= _dam
 			else:
-				by.say('punches you in the %s for %s damage' % (words.translate[to],dam),action=True)
+				_dam = dam*float(self.multiplier[to])
+				by.say('%ss you in the %s for %s damage' % (action,words.translate[to],_dam),action=True)
 				self.condition[to] -= dam
+				self.hp -= _dam
 		else:
 			if self == var.player:
 				var._c.log('You block %s\'s punch' % by.name[0])
@@ -376,15 +418,22 @@ class person:
 				
 				else:
 					if self.get_room().map[_tloc[0]][_tloc[1]] == 'wall':
-						var._c.status('There is a wall in the way.')
+						if self == var.player:
+							var._c.status('There is a wall in the way.')
+						else:
+							self.say('runs into a wall',action=True,quiet=True)
 					else:
 						if self.attacking:
 							self.attack(_tloc)
 						else:
 							for obj in self.get_room().objects:
 								if obj.room_loc == [_tloc[0],_tloc[1]] and obj.blocking:
-									var._c.status('There is a %s in the way.' % obj.name)
-									return False								
+									if self == var.player:
+										var._c.status('There is a %s in the way.' % obj.name)
+									else:
+										self.say('runs into a %s' % obj.name,action=True,quiet=True)
+									
+									return False
 						
 							self.room_loc = _tloc
 						
@@ -439,7 +488,7 @@ class person:
 	
 	def walk_to_room(self, to):
 		if var.debug: var._c.log('Going from %s,%s to %s,%s' % (self.room_loc[0],self.room_loc[1],to[0],to[1]))
-		p = ai.AStar(self.room_loc,to,self.get_room().map,room=True,size=var.room_size)
+		p = ai.AStar(self.room_loc,to,self.get_room().map,room=True,size=var.room_size,avoidType='wall')
 		self.path = p.getPath()
 		
 	def warp_to(self,place):
@@ -554,7 +603,11 @@ class person:
 					self.say('passes out',action=True)
 				elif self.condition[part] <= 0:
 					self.say('dies from a severe head wound',action=True)
-					self.kill()			
+					self.kill()
+		
+		if self.hp <= 0:
+			self.say('dies',action=True)
+			self.kill()
 	
 	def player_tick(self):
 		#Health
@@ -575,6 +628,7 @@ class person:
 				if not self.bleeding[bodypart]:
 					var._c.log('Your %s stops bleeding.' % (words.translate[bodypart]))
 				else:
+					health.append(' ')
 					health.append('Bleeding.')
 		
 		health.append(' ')
