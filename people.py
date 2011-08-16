@@ -59,7 +59,14 @@ class person:
 						'chest':1.5,'stomach':1.0,\
 						'torso':1.5,'groin':2.0,\
 						'lleg':1.0,'rleg':1.0,\
-						'lfoot':.40,'rfoot':.40}	
+						'lfoot':.40,'rfoot':.40}
+		self.accuracy = {'head':35,'eyes':45,\
+						'larm':30,'rarm':30,\
+						'lhand':40,'rhand':40,\
+						'chest':25,'stomach':25,\
+						'torso':25,'groin':25,\
+						'lleg':30,'rleg':30,\
+						'lfoot':40,'rfoot':40}
 		self.wielding = {'lhand':None,'rhand':None}
 		self.hp = 10
 		self.mhp = 10
@@ -69,6 +76,7 @@ class person:
 		self.charisma = 0
 		self.weight = 0
 		self.stamina = 10
+		self.max_stamina = 10
 		
 		#GAHHHHHHHHHHH CHANGEEEEEEEEEEEEEE
 		self.defense = 3
@@ -77,8 +85,6 @@ class person:
 		self.alert = 1
 		self.notoriety = 0
 		self.lastattacked = None
-		
-		self.max_stamina = 10
 
 		self.potential_strength = 0
 		self.potential_dexterity = 0
@@ -327,12 +333,22 @@ class person:
 			dam += functions.roll(1,wep.attack)
 		
 		#Find defense rating
-		if self.alert: dr += self.defense * 4			
+		if self.alert: dr += self.defense * 4
 		
 		#Random number + roll
 		n = random.randint(1,100)
 		
-		if ar+n > dr or self.alert == False:			
+		if ar+n > dr or self.alert == False:
+			#Did we hit the target area?
+			roll = random.randint(1,50)
+
+			if roll >= self.accuracy[to]:
+				pass
+			else:
+				_acc = dict(self.accuracy)
+				del _acc[to]
+				to = random.choice([a for a in _acc.iterkeys()])
+			
 			#Subtract damage from armor
 			if self.wearing[to]:
 				dam -= functions.roll(1,self.wearing[to].defense - ((self.wearing[to].defense/2)*(not self.alert)))
@@ -604,10 +620,14 @@ class person:
 				elif self.condition[part] <= 0:
 					self.say('dies from a severe head wound',action=True)
 					self.kill()
+					return False
 		
 		if self.hp <= 0:
 			self.say('dies',action=True)
 			self.kill()
+			return False
+		
+		return True
 	
 	def player_tick(self):
 		#Health
@@ -683,7 +703,8 @@ class person:
 					self.brain.need = {'value':0,'obj':None}
 					self.alert = 1
 
-		self.check_body_parts()
+		if not self.check_body_parts(): return 0
+		
 		if self.alert:
 			self.brain.think()
 			self.examine_inventory()

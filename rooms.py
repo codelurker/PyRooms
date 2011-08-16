@@ -28,15 +28,13 @@ class room:
 			if self.type == 'house': self.map.append(['clear'] * (var.room_size[0]))
 		
 		if self.type == 'house':
-			self.house = {'spos':(random.randint(0,(var.room_size[0]/2)-4),random.randint(1,(var.room_size[1]/2)-4)),\
-							'size':random.randint(4,10),'windows':random.randint(1,6)}
-			windows = 0
+			self.house = {'windows':3}
 			self.walls = []
 			self.walkingspace = []
 			
 			for n in range(6):
 				size = (15,15)
-				pos = (random.randint(3,size[0]-5),random.randint(4,size[1]-5))
+				pos = (random.randint(3,size[0]-3),random.randint(4,var.room_size[1]-size[1]-5))
 				_size = (random.randint(3,size[0]-pos[0]),random.randint(3,size[1]-pos[1]))
 				
 				for x in range(_size[0]):
@@ -126,23 +124,26 @@ class room:
 			#Decorate~~!!
 			
 			#Windows - Corner check.
-			for wall in self.walls:
-				if random.randint(1,8) <= 1:
-					_h = 0
-					_v = 0
-					for pos in [[-1,0],[1,0]]:
-						if [wall[0]+pos[0],wall[1]+pos[1]] in self.walls:
-							_h += 1
-					
-					for pos in [[0,-1],[0,1]]:
-						if [wall[0]+pos[0],wall[1]+pos[1]] in self.walls:
-							_v += 1
-					
-					if _h == 2 and not _v or _v == 2 and not _h:
-						self.map[wall[0]][wall[1]] = 'grass'
-						_i = item.get_item('window')
-						_i.room_loc = [wall[0],wall[1]]
-						self.add_object(_i)	
+			_windows = 0
+			while _windows < self.house['windows']:
+				for wall in self.walls:
+					if random.randint(1,8) <= 1:
+						_h = 0
+						_v = 0
+						for pos in [[-1,0],[1,0]]:
+							if [wall[0]+pos[0],wall[1]+pos[1]] in self.walls:
+								_h += 1
+						
+						for pos in [[0,-1],[0,1]]:
+							if [wall[0]+pos[0],wall[1]+pos[1]] in self.walls:
+								_v += 1
+						
+						if _h == 2 and not _v or _v == 2 and not _h:
+							self.map[wall[0]][wall[1]] = 'grass'
+							_i = item.get_item('window')
+							_i.room_loc = [wall[0],wall[1]]
+							self.add_object(_i)
+							_windows += 1
 			
 			#_t = item.get_item_name('table')
 			#_t.room_loc=[pos[0],pos[1]]

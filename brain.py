@@ -208,7 +208,7 @@ class brain:
 		if not _dist: _dist = 1
 		
 		#Assuming friendly for now...
-		_v = ((1000 * (obj.get_perc_strength() / self.get_perc_strength())) - (obj.owner.notoriety*1000))# / float(_dist)
+		_v = ((1000 * (obj.get_perc_strength() / self.get_perc_strength())) - (obj.owner.notoriety*1000)) / float(_dist)
 		
 		if self.owner.spouse == obj.owner:
 			_v+=500
@@ -229,7 +229,7 @@ class brain:
 	def think(self):
 		self.need = {'value':0,'obj':None}
 		self.want = {'value':0,'obj':None}
-		self.lhate = self.hate['obj']
+		#self.lhate = self.hate['obj']
 		
 		#Want/Need
 		for o in self.owner.get_room().objects:
@@ -266,17 +266,16 @@ class brain:
 				elif _r[1] and _r[1] < self.hate['value']:
 					self.hate = {'obj':a,'value':_r[1]}
 					
-		if self.hate['obj'] == var.player:
-			if not self.hate['obj'] == self.lhate:
-				self.owner.say('seems angered towards you',action=True)
-				if self.hate['obj'].lastattacked == self.owner.spouse:
-					if self.owner.spouse.male:
-						self.owner.say('Get your hands off my husband!')
-					else:
-						self.owner.say('Get your hands off my wife!')
-		
-		elif not self.hate['obj'] == None:
-			self.owner.say('seems angered towards %s' % (self.hate['obj'].name[0]),action=True)
+					if self.hate['obj'] == var.player:
+						self.owner.say('seems angered towards you',action=True)
+						if self.hate['obj'].lastattacked == self.owner.spouse:
+							if self.owner.spouse.male:
+								self.owner.say('Get your hands off my husband!')
+							else:
+								self.owner.say('Get your hands off my wife!')
+					
+					elif not self.hate['obj'] == None:
+						self.owner.say('seems angered towards %s' % (self.hate['obj'].name[0]),action=True)
 		
 		if self.want['obj'] == None and self.need['obj'] == None and self.hate == None:
 			#var._c.log('%s: I\'m bored...' % (self.owner.name[0]))
