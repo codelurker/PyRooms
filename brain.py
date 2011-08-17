@@ -229,7 +229,7 @@ class brain:
 	def think(self):
 		self.need = {'value':0,'obj':None}
 		self.want = {'value':0,'obj':None}
-		#self.lhate = self.hate['obj']
+		self.lhate = self.hate['obj']
 		
 		#Want/Need
 		for o in self.owner.get_room().objects:
@@ -266,16 +266,19 @@ class brain:
 				elif _r[1] and _r[1] < self.hate['value']:
 					self.hate = {'obj':a,'value':_r[1]}
 					
-					if self.hate['obj'] == var.player:
+					if self.hate['obj'] == var.player and not self.lhate == self.hate['obj']:
 						self.owner.say('seems angered towards you',action=True)
 						if self.hate['obj'].lastattacked == self.owner.spouse:
 							if self.owner.spouse.male:
 								self.owner.say('Get your hands off my husband!')
 							else:
 								self.owner.say('Get your hands off my wife!')
+						
+						self.lhate = self.hate['obj']
 					
-					elif not self.hate['obj'] == None:
+					elif not self.hate['obj'] == None and not self.hate['obj'] == var.player:
 						self.owner.say('seems angered towards %s' % (self.hate['obj'].name[0]),action=True)
+						self.lhate = self.hate['obj']
 		
 		if self.want['obj'] == None and self.need['obj'] == None and self.hate == None:
 			#var._c.log('%s: I\'m bored...' % (self.owner.name[0]))

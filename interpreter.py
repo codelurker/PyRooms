@@ -117,27 +117,23 @@ def parse_input(text):
 				var._c.log('You start talking to %s.' % _person.name[0])
 				_person.brain.get_dialog_options(var.player)
 		
-		#var._c.tick()					
+		#var._c.tick()
 	
-	elif text[0] in words.attacks:
-		#Calculate alignment
-		pass
-	
-	elif text[0] == ord('i') or text[0] == 'i':
-		if var.interactive:
-			var.interactive = False
-			
-			#Clear and redraw all windows
-			var.window.clear('log')
-			var.window.clear('main')
-			
-			var._c.draw_map()
-			return False
-		else:
-			var.interactive = True
-			var.window.clear('log')
-			var.window.refresh('log')
-			return False
+	#elif text[0] == ord('i') or text[0] == 'i':
+	#	if var.interactive:
+	#		var.interactive = False
+	#		
+	#		#Clear and redraw all windows
+	#		var.window.clear('log')
+	#		var.window.clear('main')
+	#		
+	#		var._c.draw_map()
+	#		return False
+	#	else:
+	#		var.interactive = True
+	#		var.window.clear('log')
+	#		var.window.refresh('log')
+	#		return False
 	
 	elif text[0] in ['town']:
 		if text[0] == 'town' and len(text)==2:

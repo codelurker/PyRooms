@@ -238,7 +238,8 @@ class person:
 		self.in_room = True
 		if not len(self.get_room().map):
 			self.get_room().generate()
-			self.get_room().tick()
+		
+		self.get_room().tick()
 	
 	def enter_dungeon(self,dungeon):
 		var.player.in_dungeon = True
@@ -357,8 +358,8 @@ class person:
 			if dam <= 0:
 				if by == var.player:
 					var._c.log('%s\'s %s absorbs your hit.' % (self.name[0],self.wearing[to].name))
-				else:
-					var._c.log('You are unharmed.')
+				#else:
+				#	var._c.log('You are unharmed.')
 				
 				return False
 			
@@ -369,7 +370,7 @@ class person:
 				self.hp -= _dam
 			else:
 				_dam = dam*float(self.multiplier[to])
-				by.say('%ss you in the %s for %s damage' % (action,words.translate[to],_dam),action=True)
+				by.say('%ses you in the %s for %s damage' % (action,words.translate[to],_dam),action=True)
 				self.condition[to] -= dam
 				self.hp -= _dam
 		else:

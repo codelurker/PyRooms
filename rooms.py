@@ -28,7 +28,7 @@ class room:
 			if self.type == 'house': self.map.append(['clear'] * (var.room_size[0]))
 		
 		if self.type == 'house':
-			self.house = {'windows':3}
+			self.house = {'windows':3,'doors':2}
 			self.walls = []
 			self.walkingspace = []
 			
@@ -54,7 +54,7 @@ class room:
 			#Grass
 			for x in range(0,var.room_size[0]):
 				for y in range(0,var.room_size[1]):
-					if not [x,y] in self.walls and not [x,y] in self.walkingspace and random.randint(1,6) <= 1:
+					if not [x,y] in self.walls and not [x,y] in self.walkingspace and random.randint(1,4) <= 1:
 						self.map[x][y] = 'grass'						
 		
 		for x in range(0,var.room_size[0]):
@@ -127,6 +127,8 @@ class room:
 			_windows = 0
 			while _windows < self.house['windows']:
 				for wall in self.walls:
+					if _windows >= self.house['windows']: break
+				
 					if random.randint(1,8) <= 1:
 						_h = 0
 						_v = 0
@@ -144,6 +146,26 @@ class room:
 							_i.room_loc = [wall[0],wall[1]]
 							self.add_object(_i)
 							_windows += 1
+			
+			_doors = 0
+			while _doors < self.house['doors']:
+				for wall in self.walls:
+					if _doors >= self.house['doors']: break
+					
+					if random.randint(1,8) <= 1:
+						_h = 0
+						_v = 0
+						for pos in [[-1,0],[1,0]]:
+							if [wall[0]+pos[0],wall[1]+pos[1]] in self.walls:
+								_h += 1
+						
+						for pos in [[0,-1],[0,1]]:
+							if [wall[0]+pos[0],wall[1]+pos[1]] in self.walls:
+								_v += 1
+						
+						if _h == 2 and not _v or _v == 2 and not _h:
+							self.map[wall[0]][wall[1]] = 'clear'
+						_doors += 1
 			
 			#_t = item.get_item_name('table')
 			#_t.room_loc=[pos[0],pos[1]]

@@ -8,7 +8,7 @@ translate = {'larm':'left arm','rarm':'right arm',\
 			'head':'head','larm':'left arm','rarm':'right arm',\
 			'rfoot':'right foot','lfoot':'right foot',\
 			'stomach':'stomach','torso':'torso','chest':'chest',\
-			'lleg':'left leg','rleg':'right leg','groin':'groin'}
+			'lleg':'left leg','rleg':'right leg','groin':'groin','eyes':'eyes'}
 
 def opposite(text):
 	if text == 'north':

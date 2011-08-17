@@ -1,4 +1,4 @@
-import var, people, words
+import var, people, words, random
 import items as item
 
 class family:
@@ -13,7 +13,12 @@ class family:
 		_r = var._c.map[self.loc[0]][self.loc[1]]
 		_r.tick()
 		
-		self.house = (_r.walkingspace[0][0],_r.walkingspace[0][1])
+		self.house = None
+		while not self.house:
+			for space in _r.walkingspace:
+				if random.randint(0,15) <= 1:
+					self.house = (space[0],space[1])
+					break
 		
 		#Generate a husband and wife
 		husband = people.human()
@@ -32,6 +37,13 @@ class family:
 		husband.warp_to(list(self.loc))
 		husband.room_loc = list(self.house)
 		husband.enter_room()
+		
+		self.house = None
+		while not self.house:
+			for space in _r.walkingspace:
+				if random.randint(0,15) <= 1:
+					self.house = (space[0],space[1])
+					break
 		
 		wife = people.human()
 		wife.male = False
