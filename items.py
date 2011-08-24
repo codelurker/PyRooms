@@ -99,10 +99,10 @@ class table(item):
 		
 		self.type = 'table'
 		self.contains = []
-	
+		
 	def get_description(self):
 		return self.parse_description()
-
+	
 class light(item):
 	def __init__(self):
 		item.__init__(self)

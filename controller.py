@@ -9,9 +9,10 @@ class controller:
 	def __init__(self):
 		self.map = []
 		self.date = [1,0]
-		self.ticks = 0
+		self.ticks = 1
 		self.history = []
 		self.errors = []
+		self.time = [0,0,1]
 		
 		self.id = 0
 		self.people = []
@@ -219,9 +220,9 @@ class controller:
 		r.type = 'house'
 		r.generate()
 		r.randomize()
-		
+
 		self.map[pos[0]][pos[1]] = r
-	
+		
 	def add_job(self,job):
 		self.jobs.append(job)
 	
@@ -261,7 +262,19 @@ class controller:
 			for _p in self.people:
 				_p.tick()
 			
-			self.ticks += _t
+			self.ticks += 1
+			
+			if not self.time[2] >= 59:
+				self.time[2] += 1
+			else:
+				if self.time[1] < 60:
+					self.time[1] += 1
+				else:
+					self.time[0] += 1
+					self.time[1] = 0
+				
+				self.time[2] = 0
+			
 			
 			if self.ticks == 14400:
 				self.date[0]=1

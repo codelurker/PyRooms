@@ -26,6 +26,7 @@ class person:
 		self.in_room = False
 		self.in_dungeon = False
 		self.move_ticks = 0
+		self.room_move_ticks = 0
 		self.action = None
 		self.attacking = False
 		
@@ -97,6 +98,7 @@ class person:
 		#skills
 		self.medicine = 5
 		self.speech = 2
+		self.perception = 25
 		
 		self.skills = {'smallblades':3,'handtohand':3,'defense':2}
 		
@@ -239,7 +241,7 @@ class person:
 		if not len(self.get_room().map):
 			self.get_room().generate()
 		
-		self.get_room().tick()
+		self.get_room().tick(light=False)
 	
 	def enter_dungeon(self,dungeon):
 		var.player.in_dungeon = True
@@ -308,13 +310,13 @@ class person:
 					if var.player == self:
 						for hand in self.wielding.iterkeys():
 							if self.wielding[hand]:
-								guest.attacked(self,'head',self.wielding[hand])
+								guest.attacked(self,'head',self.wielding[hand],hand=hand)
 								self.lastattacked = guest
 								self.notoriety = 1
 		
 		self.attacking = False
 	
-	def attacked(self,by,to,wep):
+	def attacked(self,by,to,wep,hand=None):
 		ar = by.strength / 4
 		dr = 0
 		
@@ -330,8 +332,18 @@ class person:
 			action = 'stab'
 			ar += by.skills['smallblades']
 			ar += wep.attack
-			dam = functions.roll(1,by.skills['handtohand'])
+			dam = functions.roll(1,by.skills['smallblades'])
 			dam += functions.roll(1,wep.attack)
+			if hand:
+				handcon = (10-by.condition[hand[0]+'arm'])
+				armcon = (10-by.condition[hand])
+				
+				if armcon:
+					var._c.log('Your %s hurts.' % words.translate[hand])
+				if handcon:
+					var._c.log('Your %s hurts.' % (words.translate[hand[0]+'arm']))
+				
+				dam -= armcon				
 		
 		#Find defense rating
 		if self.alert: dr += self.defense * 4
@@ -505,7 +517,13 @@ class person:
 	
 	def walk_to_room(self, to):
 		if var.debug: var._c.log('Going from %s,%s to %s,%s' % (self.room_loc[0],self.room_loc[1],to[0],to[1]))
-		p = ai.AStar(self.room_loc,to,self.get_room().map,room=True,size=var.room_size,avoidType='wall')
+		
+		_avoid = []
+		for item in self.get_room().objects:
+			if item.blocking:
+				_avoid.append(item.room_loc)
+		
+		p = ai.AStar(self.room_loc,to,self.get_room().map,room=True,size=var.room_size,avoidType='wall',avoidArray=_avoid)
 		self.path = p.getPath()
 		
 	def warp_to(self,place):
@@ -622,6 +640,10 @@ class person:
 					self.say('dies from a severe head wound',action=True)
 					self.kill()
 					return False
+			elif part == 'eyes':
+				if self == var.player:
+					if self.condition[part] <= 9:
+						var._c.log('You have trouble seeing the world around you.')
 		
 		if self.hp <= 0:
 			self.say('dies',action=True)
@@ -654,7 +676,7 @@ class person:
 		
 		health.append(' ')
 		health.append('Time:')
-		health.append(str(var._c.ticks))
+		health.append('%s:%s:%s' % (var._c.time[0],var._c.time[1],var._c.time[2]))
 		health.append(' ')
 		health.append('STA:')
 		health.append(str(self.stamina))
@@ -727,11 +749,13 @@ class person:
 		#Movements.
 		if self.path:
 			if self.in_room:# and self.loc == var.player.loc:
-				_p = self.path.pop()
-				_w = self.get_walk_dir(_p,room=True)
-				self.walk(_w)
-				#self.walk(self.get_walk_dir(self.path.pop()))
-				
+				if self.room_move_ticks == 0:
+					_p = self.path.pop()
+					_w = self.get_walk_dir(_p,room=True)
+					self.walk(_w)
+					self.room_move_ticks = var.room_move_ticks
+				else:
+					self.room_move_ticks -= 1				
 			else:
 				if self.move_ticks == 0:
 					self.walk(self.get_walk_dir(self.path.pop()))

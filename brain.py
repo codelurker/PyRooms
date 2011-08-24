@@ -309,14 +309,13 @@ class brain:
 					self.owner.walk_to_room((self.need['obj'].room_loc[0],self.need['obj'].room_loc[1]))
 		
 		elif self.hate['obj']:
-			#self.owner.say('Die, %s!' % self.hate['obj'].name[0])
-			
 			#Find out where he/she is
 			#Check surroundings
 			found = False
 			for pos in [[-1,0],[1,0],[0,-1],[0,1]]:
 				if [self.owner.room_loc[0]+pos[0],self.owner.room_loc[1]+pos[1]] == self.hate['obj'].room_loc:
 					self.owner.attack([self.owner.room_loc[0]+pos[0],self.owner.room_loc[1]+pos[1]])
+					self.owner.path = None
 					found = True
 			
 			if not found:				

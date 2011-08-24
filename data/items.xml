@@ -92,6 +92,20 @@
 </item>
 
 <item>
+	<type>clothing</type>
+	<ref>cotton belt</ref>
+	<slot>torso</slot>
+	<weight>1</weight>
+	<price>0</price>
+	<defense>2</defense>
+	
+	<prefix></prefix>
+	<action>wearing</action>
+	<room_desc>%prefix% %ref% is in %pos%</room_desc>
+	<desc></desc>
+</item>
+
+<item>
 	<type>weapon</type>
 	<ref>iron dagger</ref>
 	<weight>3</weight>

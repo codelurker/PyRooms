@@ -38,9 +38,9 @@ def parse_input(text):
 			var.player.walk(text[0])
 			
 			if var.player.in_room:
-				var._c.tick()
+				var._c.tick(ticks = 2)
 			else:
-				var._c.tick(ticks = 30)
+				var._c.tick(ticks = 48)
 		
 		elif text[0] in ['take','pick'] and len(text) >= 2:
 			if text[1] == 'up':
@@ -116,24 +116,6 @@ def parse_input(text):
 				_person = _look[0]
 				var._c.log('You start talking to %s.' % _person.name[0])
 				_person.brain.get_dialog_options(var.player)
-		
-		#var._c.tick()
-	
-	#elif text[0] == ord('i') or text[0] == 'i':
-	#	if var.interactive:
-	#		var.interactive = False
-	#		
-	#		#Clear and redraw all windows
-	#		var.window.clear('log')
-	#		var.window.clear('main')
-	#		
-	#		var._c.draw_map()
-	#		return False
-	#	else:
-	#		var.interactive = True
-	#		var.window.clear('log')
-	#		var.window.refresh('log')
-	#		return False
 	
 	elif text[0] in ['town']:
 		if text[0] == 'town' and len(text)==2:
@@ -169,6 +151,8 @@ def parse_input(text):
 		if var.player.in_room:
 			for line in var.player.get_room().noises:
 				var._c.log(line)
+		
+		var._c.tick()
 	
 	elif text[0] == ord(','):
 		if var.player.in_room:

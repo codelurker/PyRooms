@@ -44,7 +44,7 @@ class Node:
 		return _n
 
 class AStar:
-	def __init__(self,start,end,omap=None,size=var.world_size,room=False,debug=False,ignoreNone=False,avoidType=False):
+	def __init__(self,start,end,omap=None,size=var.world_size,room=False,debug=False,ignoreNone=False,avoidType=False,avoidArray=None):
 		if omap == None:
 			omap = var._c.map
 
@@ -58,6 +58,7 @@ class AStar:
 		self.max_chances = var.astar_chances
 		self.ignoreNone = ignoreNone
 		self.avoidType = avoidType
+		self.avoidArray = avoidArray
 		
 		self.map = []
 		
@@ -89,8 +90,13 @@ class AStar:
 			for x in range(0,self.size[0]):
 				_y = []
 				for y in range(0,self.size[1]):
-					if avoidType==False:
+					if avoidType==False and not self.avoidArray:
 						if omap[x][y] or ignoreNone:
+							_y.append(Node((x,y),self))
+						else:
+							_y.append(None)
+					elif avoidType and self.avoidArray:
+						if omap[x][y] and not omap[x][y] == self.avoidType and not [x,y] in self.avoidArray:
 							_y.append(Node((x,y),self))
 						else:
 							_y.append(None)

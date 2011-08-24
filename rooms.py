@@ -167,10 +167,18 @@ class room:
 							self.map[wall[0]][wall[1]] = 'clear'
 						_doors += 1
 			
-			#_t = item.get_item_name('table')
-			#_t.room_loc=[pos[0],pos[1]]
-			#self.add_object(_t)
+			_t = item.get_item_name('table')
+			_rpos = self.walkingspace[random.randint(0,len(self.walkingspace)-1)]
+			_t.room_loc=[_rpos[0],_rpos[1]]
+			_t.blocking = True
+			self.add_object(_t)
 			
+			for _pos in [[-1,0],[0,-1],[1,0],[0,1]]:
+				if [_rpos[0]+_pos[0],_rpos[1]+_pos[1]] in self.walkingspace:
+					_i = item.get_item_name('chair')
+					_i.room_loc = [_rpos[0]+_pos[0],_rpos[1]+_pos[1]]
+					self.add_object(_i)
+
 		elif self.type == 'forest':
 			_ws = []
 			for w in range(self.green/10):
@@ -233,7 +241,7 @@ class room:
 						
 						var._c.map[_pos[0]][_pos[1]] = r
 				
-	def tick(self):
+	def tick(self,light=True):
 		lights = []
 		
 		self.lmap = []
@@ -249,39 +257,29 @@ class room:
 		
 		if not self.type == 'house' and self.flags['sunlit']: return True
 		
-		lights = []
-		for obj in self.objects:
-			if obj.type in ['light']:
-				lights.append(obj)
-		
-		for guest in self.guests:
-			for obj in guest.items:
-				if obj.type == 'light':
-					lights.append(obj)
-		
-		for obj in lights:
-			for y in range(-24,25):
-				for x in range(-24,25):
-					if not 0 < obj.room_loc[0]+x < var.room_size[0] and not 0 < obj.room_loc[1]+y < var.room_size[1]: continue
-					if (abs(obj.room_loc[0]-(obj.room_loc[0]+x))+abs(obj.room_loc[1]-(obj.room_loc[1]+y))) > 15: continue
+		if not light: return True
+		for y in range(-var.player.perception-(10-var.player.condition['eyes']),var.player.perception-(10-var.player.condition['eyes'])):
+			for x in range(-24,25):
+				if not 0 < var.player.room_loc[0]+x < var.room_size[0] and not 0 < var.player.room_loc[1]+y < var.room_size[1]: continue
+				if (abs(var.player.room_loc[0]-(var.player.room_loc[0]+x))+abs(var.player.room_loc[1]-(var.player.room_loc[1]+y))) > 15: continue
+				
+				if (var.player.room_loc[0],var.player.room_loc[1]) == (var.player.room_loc[0]+x,var.player.room_loc[1]+y): continue
+				
+				l = ai.line((var.player.room_loc[0],var.player.room_loc[1]),(var.player.room_loc[0]+x,var.player.room_loc[1]+y))
 					
-					if (obj.room_loc[0],obj.room_loc[1]) == (obj.room_loc[0]+x,obj.room_loc[1]+y): continue
+				if not l.path[0] == (var.player.room_loc[0],var.player.room_loc[1]):
+					l.path.reverse()
+											
+				done = False
+				for lpos in l.path:
+					if done: break				
 					
-					l = ai.line((obj.room_loc[0],obj.room_loc[1]),(obj.room_loc[0]+x,obj.room_loc[1]+y))
-						
-					if not l.path[0] == (obj.room_loc[0],obj.room_loc[1]):
-						l.path.reverse()
-												
-					done = False
-					for lpos in l.path:
-						if done: break				
-						
-						if lpos[0]>=0 and lpos[0]<var.room_size[0] and lpos[1]>=0 and lpos[1]<var.room_size[1]:
-							if not self.map[lpos[0]][lpos[1]]=='wall':
-								self.lmap[lpos[0]][lpos[1]] = 1
-							else:
-								self.lmap[lpos[0]][lpos[1]] = 1
-								done = True
+					if lpos[0]>=0 and lpos[0]<var.room_size[0] and lpos[1]>=0 and lpos[1]<var.room_size[1]:
+						if not self.map[lpos[0]][lpos[1]]=='wall':
+							self.lmap[lpos[0]][lpos[1]] = 1
+						else:
+							self.lmap[lpos[0]][lpos[1]] = 1
+							done = True
 	
 	def get_description(self,exits=True):
 		self.parse_room(exits=exits)
@@ -322,25 +320,6 @@ class room:
 					self.exits.append({'dir':'east','room':_r,'window':True,'obj':None})
 				elif pos == [-1,0]:
 					self.exits.append({'dir':'west','room':_r,'window':True,'obj':None})
-		
-		#if self.type == 'house':
-		#	for exit in self.exits:
-		#		_i = item.get_item('window')
-		#		_i.place = exit['dir']
-		#		_i.inside = self
-		#		_i.outside = exit['room']
-		#		
-		#		if _i.place == 'west':
-		#			_i.room_loc = [1,12]
-		#		elif _i.place == 'east':
-		#			_i.room_loc = [23,12]
-		#		elif _i.place == 'north':
-		#			_i.room_loc = [12,2]
-		#		elif _i.place == 'south':
-		#			_i.room_loc = [12,22]
-		#		
-		#		exit['obj'] = _i
-		#		self.add_object(_i)
 				
 	def add_object(self,obj,place=None):
 		obj.loc = self.loc
