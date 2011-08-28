@@ -121,6 +121,20 @@
 </item>
 
 <item>
+	<type>potion</type>
+	<ref>health potion</ref>
+	<weight>1</weight>
+	<price>10</price>
+	<action>drink</action>
+	
+	<effect>heal</effect>
+	<amount>10</amount>
+	
+	<room_desc>%prefix% %ref% is in %pos%</room_desc>
+	<desc></desc>
+</item>
+
+<item>
 	<type>window</type>
 	<ref>window</ref>
 	<weight>-1</weight>

@@ -224,9 +224,13 @@ def load_config_files(flush=False):
 					_i = items.clothing()
 					_i.slot = _j['slot']
 					_i.defense = int(_j['defense'])
+				elif _j['type'] == 'potion':
+					_i = items.potion()
+					_i.effect = _j['effect']
+					_i.amount = int(_j['amount'])
+					_i.icon = '!'
 					
 				_i.name = _j['ref']
-				_i.prefix = _j['prefix']
 				_i.action = _j['action']
 				_i.room_description = _j['room_desc']
 				_i.description = _j['desc']

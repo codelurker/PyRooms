@@ -33,8 +33,8 @@ class room:
 			self.walkingspace = []
 			
 			for n in range(6):
-				size = (15,15)
-				pos = (random.randint(3,size[0]-3),random.randint(4,var.room_size[1]-size[1]-5))
+				size = (15,20)
+				pos = (random.randint(3,size[0]-3),random.randint(4,var.room_size[1]-size[1]))
 				_size = (random.randint(3,size[0]-pos[0]),random.randint(3,size[1]-pos[1]))
 				
 				for x in range(_size[0]):
@@ -118,11 +118,14 @@ class room:
 		
 		elif self.type == 'house':
 			_d = item.get_item_name('iron dagger')
-			_d.room_loc = [2,2]
+			_d.room_loc = [1,2]
 			self.add_object(_d)
 			
-			#Decorate~~!!
+			_d = item.get_item_name('health potion')
+			_d.room_loc = [1,3]
+			self.add_object(_d)
 			
+			#Decorate~~!!			
 			#Windows - Corner check.
 			_windows = 0
 			while _windows < self.house['windows']:

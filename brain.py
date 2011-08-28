@@ -14,6 +14,7 @@ class brain:
 		self.focus = None
 		self.love = {'value':0,'obj':None}
 		self.hate = {'value':0,'obj':None}
+		self.lhate = None
 	
 	def get_compatibility_with(self, person):
 		_p = 0 #how comfortable this person is with talking to <person>
@@ -180,6 +181,8 @@ class brain:
 			if self.owner.needs[i]=='rest' and obj.name=='chair':
 				if not obj.in_use and not obj.user == self.owner and not obj.owner:
 					_n+= ((100 * (10-self.owner.stamina)) / self.owner.get_dist_to(obj.room_loc)) * self.owner.alert
+			elif self.owner.needs[i]=='health' and obj.name.count('health'):
+				_n+= ((100 * (10-self.owner.hp)) / self.owner.get_dist_to(obj.room_loc)) * self.owner.alert
 
 		if obj.in_use and not obj.user == self.owner:
 			_w = 0
@@ -187,8 +190,8 @@ class brain:
 		
 		#if _w:
 		#	var._c.log(self.owner.name[0] + ': %s want value at %s' % (obj.name,_w))
-		#if _n:
-		#	var._c.log(self.owner.name[0] + ': %s need value at %s' % (obj.name,_n))
+		if _n:
+			var._c.log(self.owner.name[0] + ': %s need value at %s' % (obj.name,_n))
 		
 		if _n >= _w:
 			return ('needs',_n)
@@ -208,7 +211,7 @@ class brain:
 		if not _dist: _dist = 1
 		
 		#Assuming friendly for now...
-		_v = ((1000 * (obj.get_perc_strength() / self.get_perc_strength())) - (obj.owner.notoriety*1000)) / float(_dist)
+		_v = ((300 * (obj.get_perc_strength() / self.get_perc_strength())) - (obj.owner.notoriety*300)) / float(_dist)
 		
 		if self.owner.spouse == obj.owner:
 			_v+=500
@@ -220,16 +223,16 @@ class brain:
 			hate = _v
 			love = None
 		
-		#if hate:
-		#	var._c.log(self.owner.name[0] + ': friendship with %s is %s' % (obj.owner.name[0],hate))
-		#	pass
+		if hate:
+			var._c.log(self.owner.name[0] + ': hate for %s is %s' % (obj.owner.name[0],hate))
 		
 		return [love,hate]
 
 	def think(self):
 		self.need = {'value':0,'obj':None}
 		self.want = {'value':0,'obj':None}
-		self.lhate = self.hate['obj']
+		self.hate = {'value':0,'obj':None}
+		#self.lhate = self.hate['obj']
 		
 		#Want/Need
 		for o in self.owner.get_room().objects:
@@ -266,13 +269,15 @@ class brain:
 				elif _r[1] and _r[1] < self.hate['value']:
 					self.hate = {'obj':a,'value':_r[1]}
 					
-					if self.hate['obj'] == var.player and not self.lhate == self.hate['obj']:
-						self.owner.say('seems angered towards you',action=True)
-						if self.hate['obj'].lastattacked == self.owner.spouse:
-							if self.owner.spouse.male:
-								self.owner.say('Get your hands off my husband!')
-							else:
-								self.owner.say('Get your hands off my wife!')
+					if self.hate['obj'] == var.player:# and not self.lhate == self.hate['obj']:
+						if not self.lhate == self.hate['obj']:
+							self.owner.say('seems angered towards you',action=True)
+							if self.hate['obj'].lastattacked == self.owner.spouse:
+
+								if self.owner.spouse.male:
+									self.owner.say('Get your hands off my husband!')
+								else:
+									self.owner.say('Get your hands off my wife!')
 						
 						self.lhate = self.hate['obj']
 					
@@ -297,29 +302,32 @@ class brain:
 					self.owner.walk_to_room((self.want['obj'].room_loc[0],self.want['obj'].room_loc[1]))
 
 		elif self.want['value'] <= self.need['value'] and self.need['value'] > abs(self.hate['value']):	
-			if self.owner.room_loc[0] == self.need['obj'].room_loc[0] and self.owner.room_loc[1] == self.need['obj'].room_loc[1]:
-				if not self.owner.action:
-					var._c.log(self.owner.name[0]+': I\'m going to bed.')
-					self.owner.action = self.need['obj'].action
+			if self.owner.room_loc[0] == self.need['obj'].room_loc[0] and self.owner.room_loc[1] == self.need['obj'].room_loc[1] and not self.need['obj'].owner:
+				self.need['obj'].take(self.owner)
+				self.need = {'value':0,'obj':None}
 			else:
-				self.need['obj'].in_use = True
-				self.need['obj'].user = self.owner
-				
 				if not self.owner.path or not self.owner.path[0] == self.need['obj'].room_loc:
 					self.owner.walk_to_room((self.need['obj'].room_loc[0],self.need['obj'].room_loc[1]))
 		
 		elif self.hate['obj']:
-			#Find out where he/she is
-			#Check surroundings
-			found = False
-			for pos in [[-1,0],[1,0],[0,-1],[0,1]]:
-				if [self.owner.room_loc[0]+pos[0],self.owner.room_loc[1]+pos[1]] == self.hate['obj'].room_loc:
-					self.owner.attack([self.owner.room_loc[0]+pos[0],self.owner.room_loc[1]+pos[1]])
-					self.owner.path = None
-					found = True
-			
-			if not found:				
-				self.owner.walk_to_room((self.hate['obj'].room_loc[0],self.hate['obj'].room_loc[1]))
+			#Can I fight him/her?
+			if self.owner.hp >= 8:
+				#Find out where he/she is
+				#Check surroundings
+				found = False
+				for pos in [[-1,0],[1,0],[0,-1],[0,1]]:
+					if [self.owner.room_loc[0]+pos[0],self.owner.room_loc[1]+pos[1]] == self.hate['obj'].room_loc:
+						self.owner.attack([self.owner.room_loc[0]+pos[0],self.owner.room_loc[1]+pos[1]])
+						self.owner.path = None
+						found = True
+				
+				if not found:				
+					self.owner.walk_to_room((self.hate['obj'].room_loc[0],self.hate['obj'].room_loc[1]))
+			else:
+				#Figure out what to do
+				if not self.owner.drink_potion('health'):
+					self.owner.walk_to_room((1,1))
+					self.owner.say('flees in terror',action=True)
 		
 		#if self.love:
 		#	var._c.log(self.owner.name[0]+': Love %s' % self.love['obj'].name[0])

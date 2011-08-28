@@ -186,6 +186,20 @@ class corpse(item):
 	def get_description(self):
 		return self.parse_description()
 
+class potion(item):
+	def __init__(self):
+		item.__init__(self)
+		
+		self.type = 'potion'
+	
+	def use(self,person):
+		if self.effect == 'heal':
+			person.hp = self.amount
+			if person.hp > 10: person.hp = 10
+	
+	def get_description(self):
+		return self.parse_description()
+
 def get_item(type):
 	_l = []
 	

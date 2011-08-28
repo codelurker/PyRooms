@@ -29,9 +29,10 @@ class person:
 		self.room_move_ticks = 0
 		self.action = None
 		self.attacking = False
+		self.move_lock = None
 		
 		self.likes = ['price','damage','defense']
-		self.needs = ['rest']
+		self.needs = []
 		
 		self.bleeding = {'head':0,'eyes':0,\
 						'larm':0,'rarm':0,\
@@ -252,6 +253,9 @@ class person:
 		dungeon.guests.remove(self)
 	
 	def say(self,text,action=False,quiet=False):
+		if self.history and text == self.history[len(self.history)-1]:
+			return False
+
 		self.history.append(text)
 		
 		if var.player.loc == self.loc:
@@ -295,14 +299,11 @@ class person:
 					if var.player == self:
 						guest.attacked(self,'head','lhand')
 						self.lastattacked = guest
-						self.notoriety = 1
+						if not self.notoriety:
+							self.notoriety = 1
 					else:
-						if guest == var.player:
-							self.lastattacked = guest
-							guest.attacked(self,'head','lhand')
-						else:
-							self.lastattacked = guest
-							guest.attacked(self,'head','lhand')
+						self.lastattacked = guest
+						guest.attacked(self,'head','lhand')
 						
 						return True
 				
@@ -312,28 +313,40 @@ class person:
 							if self.wielding[hand]:
 								guest.attacked(self,'head',self.wielding[hand],hand=hand)
 								self.lastattacked = guest
-								self.notoriety = 1
+								if not self.notoriety:
+									self.notoriety = 1
+					else:
+						for hand in self.wielding.iterkeys():
+							if self.wielding[hand]:
+								self.lastattacked = guest
+								guest.attacked(self,'head',self.wielding[hand],hand=hand)
+								
+								return True
 		
 		self.attacking = False
 	
 	def attacked(self,by,to,wep,hand=None):
 		ar = by.strength / 4
 		dr = 0
+		bleed = False
 		
 		#Add bonuses based on weapon type
 		#While we're here, calculate damage
 		if wep in ['lhand','rhand']:
-			action = 'punch'
+			action = ['punch','punches']
 			ar += by.skills['handtohand']
 			dam = functions.roll(1,by.skills['handtohand'])
 			
 			dr += by.skills['handtohand']
 		elif wep.category in ['knife','ssword']:
-			action = 'stab'
+			action = ['stab','stabs']
+			bleed = True
+			
 			ar += by.skills['smallblades']
 			ar += wep.attack
 			dam = functions.roll(1,by.skills['smallblades'])
 			dam += functions.roll(1,wep.attack)
+			
 			if hand:
 				handcon = (10-by.condition[hand[0]+'arm'])
 				armcon = (10-by.condition[hand])
@@ -368,7 +381,7 @@ class person:
 			
 			#Correct damage
 			if dam <= 0:
-				if by == var.player:
+				if by == var.player and self.wearing[to]:
 					var._c.log('%s\'s %s absorbs your hit.' % (self.name[0],self.wearing[to].name))
 				#else:
 				#	var._c.log('You are unharmed.')
@@ -377,19 +390,27 @@ class person:
 			
 			if by == var.player:
 				_dam = dam*float(self.multiplier[to])
-				var._c.log('You %s %s in the %s for %s damage.' % (action,self.name[0],words.translate[to],_dam))
+				var._c.log('You %s %s in the %s for %s damage.' % (action[0],self.name[0],words.translate[to],_dam))
+				
+				if bleed:
+					self.bleeding[to] = dam/2
+				
 				self.condition[to] -= dam
 				self.hp -= _dam
 			else:
 				_dam = dam*float(self.multiplier[to])
-				by.say('%ses you in the %s for %s damage' % (action,words.translate[to],_dam),action=True)
+				by.say('%s you in the %s for %s damage' % (action[1],words.translate[to],_dam),action=True)
+				
+				if bleed:
+					self.bleeding[to] = dam/2
+				
 				self.condition[to] -= dam
 				self.hp -= _dam
 		else:
 			if self == var.player:
-				var._c.log('You block %s\'s punch' % by.name[0])
+				var._c.log('You block %s\'s %s' % (by.name[0],action[0]))
 			else:
-				self.say('blocks your punch',action=True)
+				self.say('blocks your %s' % action[0],action=True)
 	
 	def walk(self,dir):
 		if self.in_room:# or (var.player.in_room and self.loc == var.player.loc):
@@ -523,6 +544,10 @@ class person:
 			if item.blocking:
 				_avoid.append(item.room_loc)
 		
+		for guest in self.get_room().guests:
+			if not guest == self and not tuple(guest.room_loc) == tuple(to):
+				_avoid.append(guest.room_loc)
+		
 		p = ai.AStar(self.room_loc,to,self.get_room().map,room=True,size=var.room_size,avoidType='wall',avoidArray=_avoid)
 		self.path = p.getPath()
 		
@@ -538,7 +563,7 @@ class person:
 	
 	def find_partner(self):
 		for person in var._c.people:
-			if not person.male and person.spouse == None:
+			if not person.male and person.spouse == None and person.loc == self.loc:
 				if person.age < person.events['seek_partner_age']:
 					break
 				
@@ -621,6 +646,20 @@ class person:
 		#var._c.log('%s %s %s has been born.' % (functions.get_date(),_child.name[0],_child.name[1]))
 		pass
 	
+	def lock(self,ticks,action,message):
+		self.move_lock = {'ticks':ticks,'action':action,'message':message}
+	
+	def drink_potion(self,name):
+		for i in self.items:
+			if i.type == 'potion':
+				if i.name.count(name):
+					self.say('begins to drink a %s' % i.name,action=True)
+					self.lock(2,i.use,'stops drinking')
+					self.items.remove(i)
+					return True
+		
+		return False
+	
 	def examine_inventory(self):
 		for i in self.items:
 			if i.type == 'weapon' and i.wielding == False:
@@ -645,6 +684,18 @@ class person:
 					if self.condition[part] <= 9:
 						var._c.log('You have trouble seeing the world around you.')
 		
+		for bodypart in self.bleeding.iterkeys():
+			if self.bleeding[bodypart]:
+				self.condition[bodypart]-=1
+				self.bleeding[bodypart]-=1
+				
+				if self.condition[bodypart] <= 3:
+					var._c.log('%s\'s %s is bleeding.' % (self.name[0],words.translate[bodypart]))
+		
+		if self.hp <= 5:
+			if not 'health' in self.needs:
+				self.needs.append('health')
+		
 		if self.hp <= 0:
 			self.say('dies',action=True)
 			self.kill()
@@ -657,8 +708,20 @@ class person:
 		health = []
 		
 		_t = 0
-		for part in words.body_parts:
+		for part in self.condition.iterkeys():
 			_t += self.condition[part]
+		
+			if part == 'head':
+				if self.condition[part] <= 3 and self.alert:
+					self.alert = 0
+					self.say('passes out',action=True)
+				elif self.condition[part] <= 0:
+					self.say('dies from a severe head wound',action=True)
+					self.kill()
+					return False
+			elif part == 'eyes':
+				if self.condition[part] <= 9:
+					var._c.log('You have trouble seeing the world around you.')
 		
 		health.append('Condition:')
 		health.append('%s/%s' % (_t,140))
@@ -728,7 +791,7 @@ class person:
 
 		if not self.check_body_parts(): return 0
 		
-		if self.alert:
+		if self.alert and not self.move_lock:
 			self.brain.think()
 			self.examine_inventory()
 		
@@ -747,7 +810,7 @@ class person:
 			#print '%s is now %s years old!' % (self.name,self.age)
 		
 		#Movements.
-		if self.path:
+		if self.path and not self.move_lock:
 			if self.in_room:# and self.loc == var.player.loc:
 				if self.room_move_ticks == 0:
 					_p = self.path.pop()
@@ -762,6 +825,13 @@ class person:
 					self.move_ticks = var.move_ticks
 				else:
 					self.move_ticks -= 1
+		elif self.move_lock:
+			if self.move_lock['ticks']:
+				self.move_lock['ticks'] -= 1
+			else:
+				self.move_lock['action'](self)
+				self.say(self.move_lock['message'],action=True)
+				self.move_lock = None			
 	
 	def kill(self):
 		c = item.corpse(self.name,self.loc,self.room_loc)

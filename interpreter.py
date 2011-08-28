@@ -38,7 +38,10 @@ def parse_input(text):
 			var.player.walk(text[0])
 			
 			if var.player.in_room:
-				var._c.tick(ticks = 2)
+				if var.player.attacking:
+					var._c.tick(ticks = 1)
+				else:
+					var._c.tick(ticks = 1)
 			else:
 				var._c.tick(ticks = 48)
 		

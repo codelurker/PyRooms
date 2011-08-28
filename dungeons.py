@@ -66,18 +66,3 @@ class dungeon:
 				
 				if count <= 0:
 					self.fin_map[x][y] = 'wall'
-	
-	def draw_map(self):
-		for x in range(0,self.size[0]):
-			for y in range(0,self.size[1]):
-				if self.fin_map[x][y]=='wall':
-					print '#',
-				else:
-					print ' ',
-			
-			print
-
-#m = dungeon((0,0))
-#m.generate()
-#m.iterate()
-#m.draw_map()

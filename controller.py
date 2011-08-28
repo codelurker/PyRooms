@@ -168,7 +168,7 @@ class controller:
 		#self.path_maker(self.towns)
 
 		#Forests
-		self.make_biome(self.forests,'forest')
+		self.make_biome(self.forests,'forest',num=5)
 		
 		#Make field
 		for x in range(var.world_size[0]):

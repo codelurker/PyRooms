@@ -6,7 +6,7 @@ debug_console = False
 running = True
 interactive = False
 astar_chances = 900
-walker_life = 2
+walker_life = 24
 camera = [0,0]
 
 #Settings
@@ -18,7 +18,7 @@ offset = (1,0)
 biome_distance = 20
 towns = 5
 move_ticks = 24
-room_move_ticks = 1
+room_move_ticks = 0
 
 #Stats
 base_human_seek_partner_age = 16
