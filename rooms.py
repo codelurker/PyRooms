@@ -282,10 +282,10 @@ class room:
 					if lpos[0]>=0 and lpos[0]<self.size[0] and lpos[1]>=0 and lpos[1]<self.size[1]:
 						if not self.map[lpos[0]][lpos[1]]=='wall':
 							self.lmap[lpos[0]][lpos[1]] = 1
-							if not [lpos[0],lpos[1]] in self.fmap: self.fmap.append([lpos[0],lpos[1]])
+							if not self.fmap[lpos[0]][lpos[1]]: self.fmap[lpos[0]][lpos[1]] = True#self.fmap.append([lpos[0],lpos[1]])
 						else:
 							self.lmap[lpos[0]][lpos[1]] = 1
-							if not [lpos[0],lpos[1]] in self.fmap: self.fmap.append([lpos[0],lpos[1]])
+							if not self.fmap[lpos[0]][lpos[1]]: self.fmap[lpos[0]][lpos[1]] = True
 							done = True
 	
 	def get_description(self,exits=True):

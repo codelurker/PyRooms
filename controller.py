@@ -2,7 +2,6 @@
 import functions, people, var, ai, rooms, towns, dungeons, words,  biomes, families, random
 import items as item
 import jobs as job
-from colorama import init, Fore, Back, Style
 
 random.seed()
 
@@ -438,17 +437,16 @@ class controller:
 					if y>=var.dungeon_size[1]-1:
 						y = var.dungeon_size[1]-1
 					
-					self.draw_tile(x-var.camera[0],y-var.camera[1],room.map[x][y])
+					if not room.lmap[x][y]:
+						if room.fmap[x][y]:
+							self.draw_tile(x-var.camera[0],y-var.camera[1],room.map[x][y],color=False)
+						else:
+							var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
+					else:
+						self.draw_tile(x-var.camera[0],y-var.camera[1],room.map[x][y])
 					
 					for guest in room.guests:
 						if (x,y) == tuple(guest.room_loc):
 							var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
-					
-					if not room.lmap[x][y]:
-						if [x,y] in room.fmap:
-							self.draw_tile(x-var.camera[0],y-var.camera[1],room.map[x][y],color=False)
-						else:
-							var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
-					#else:
 		
 		var.window.refresh('main')

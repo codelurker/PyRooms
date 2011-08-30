@@ -152,6 +152,7 @@ class dungeon(rooms.room):
 	def __init__(self,loc):
 		rooms.room.__init__(self,loc,var._c,size=var.dungeon_size)
 		
+		self.type = "dungeon"
 		self.rooms = []
 
 	def generate(self):
@@ -270,37 +271,3 @@ class dungeon(rooms.room):
 		while 1:
 			for walking in self.walkingspace:
 				if random.randint(0,10) <= 1: return walking
-	
-	def tick(self):
-		self.lmap = []
-		for x in range(0,var.dungeon_size[0]):
-			ycols = []
-			for y in range(0,var.dungeon_size[1]):	
-				ycols.append(0)
-			
-			self.lmap.append(ycols)
-		
-		for y in range(-var.player.perception-(10-var.player.condition['eyes']),var.player.perception-(10-var.player.condition['eyes'])):
-			for x in range(-24,25):
-				if not 0 < var.player.room_loc[0]+x < var.dungeon_size[0] and not 0 < var.player.room_loc[1]+y < var.dungeon_size[1]: continue
-				if (abs(var.player.room_loc[0]-(var.player.room_loc[0]+x))+abs(var.player.room_loc[1]-(var.player.room_loc[1]+y))) > 15: continue
-				
-				if (var.player.room_loc[0],var.player.room_loc[1]) == (var.player.room_loc[0]+x,var.player.room_loc[1]+y): continue
-				
-				l = ai.line((var.player.room_loc[0],var.player.room_loc[1]),(var.player.room_loc[0]+x,var.player.room_loc[1]+y))
-					
-				if not l.path[0] == (var.player.room_loc[0],var.player.room_loc[1]):
-					l.path.reverse()
-											
-				done = False
-				for lpos in l.path:
-					if done: break				
-					
-					if lpos[0]>=0 and lpos[0]<var.dungeon_size[0] and lpos[1]>=0 and lpos[1]<var.dungeon_size[1]:
-						if not self.map[lpos[0]][lpos[1]]=='wall':
-							self.lmap[lpos[0]][lpos[1]] = 1
-							if not [lpos[0],lpos[1]] in self.fmap: self.fmap.append([lpos[0],lpos[1]])
-						else:
-							self.lmap[lpos[0]][lpos[1]] = 1
-							if not [lpos[0],lpos[1]] in self.fmap: self.fmap.append([lpos[0],lpos[1]])
-							done = True
