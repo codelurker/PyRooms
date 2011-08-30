@@ -2,7 +2,7 @@ import random, ai, words, var
 import items as item
 
 class room:
-	def __init__(self, loc, controller):
+	def __init__(self, loc, controller, size=var.room_size):
 		self.name = 'The TesterToaster House'
 		self.type = ''
 		self.on_enter = ''
@@ -16,25 +16,29 @@ class room:
 		self.dungeons = []
 		
 		self.map = []
+		self.walkingspace = []
 		self.lmap = []
+		self.fmap = []
 		self.exits = []
 		self.noises = []
 		
 		self.flags = {'sunlit':False}
 		
+		self.size = size
+		
 	def generate(self):
-		for y in range(0,var.room_size[1]+1):
-			self.lmap.append([0] * var.room_size[0])
-			if self.type == 'house': self.map.append(['clear'] * (var.room_size[0]))
+		for y in range(0,self.size[1]):
+			self.lmap.append([0] * self.size[0])
+			self.fmap.append([0] * self.size[0])
+			if self.type == 'house': self.map.append(['clear'] * (self.size[0]))
 		
 		if self.type == 'house':
 			self.house = {'windows':3,'doors':2}
 			self.walls = []
-			self.walkingspace = []
 			
 			for n in range(6):
 				size = (15,20)
-				pos = (random.randint(3,size[0]-3),random.randint(4,var.room_size[1]-size[1]))
+				pos = (random.randint(3,size[0]-3),random.randint(4,self.size[1]-size[1]))
 				_size = (random.randint(3,size[0]-pos[0]),random.randint(3,size[1]-pos[1]))
 				
 				for x in range(_size[0]):
@@ -52,18 +56,18 @@ class room:
 				if place in self.walls: self.walls.remove(place)
 	
 			#Grass
-			for x in range(0,var.room_size[0]):
-				for y in range(0,var.room_size[1]):
+			for x in range(0,self.size[0]):
+				for y in range(0,self.size[1]):
 					if not [x,y] in self.walls and not [x,y] in self.walkingspace and random.randint(1,4) <= 1:
 						self.map[x][y] = 'grass'						
 		
-		for x in range(0,var.room_size[0]):
+		for x in range(0,self.size[0]):
 			ycols = []
 			
 			if self.type == 'house':
 				break
 			
-			for y in range(0,var.room_size[1]):				
+			for y in range(0,self.size[1]):				
 				if self.type == 'clearing':
 					if random.randint(0,8) == 1:
 						type = 'grass'
@@ -245,12 +249,10 @@ class room:
 						var._c.map[_pos[0]][_pos[1]] = r
 				
 	def tick(self,light=True):
-		lights = []
-		
 		self.lmap = []
-		for x in range(0,var.room_size[0]):
+		for x in range(0,self.size[0]):
 			ycols = []
-			for y in range(0,var.room_size[1]):	
+			for y in range(0,self.size[1]):	
 				if not self.type == 'house' and self.flags['sunlit']:
 					ycols.append(1)
 				else:
@@ -263,7 +265,7 @@ class room:
 		if not light: return True
 		for y in range(-var.player.perception-(10-var.player.condition['eyes']),var.player.perception-(10-var.player.condition['eyes'])):
 			for x in range(-24,25):
-				if not 0 < var.player.room_loc[0]+x < var.room_size[0] and not 0 < var.player.room_loc[1]+y < var.room_size[1]: continue
+				if not 0 < var.player.room_loc[0]+x < self.size[0] and not 0 < var.player.room_loc[1]+y < self.size[1]: continue
 				if (abs(var.player.room_loc[0]-(var.player.room_loc[0]+x))+abs(var.player.room_loc[1]-(var.player.room_loc[1]+y))) > 15: continue
 				
 				if (var.player.room_loc[0],var.player.room_loc[1]) == (var.player.room_loc[0]+x,var.player.room_loc[1]+y): continue
@@ -277,11 +279,13 @@ class room:
 				for lpos in l.path:
 					if done: break				
 					
-					if lpos[0]>=0 and lpos[0]<var.room_size[0] and lpos[1]>=0 and lpos[1]<var.room_size[1]:
+					if lpos[0]>=0 and lpos[0]<self.size[0] and lpos[1]>=0 and lpos[1]<self.size[1]:
 						if not self.map[lpos[0]][lpos[1]]=='wall':
 							self.lmap[lpos[0]][lpos[1]] = 1
+							if not [lpos[0],lpos[1]] in self.fmap: self.fmap.append([lpos[0],lpos[1]])
 						else:
 							self.lmap[lpos[0]][lpos[1]] = 1
+							if not [lpos[0],lpos[1]] in self.fmap: self.fmap.append([lpos[0],lpos[1]])
 							done = True
 	
 	def get_description(self,exits=True):

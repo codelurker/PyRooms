@@ -66,3 +66,11 @@ class family:
 		wife.warp_to(list(self.loc))
 		wife.room_loc = list(self.house)
 		wife.enter_room()
+		
+		dog = people.dog()
+		dog.tamed = True
+		dog.owner = husband
+		dog.name = 'Albert'
+		dog.warp_to(list(self.loc))
+		dog.room_loc = [2,1]
+		dog.enter_room()

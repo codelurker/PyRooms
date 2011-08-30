@@ -2,6 +2,7 @@
 import functions, people, var, ai, rooms, towns, dungeons, words,  biomes, families, random
 import items as item
 import jobs as job
+from colorama import init, Fore, Back, Style
 
 random.seed()
 
@@ -16,6 +17,7 @@ class controller:
 		
 		self.id = 0
 		self.people = []
+		self.monsters = []
 		self.jobs = []
 		
 		#Biomes
@@ -112,8 +114,8 @@ class controller:
 	def make_dungeon(self,num=1):
 		for _f in range(num):
 			d = dungeons.dungeon((2,2))
-			d.generate()
-			d.iterate()
+			#d.generate()
+			#d.iterate()
 			self.map[1][1].generate()
 			self.map[1][1].dungeons.append(d)
 			self.map[1][1].map[2][2]='stairsdown'
@@ -236,7 +238,8 @@ class controller:
 		var.player.intelligence = 3
 		var.player.charisma = 8
 		
-		var.player.warp_to(list(self.get_random_town().loc))
+		#var.player.warp_to(list(self.get_random_town().loc))
+		var.player.warp_to([1,1])
 		var.player.birthplace = var.player
 		var.player.add_item(item.get_item('light'))
 		
@@ -261,6 +264,9 @@ class controller:
 			
 			for _p in self.people:
 				_p.tick()
+			
+			for _m in self.monsters:
+				_m.tick()
 			
 			self.ticks += 1
 			
@@ -290,14 +296,17 @@ class controller:
 			var.camera[0] = var.player.loc[0]-(var.win_size[0]/2)
 			var.camera[1] = var.player.loc[1]-(var.win_size[1]/2)
 		elif var.player.in_dungeon:
-			var.camera[0] = var.player.room_loc[0]-(var.win_size[0]/2)
+			var.camera[0] = var.player.room_loc[0]-(13)
 			var.camera[1] = var.player.room_loc[1]-(var.win_size[1]/2)
 		
 		if var.camera[0]<0: var.camera[0] = 0
 		if var.camera[1]<0: var.camera[1] = 0
 		
-		if var.player.in_room:
+		if var.player.in_room and not var.player.in_dungeon:
 			var.player.get_room().tick()
+		
+		if var.player.in_dungeon:
+			var.player.get_room().dungeons[0].tick()
 		
 		self.draw_map()
 		if var.debug: print 'Done!\n',
@@ -329,6 +338,30 @@ class controller:
 				
 				for _p in self.people:
 					_p.events['lastbirthday']=False
+	
+	def draw_tile(self,x,y,tile,color=True):
+		if tile == 'clear':
+			var.window.write('main',' ',(x,y))
+		elif tile == 'grass':
+			if color: var.window.set_color(3)
+			var.window.write('main','.',(x,y))
+			if color: var.window.set_color(1)
+		elif tile == 'tree':
+			if color: var.window.set_color(2)
+			var.window.write('main','F',(x,y))
+			if color: var.window.set_color(1)
+		elif tile == 'wall':
+			if color: var.window.set_color(6)
+			var.window.write('main','#',(x,y))
+			if color: var.window.set_color(1)
+		elif tile == 'floor':
+			if color: var.window.set_color(8)
+			var.window.write('main','.',(x,y))
+			if color: var.window.set_color(1)
+		elif tile == 'stairsdown':
+			if color: var.window.set_color(6)
+			var.window.write('main','>',(x,y))
+			if color: var.window.set_color(1)
 	
 	def draw_map(self):
 		if not var.player.in_room:
@@ -379,28 +412,7 @@ class controller:
 			
 			for y in range(0,var.room_size[1]):
 				for x in range(0,var.room_size[0]):
-					if room.map[x][y] == 'clear':
-						var.window.write('main',' ',(x+var.offset[0],y+var.offset[1]))
-					elif room.map[x][y] == 'grass':
-						var.window.set_color(3)
-						var.window.write('main','.',(x+var.offset[0],y+var.offset[1]))
-						var.window.set_color(1)
-					elif room.map[x][y] == 'tree':
-						var.window.set_color(2)
-						var.window.write('main','F',(x+var.offset[0],y+var.offset[1]))
-						var.window.set_color(1)
-					elif room.map[x][y] == 'wall':
-						var.window.set_color(7)
-						var.window.write('main','#',(x+var.offset[0],y+var.offset[1]))
-						var.window.set_color(1)
-					elif room.map[x][y] == 'floor':
-						var.window.set_color(8)
-						var.window.write('main','.',(x+var.offset[0],y+var.offset[1]))
-						var.window.set_color(1)
-					elif room.map[x][y] == 'stairsdown':
-						var.window.set_color(6)
-						var.window.write('main','>',(x+var.offset[0],y+var.offset[1]))
-						var.window.set_color(1)
+					self.draw_tile(x+var.offset[0],y+var.offset[1],room.map[x][y])
 					
 					for item in room.objects:
 						if (x,y) == tuple(item.room_loc):
@@ -408,7 +420,7 @@ class controller:
 					
 					for guest in room.guests:
 						if (x,y) == tuple(guest.room_loc):
-							var.window.write('main','@',(x+var.offset[0],y+var.offset[1]))
+							var.window.write('main',guest.icon,(x+var.offset[0],y+var.offset[1]))
 					
 					if not room.lmap[x][y]: var.window.write('main',' ',(x+var.offset[0],y+var.offset[1]))
 		
@@ -416,7 +428,7 @@ class controller:
 			room = var.player.get_room().dungeons[0]
 			
 			for _y in range(var.camera[1],var.camera[1]+var.win_size[1]):
-				for _x in range(var.camera[0],var.camera[0]+var.win_size[0]):
+				for _x in range(var.camera[0],var.camera[0]+(26)):
 					x = int(_x)
 					y = int(_y)
 					
@@ -426,27 +438,17 @@ class controller:
 					if y>=var.dungeon_size[1]-1:
 						y = var.dungeon_size[1]-1
 					
-					if room.map[x][y] == 'clear' or room.map[x][y] == 'floor':
-						var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
-					elif room.map[x][y] == 'grass':
-						var.window.set_color(3)
-						var.window.write('main','.',(x-var.camera[0],y-var.camera[1]))
-						var.window.set_color(1)
-					elif room.map[x][y] == 'tree':
-						var.window.set_color(2)
-						var.window.write('main','F',(x-var.camera[0],y-var.camera[1]))
-						var.window.set_color(1)
-					elif room.map[x][y] == 'wall':
-						var.window.set_color(6)
-						var.window.write('main','#',(x-var.camera[0],y-var.camera[1]))
-						var.window.set_color(1)
-					elif room.map[x][y] == 'stairsdown':
-						var.window.set_color(6)
-						var.window.write('main','>',(x-var.camera[0],y-var.camera[1]))
-						var.window.set_color(1)
+					self.draw_tile(x-var.camera[0],y-var.camera[1],room.map[x][y])
 					
 					for guest in room.guests:
 						if (x,y) == tuple(guest.room_loc):
 							var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
+					
+					if not room.lmap[x][y]:
+						if [x,y] in room.fmap:
+							self.draw_tile(x-var.camera[0],y-var.camera[1],room.map[x][y],color=False)
+						else:
+							var.window.write('main',' ',(x-var.camera[0],y-var.camera[1]))
+					#else:
 		
 		var.window.refresh('main')

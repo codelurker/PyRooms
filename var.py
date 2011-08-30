@@ -12,7 +12,7 @@ camera = [0,0]
 #Settings
 win_size = (80,25)
 world_size = (110,80)
-room_size = (25,24)
+room_size = (25,25)
 dungeon_size = (80,80)
 offset = (1,0)
 biome_distance = 20

@@ -164,9 +164,9 @@ def parse_input(text):
 	elif text[0] == ord('>'):
 		if var.player.in_room:
 			if var.player.get_room().map[var.player.room_loc[0]][var.player.room_loc[1]] == 'stairsdown':
-				var._c.log('Entering...')
 				var.window.clear('log')
 				var.window.refresh('log')
+				var._c.status('Entering...')
 				var.player.enter_dungeon(var.player.get_room().dungeons[0])
 				var._c.draw_map()
 	

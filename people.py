@@ -5,9 +5,7 @@ import items as item
 random.seed()
 
 class person:
-	def __init__(self,player=False):
-		if not player: var._c.people.append(self)
-		
+	def __init__(self):
 		self.id = var._c.get_id()		
 		self.brain = brain.brain(self)
 		self.name = [None,None]
@@ -245,11 +243,15 @@ class person:
 		self.get_room().tick(light=False)
 	
 	def enter_dungeon(self,dungeon):
-		var.player.in_dungeon = True
+		self.in_dungeon = True
+		dungeon.generate()
 		dungeon.guests.append(self)
+		self.room_loc = dungeon.get_open_space()
+		dungeon.tick()
+		var.window.clear('status')
 	
 	def leave_dungeon(self,dungeon):
-		var.player.in_dungeon = False
+		self.in_dungeon = False
 		dungeon.guests.remove(self)
 	
 	def say(self,text,action=False,quiet=False):
@@ -433,7 +435,7 @@ class person:
 			_tloc[0] -= 1
 		
 		if _tloc[0] < var.world_size[0] and _tloc[1] < var.world_size[1] and var._c.map[_tloc[0]][_tloc[1]] or self.in_room == True:
-			if self.in_room:# and not self.in_dungeon or (var.player.in_room and self.loc == var.player.loc and not var.player.in_dungeon):
+			if self.in_room and not self.in_dungeon:# or (var.player.in_room and self.loc == var.player.loc and not var.player.in_dungeon):
 				if _tloc[0] < 0:
 					var._c.map[self.loc[0]][self.loc[1]].guests.remove(self)
 					self.loc[0]-=1
@@ -500,7 +502,38 @@ class person:
 									var.window.refresh('status')
 			
 			elif self.in_dungeon:
-				self.room_loc = _tloc
+				if self.get_room().dungeons[0].map[_tloc[0]][_tloc[1]] == 'wall':
+					if self == var.player:
+						var._c.status('There is a wall in the way.')
+					else:
+						self.say('runs into a wall',action=True,quiet=True)
+				
+				else:
+					if self.attacking:
+						self.attack(_tloc)
+					else:
+						for obj in self.get_room().dungeons[0].objects:
+							if obj.room_loc == [_tloc[0],_tloc[1]] and obj.blocking:
+								if self == var.player:
+									var._c.status('There is a %s in the way.' % obj.name)
+								else:
+									self.say('runs into a %s' % obj.name,action=True,quiet=True)
+								
+								return False
+					
+						self.room_loc = _tloc
+					
+					if self == var.player:
+						for i in self.items:
+							i.room_loc = self.room_loc
+						
+						var.window.clear('status')
+						var.window.refresh('status')
+						
+						for o in self.get_room().objects:
+							if o.room_loc == self.room_loc:
+								var.window.write('status','You see a %s here.' % (o.name),(0,1))
+								var.window.refresh('status')
 			
 			else:
 				self.loc = _tloc
@@ -843,6 +876,51 @@ class person:
 
 class human(person):
 	def __init__(self,player=False):
-		person.__init__(self,player=player)
+		person.__init__(self)
+		
+		if not player:
+			var._c.people.append(self)
 		
 		self.race = 'Human'
+		self.icon = '@'
+
+class monster(person):
+	def __init__(self):
+		person.__init__(self)
+		
+		var._c.monsters.append(self)
+		
+		self.race = 'Monster'
+		
+		self.tameable = False
+		self.tamed = False
+	
+	def tick(self):
+		if self.loc == var.player.loc and not self.path:
+			var._c.log('Trying')
+			self.walk_to_room((var.player.room_loc[0],var.player.room_loc[1]))
+		
+		if self.path and not self.move_lock:
+			if self.in_room:# and self.loc == var.player.loc:
+				if self.room_move_ticks == 0:
+					_p = self.path.pop()
+					_w = self.get_walk_dir(_p,room=True)
+					self.walk(_w)
+					self.room_move_ticks = var.room_move_ticks
+				else:
+					self.room_move_ticks -= 1				
+			else:
+				if self.move_ticks == 0:
+					self.walk(self.get_walk_dir(self.path.pop()))
+					self.move_ticks = var.move_ticks
+				else:
+					self.move_ticks -= 1
+
+class dog(monster):
+	def __init__(self):
+		monster.__init__(self)
+		
+		self.race = 'Dog'
+		self.tameable = True
+		
+		self.icon = 'd'
