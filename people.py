@@ -244,8 +244,20 @@ class person:
 	
 	def enter_dungeon(self,dungeon):
 		self.in_dungeon = True
-		dungeon.generate()
-		dungeon.guests.append(self)
+		if self==var.player:
+			dungeon.generate()
+			dungeon.guests.append(self)
+			
+			_dog = dog()
+			_dog.tamed = False
+			_dog.owner = None
+			_dog.name = 'Albert'
+			_dog.warp_to(list(self.loc))
+			_dog.room_loc = self.room_loc
+			_dog.enter_room()
+			_dog.enter_dungeon(dungeon)
+			dungeon.guests.append(_dog)
+		
 		self.room_loc = dungeon.get_open_space()
 		dungeon.tick()
 		var.window.clear('status')
@@ -583,7 +595,22 @@ class person:
 		
 		p = ai.AStar(self.room_loc,to,self.get_room().map,room=True,size=var.room_size,avoidType='wall',avoidArray=_avoid)
 		self.path = p.getPath()
+	
+	def walk_to_dungeon(self, to):
+		if var.debug: var._c.log('Going from %s,%s to %s,%s' % (self.room_loc[0],self.room_loc[1],to[0],to[1]))
 		
+		_avoid = []
+		for item in self.get_room().dungeons[0].objects:
+			if item.blocking:
+				_avoid.append(item.room_loc)
+		
+		for guest in self.get_room().dungeons[0].guests:
+			if not guest == self and not tuple(guest.room_loc) == tuple(to):
+				_avoid.append(guest.room_loc)
+		
+		p = ai.AStar(self.room_loc,to,self.get_room().dungeons[0].map,room=True,size=var.dungeon_size,avoidType='wall',avoidArray=_avoid)
+		self.path = p.getPath()
+	
 	def warp_to(self,place):
 		self.loc = place
 		var._c.map[place[0]][place[1]].add_guest(self)
@@ -896,9 +923,12 @@ class monster(person):
 		self.tamed = False
 	
 	def tick(self):
-		if self.loc == var.player.loc and not self.path:
-			var._c.log('Trying')
+		if self.loc == var.player.loc and var.player.in_room and not self.in_dungeon and not self.path:
 			self.walk_to_room((var.player.room_loc[0],var.player.room_loc[1]))
+		
+		if self.loc == var.player.loc and var.player.in_room and self.in_dungeon and not self.path:
+			#self.walk_to_dungeon((var.player.room_loc[0],var.player.room_loc[1]))
+			self.brain.think()
 		
 		if self.path and not self.move_lock:
 			if self.in_room:# and self.loc == var.player.loc:

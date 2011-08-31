@@ -226,7 +226,12 @@ class brain:
 		if hate:
 			var._c.log(self.owner.name[0] + ': hate for %s is %s' % (obj.owner.name[0],hate))
 		
-		return [love,hate]
+		if self.owner.name == "Albert":
+			var._c.log(self.owner.name+'I am a dog!')
+			var._c.log(str(-love))
+			return [-hate,love]
+		else:
+			return [love,hate]
 
 	def think(self):
 		self.need = {'value':0,'obj':None}

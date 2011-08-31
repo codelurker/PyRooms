@@ -167,6 +167,7 @@ def parse_input(text):
 				var.window.clear('log')
 				var.window.refresh('log')
 				var._c.status('Entering...')
+				var.window.draw_screen()
 				var.player.enter_dungeon(var.player.get_room().dungeons[0])
 				var._c.draw_map()
 	
