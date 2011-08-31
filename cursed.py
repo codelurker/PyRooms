@@ -97,7 +97,10 @@ class cursed:
 	def refresh(self,name):
 		for screen in self.screen:
 			if screen['name'] == name:
-				screen['win'].refresh()
+				screen['win'].noutrefresh()#refresh()
+
+	def draw_screen(self):
+		curses.doupdate()
 
 	def clear_line(self,line,char=' '):
 		for i in range(0,79):

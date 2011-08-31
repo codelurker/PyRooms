@@ -449,4 +449,5 @@ class controller:
 						if (x,y) == tuple(guest.room_loc):
 							var.window.write('main','@',(x-var.camera[0],y-var.camera[1]))
 		
-		var.window.refresh('main')
+		#var.window.refresh('main')
+		var.window.draw_screen()
