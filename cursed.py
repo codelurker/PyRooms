@@ -97,7 +97,7 @@ class cursed:
 	def refresh(self,name):
 		for screen in self.screen:
 			if screen['name'] == name:
-				screen['win'].noutrefresh()#refresh()
+				screen['win'].noutrefresh()
 
 	def draw_screen(self):
 		curses.doupdate()
